@@ -43,10 +43,10 @@ Progress legend: `[ ]` pending · `[x]` done
 
 ## Phase 4 — Alembic Migrations
 
-- [ ] 4.1 Configure `apps/api/alembic.ini`
-- [ ] 4.2 Configure `apps/api/alembic/env.py` (async-compatible, reads `DATABASE_URL` from env)
-- [ ] 4.3 Generate initial migration from models
-- [ ] 4.4 Confirm `make migrate` applies migrations cleanly against running Postgres
+- [x] 4.1 Configure `apps/api/alembic.ini`
+- [x] 4.2 Configure `apps/api/alembic/env.py` (async-compatible, reads `DATABASE_URL` from env)
+- [x] 4.3 Generate initial migration from models
+- [x] 4.4 Confirm `make migrate` applies migrations cleanly against running Postgres
 
 ---
 
