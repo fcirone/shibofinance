@@ -85,66 +85,66 @@ Progress legend: `[ ]` pending · `[x]` done
 
 ---
 
-## Phase 8 — XP Brazil Importer
+## Phase 8 — Statement Payment Matching
 
-- [ ] 8.1 `packages/importers/xp_br/detector.py`
-- [ ] 8.2 `packages/importers/xp_br/bank_parser_csv.py`
-- [ ] 8.3 `packages/importers/xp_br/card_parser_csv.py`
-- [ ] 8.4 Add sample files to `data/samples/xp_br/`
-- [ ] 8.5 Manually test import of both file types
-
----
-
-## Phase 9 — BBVA Uruguay Importer
-
-- [ ] 9.1 `packages/importers/bbva_uy/detector.py`
-- [ ] 9.2 `packages/importers/bbva_uy/bank_parser_csv.py`
-- [ ] 9.3 `packages/importers/bbva_uy/card_parser_pdf.py`
-- [ ] 9.4 Add sample files to `data/samples/bbva_uy/`
-- [ ] 9.5 Manually test import of both file types
+- [ ] 8.1 Implement `apps/api/services/statement_matcher.py`
+  - [ ] 8.1.1 Detect payment patterns: `PAGAMENTO FATURA`, `PAGTO CARTAO`, `CARD PAYMENT`
+  - [ ] 8.1.2 Match by amount (exact or partial) and date proximity to statement due date
+  - [ ] 8.1.3 Insert record into `statement_payment_links`
+  - [ ] 8.1.4 Auto-categorize matched bank transaction as `transfer`
 
 ---
 
-## Phase 10 — Statement Payment Matching
+## Phase 9 — API Endpoints
 
-- [ ] 10.1 Implement `apps/api/services/statement_matcher.py`
-  - [ ] 10.1.1 Detect payment patterns: `PAGAMENTO FATURA`, `PAGTO CARTAO`, `CARD PAYMENT`
-  - [ ] 10.1.2 Match by amount (exact or partial) and date proximity to statement due date
-  - [ ] 10.1.3 Insert record into `statement_payment_links`
-  - [ ] 10.1.4 Auto-categorize matched bank transaction as `transfer`
-
----
-
-## Phase 11 — API Endpoints
-
-- [ ] 11.1 `app/main.py` — FastAPI app setup, router registration
-- [ ] 11.2 `app/schemas.py` — Pydantic v2 request/response schemas
-- [ ] 11.3 `app/routers/health.py` — `GET /health`
-- [ ] 11.4 `app/routers/instruments.py` — `POST /instruments`, `GET /instruments`
-- [ ] 11.5 `app/routers/imports.py` — `POST /imports/upload`
-- [ ] 11.6 `app/routers/bank_transactions.py` — `GET /bank-transactions`
-- [ ] 11.7 `app/routers/card_transactions.py` — `GET /card-transactions`
-- [ ] 11.8 `app/routers/statements.py` — `GET /card-statements`
-- [ ] 11.9 `app/routers/categories.py` — `GET /categories`, `POST /categorize`
-- [ ] 11.10 `app/routers/spending_summary.py` — `GET /spending-summary` (card txs + bank txs excluding transfers)
+- [ ] 9.1 `app/main.py` — FastAPI app setup, router registration
+- [ ] 9.2 `app/schemas.py` — Pydantic v2 request/response schemas
+- [ ] 9.3 `app/routers/health.py` — `GET /health`
+- [ ] 9.4 `app/routers/instruments.py` — `POST /instruments`, `GET /instruments`
+- [ ] 9.5 `app/routers/imports.py` — `POST /imports/upload`
+- [ ] 9.6 `app/routers/bank_transactions.py` — `GET /bank-transactions`
+- [ ] 9.7 `app/routers/card_transactions.py` — `GET /card-transactions`
+- [ ] 9.8 `app/routers/statements.py` — `GET /card-statements`
+- [ ] 9.9 `app/routers/categories.py` — `GET /categories`, `POST /categorize`
+- [ ] 9.10 `app/routers/spending_summary.py` — `GET /spending-summary` (card txs + bank txs excluding transfers)
 
 ---
 
-## Phase 12 — CLI Tool
+## Phase 10 — CLI Tool
 
-- [ ] 12.1 Implement `tools/import_cli.py`
-  - [ ] 12.1.1 `import` command (`--file`, `--instrument`, `--source auto`)
-  - [ ] 12.1.2 `list-transactions` command (`--instrument`)
+- [ ] 10.1 Implement `tools/import_cli.py`
+  - [ ] 10.1.1 `import` command (`--file`, `--instrument`, `--source auto`)
+  - [ ] 10.1.2 `list-transactions` command (`--instrument`)
 
 ---
 
-## Phase 13 — Tests
+## Phase 11 — Tests
 
-- [ ] 13.1 `tests/test_health.py` — health endpoint returns 200
-- [ ] 13.2 `tests/test_import_idempotency.py` — reimporting same file produces no new rows
-- [ ] 13.3 Fingerprint consistency test — same input always produces same hash
-- [ ] 13.4 Basic query test — imported transactions appear in GET endpoints
-- [ ] 13.5 Confirm `make test` passes with all tests green
+- [ ] 11.1 `tests/test_health.py` — health endpoint returns 200
+- [ ] 11.2 `tests/test_import_idempotency.py` — reimporting same file produces no new rows
+- [ ] 11.3 Fingerprint consistency test — same input always produces same hash
+- [ ] 11.4 Basic query test — imported transactions appear in GET endpoints
+- [ ] 11.5 Confirm `make test` passes with all tests green
+
+---
+
+## Phase 12 — XP Brazil Importer
+
+- [ ] 12.1 `packages/importers/xp_br/detector.py`
+- [ ] 12.2 `packages/importers/xp_br/bank_parser_csv.py`
+- [ ] 12.3 `packages/importers/xp_br/card_parser_csv.py`
+- [ ] 12.4 Add sample files to `data/samples/xp_br/`
+- [ ] 12.5 Write and run tests
+
+---
+
+## Phase 13 — BBVA Uruguay Importer
+
+- [ ] 13.1 `packages/importers/bbva_uy/detector.py`
+- [ ] 13.2 `packages/importers/bbva_uy/bank_parser_csv.py`
+- [ ] 13.3 `packages/importers/bbva_uy/card_parser_pdf.py`
+- [ ] 13.4 Add sample files to `data/samples/bbva_uy/`
+- [ ] 13.5 Write and run tests
 
 ---
 
