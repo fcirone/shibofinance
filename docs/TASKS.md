@@ -16,16 +16,16 @@ Progress legend: `[ ]` pending · `[x]` done
 
 ## Phase 2 — Docker Compose
 
-- [ ] 2.1 Write `docker-compose.yml` with `db` (postgres:16) and `api` (FastAPI) services
-- [ ] 2.2 Add optional `pgadmin` service
-- [ ] 2.3 Write `apps/api/Dockerfile`
-- [ ] 2.4 Confirm `make up` starts the full stack
+- [x] 2.1 Write `docker-compose.yml` with `db` (postgres:16) and `api` (FastAPI) services
+- [x] 2.2 Add optional `pgadmin` service
+- [x] 2.3 Write `apps/api/Dockerfile`
+- [x] 2.4 Confirm `make up` starts the full stack
 
 ---
 
 ## Phase 3 — Database Models
 
-- [ ] 3.1 Create `apps/api/pyproject.toml` (Python 3.12, FastAPI, SQLAlchemy 2.x, Alembic, Pydantic v2, Pytest)
+- [x] 3.1 Create `apps/api/pyproject.toml` (Python 3.12, FastAPI, SQLAlchemy 2.x, Alembic, Pydantic v2, Pytest)
 - [ ] 3.2 Implement `app/settings.py` (env-based config)
 - [ ] 3.3 Implement `app/db.py` (SQLAlchemy async engine + session factory)
 - [ ] 3.4 Implement `app/models.py` with all tables:
