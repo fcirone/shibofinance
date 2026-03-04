@@ -2,6 +2,12 @@
 
 Progress legend: `[ ]` pending · `[x]` done
 
+## Execution Rules
+- Execute ONLY the next unchecked task.
+- Do not change completed code unless required to complete the current task.
+- If a spec mismatch is found, propose a minimal patch and stop.
+- Always add/adjust tests for the current task.
+
 ---
 
 ## Phase 1 — Repo Skeleton
@@ -52,10 +58,10 @@ Progress legend: `[ ]` pending · `[x]` done
 
 ## Phase 5 — Core Packages
 
-- [ ] 5.1 `packages/core/money.py` — integer minor-unit conversion helpers
-- [ ] 5.2 `packages/core/timezones.py` — timezone constants and UTC conversion
-- [ ] 5.3 `packages/core/normalizers.py` — description normalization (lowercase, remove accents, collapse whitespace, remove duplicate punctuation)
-- [ ] 5.4 `packages/core/fingerprint.py` — SHA256 fingerprint generation from `(instrument_id, posted_date, currency, amount_minor, description_norm)`
+- [x] 5.1 `packages/core/money.py` — integer minor-unit conversion helpers
+- [x] 5.2 `packages/core/timezones.py` — timezone constants and UTC conversion
+- [x] 5.3 `packages/core/normalizers.py` — description normalization (lowercase, remove accents, collapse whitespace, remove duplicate punctuation)
+- [x] 5.4 `packages/core/fingerprint.py` — SHA256 fingerprint generation from `(instrument_id, posted_date, currency, amount_minor, description_norm)`
 
 ---
 
