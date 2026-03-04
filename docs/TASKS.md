@@ -6,11 +6,11 @@ Progress legend: `[ ]` pending · `[x]` done
 
 ## Phase 1 — Repo Skeleton
 
-- [ ] 1.1 Create root directory structure (`apps/`, `packages/`, `tools/`, `data/`)
-- [ ] 1.2 Add `.gitignore` (Python, Docker, `.env`)
-- [ ] 1.3 Add `.env.example` with required env vars
-- [ ] 1.4 Create root `Makefile` with `up`, `down`, `logs`, `migrate`, `test`, `api-shell` targets
-- [ ] 1.5 Create `README.md` with setup instructions
+- [x] 1.1 Create root directory structure (`apps/`, `packages/`, `tools/`, `data/`)
+- [x] 1.2 Add `.gitignore` (Python, Docker, `.env`)
+- [x] 1.3 Add `.env.example` with required env vars
+- [x] 1.4 Create root `Makefile` with `up`, `down`, `logs`, `migrate`, `test`, `api-shell` targets
+- [x] 1.5 Create `README.md` with setup instructions
 
 ---
 
