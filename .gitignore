@@ -71,9 +71,10 @@ ehthumbs.db
 # Alembic
 # (keep versions tracked, ignore only local overrides)
 
-# Data / uploads
+# Data / uploads / samples (contain real financial statements)
 data/uploads/
 data/tmp/
+data/samples/
 
 # Secrets / certs
 *.pem
