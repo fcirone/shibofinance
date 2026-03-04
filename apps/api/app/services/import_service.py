@@ -92,7 +92,7 @@ async def run_import(
 
     try:
         importer = registry.detect(file_bytes, filename)
-        result = importer.parse(file_bytes, str(instrument.id))
+        result = importer.parse(file_bytes, str(instrument.id), instrument.metadata_ or {})
 
         inserted_total = 0
         duplicate_total = 0

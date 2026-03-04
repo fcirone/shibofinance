@@ -507,7 +507,7 @@ card_statements list
 
 Santander Brazil
 
-bank CSV  
+bank PDF  
 credit card PDF  
 
 XP Brazil

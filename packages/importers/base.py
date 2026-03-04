@@ -58,6 +58,11 @@ class BaseImporter(Protocol):
         """Return True if this importer can handle the given file."""
         ...
 
-    def parse(self, file_bytes: bytes, instrument_id: str) -> ImportResult:
+    def parse(
+        self,
+        file_bytes: bytes,
+        instrument_id: str,
+        instrument_metadata: dict | None = None,
+    ) -> ImportResult:
         """Parse the file and return normalised rows."""
         ...

@@ -77,11 +77,11 @@ Progress legend: `[ ]` pending · `[x]` done
 
 ## Phase 7 — Santander Brazil Importer
 
-- [ ] 7.1 `packages/importers/santander_br/detector.py` — detect Santander BR files
-- [ ] 7.2 `packages/importers/santander_br/bank_parser_csv.py` — parse bank statement CSV
-- [ ] 7.3 `packages/importers/santander_br/card_parser_pdf.py` — parse credit card PDF
-- [ ] 7.4 Add sample files to `data/samples/santander_br/`
-- [ ] 7.5 Manually test import of both file types
+- [x] 7.1 `packages/importers/santander_br/detector.py` — detect Santander BR files
+- [x] 7.2 `packages/importers/santander_br/bank_parser_pdf.py` — parse bank statement PDF (spec was PDF, not CSV)
+- [x] 7.3 `packages/importers/santander_br/card_parser_pdf.py` — parse credit card PDF
+- [x] 7.4 Add sample files to `data/samples/santander_br/`
+- [x] 7.5 Write and run tests — 16/16 passing (`tests/test_santander_br.py`)
 
 ---
 
