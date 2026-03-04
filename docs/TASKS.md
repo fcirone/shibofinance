@@ -97,16 +97,16 @@ Progress legend: `[ ]` pending · `[x]` done
 
 ## Phase 9 — API Endpoints
 
-- [ ] 9.1 `app/main.py` — FastAPI app setup, router registration
-- [ ] 9.2 `app/schemas.py` — Pydantic v2 request/response schemas
-- [ ] 9.3 `app/routers/health.py` — `GET /health`
-- [ ] 9.4 `app/routers/instruments.py` — `POST /instruments`, `GET /instruments`
-- [ ] 9.5 `app/routers/imports.py` — `POST /imports/upload`
-- [ ] 9.6 `app/routers/bank_transactions.py` — `GET /bank-transactions`
-- [ ] 9.7 `app/routers/card_transactions.py` — `GET /card-transactions`
-- [ ] 9.8 `app/routers/statements.py` — `GET /card-statements`
-- [ ] 9.9 `app/routers/categories.py` — `GET /categories`, `POST /categorize`
-- [ ] 9.10 `app/routers/spending_summary.py` — `GET /spending-summary` (card txs + bank txs excluding transfers)
+- [x] 9.1 `app/main.py` — FastAPI app setup, router registration
+- [x] 9.2 `app/schemas.py` — Pydantic v2 request/response schemas
+- [x] 9.3 `app/routers/health.py` — `GET /health`
+- [x] 9.4 `app/routers/instruments.py` — `POST /instruments`, `GET /instruments`
+- [x] 9.5 `app/routers/imports.py` — `POST /imports/upload`
+- [x] 9.6 `app/routers/bank_transactions.py` — `GET /bank-transactions`
+- [x] 9.7 `app/routers/card_transactions.py` — `GET /card-transactions`
+- [x] 9.8 `app/routers/statements.py` — `GET /card-statements`
+- [x] 9.9 `app/routers/categories.py` — `GET /categories`, `POST /categorize`
+- [x] 9.10 `app/routers/spending_summary.py` — `GET /spending-summary` (card txs + bank txs excluding transfers)
 
 ---
 

@@ -1,0 +1,35 @@
+from datetime import date
+
+from fastapi import APIRouter, Depends, Query
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.db import get_db
+from app.models import CreditCard, CreditCardTransaction
+from app.schemas import CardTransactionOut
+
+router = APIRouter(prefix="/card-transactions", tags=["card-transactions"])
+
+
+@router.get("", response_model=list[CardTransactionOut])
+async def list_card_transactions(
+    instrument_id: str | None = Query(None),
+    date_from: date | None = Query(None),
+    date_to: date | None = Query(None),
+    limit: int = Query(200, le=1000),
+    offset: int = Query(0),
+    db: AsyncSession = Depends(get_db),
+):
+    q = select(CreditCardTransaction).order_by(CreditCardTransaction.posted_date.desc())
+    if instrument_id:
+        # Join through credit_cards to filter by instrument
+        q = q.join(CreditCard, CreditCardTransaction.credit_card_id == CreditCard.id).where(
+            CreditCard.instrument_id == instrument_id
+        )
+    if date_from:
+        q = q.where(CreditCardTransaction.posted_date >= date_from)
+    if date_to:
+        q = q.where(CreditCardTransaction.posted_date <= date_to)
+    q = q.limit(limit).offset(offset)
+    rows = await db.scalars(q)
+    return rows.all()
