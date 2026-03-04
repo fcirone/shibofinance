@@ -26,18 +26,18 @@ Progress legend: `[ ]` pending · `[x]` done
 ## Phase 3 — Database Models
 
 - [x] 3.1 Create `apps/api/pyproject.toml` (Python 3.12, FastAPI, SQLAlchemy 2.x, Alembic, Pydantic v2, Pytest)
-- [ ] 3.2 Implement `app/settings.py` (env-based config)
-- [ ] 3.3 Implement `app/db.py` (SQLAlchemy async engine + session factory)
-- [ ] 3.4 Implement `app/models.py` with all tables:
-  - [ ] 3.4.1 `instruments`
-  - [ ] 3.4.2 `credit_cards`
-  - [ ] 3.4.3 `import_batches`
-  - [ ] 3.4.4 `bank_transactions`
-  - [ ] 3.4.5 `credit_card_statements`
-  - [ ] 3.4.6 `credit_card_transactions`
-  - [ ] 3.4.7 `statement_payment_links`
-  - [ ] 3.4.8 `categories`
-  - [ ] 3.4.9 `categorizations`
+- [x] 3.2 Implement `app/settings.py` (env-based config)
+- [x] 3.3 Implement `app/db.py` (SQLAlchemy async engine + session factory)
+- [x] 3.4 Implement `app/models.py` with all tables:
+  - [x] 3.4.1 `instruments`
+  - [x] 3.4.2 `credit_cards`
+  - [x] 3.4.3 `import_batches`
+  - [x] 3.4.4 `bank_transactions`
+  - [x] 3.4.5 `credit_card_statements`
+  - [x] 3.4.6 `credit_card_transactions`
+  - [x] 3.4.7 `statement_payment_links`
+  - [x] 3.4.8 `categories`
+  - [x] 3.4.9 `categorizations`
 
 ---
 
