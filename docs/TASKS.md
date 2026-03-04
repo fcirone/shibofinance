@@ -87,11 +87,11 @@ Progress legend: `[ ]` pending · `[x]` done
 
 ## Phase 8 — Statement Payment Matching
 
-- [ ] 8.1 Implement `apps/api/services/statement_matcher.py`
-  - [ ] 8.1.1 Detect payment patterns: `PAGAMENTO FATURA`, `PAGTO CARTAO`, `CARD PAYMENT`
-  - [ ] 8.1.2 Match by amount (exact or partial) and date proximity to statement due date
-  - [ ] 8.1.3 Insert record into `statement_payment_links`
-  - [ ] 8.1.4 Auto-categorize matched bank transaction as `transfer`
+- [x] 8.1 Implement `apps/api/services/statement_matcher.py`
+  - [x] 8.1.1 Detect payment patterns: `PAGAMENTO FATURA`, `PAGTO CARTAO`, `CARD PAYMENT`
+  - [x] 8.1.2 Match by amount (exact or partial) and date proximity to statement due date
+  - [x] 8.1.3 Insert record into `statement_payment_links`
+  - [x] 8.1.4 Auto-categorize matched bank transaction as `transfer`
 
 ---
 

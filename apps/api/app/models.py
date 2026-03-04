@@ -173,6 +173,7 @@ class BankTransaction(Base):
         primaryjoin="and_(Categorization.target_type=='bank_transaction', "
                     "foreign(Categorization.target_id)==BankTransaction.id)",
         uselist=False,
+        overlaps="card_transaction",
     )
 
 
@@ -248,6 +249,7 @@ class CreditCardTransaction(Base):
         primaryjoin="and_(Categorization.target_type=='card_transaction', "
                     "foreign(Categorization.target_id)==CreditCardTransaction.id)",
         uselist=False,
+        overlaps="bank_transaction",
     )
 
 
@@ -319,12 +321,14 @@ class Categorization(Base):
     bank_transaction: Mapped["BankTransaction | None"] = relationship(
         back_populates="categorization",
         primaryjoin="and_(Categorization.target_type=='bank_transaction', "
-                    "Categorization.target_id==foreign(BankTransaction.id))",
+                    "foreign(Categorization.target_id)==BankTransaction.id)",
         uselist=False,
+        overlaps="card_transaction",
     )
     card_transaction: Mapped["CreditCardTransaction | None"] = relationship(
         back_populates="categorization",
         primaryjoin="and_(Categorization.target_type=='card_transaction', "
-                    "Categorization.target_id==foreign(CreditCardTransaction.id))",
+                    "foreign(Categorization.target_id)==CreditCardTransaction.id)",
         uselist=False,
+        overlaps="bank_transaction",
     )
