@@ -67,11 +67,11 @@ Progress legend: `[ ]` pending · `[x]` done
 
 ## Phase 6 — Importer Framework
 
-- [ ] 6.1 Define `packages/importers/base.py` — `BaseImporter` interface (`SOURCE_NAME`, `detect()`, `parse()`) and `ImportResult` dataclass
-- [ ] 6.2 Implement `packages/importers/registry.py` — auto-detects importer from file bytes + filename
-- [ ] 6.3 Implement `apps/api/services/fingerprint_service.py` — wraps core fingerprint logic
-- [ ] 6.4 Implement `apps/api/services/dedupe_service.py` — upsert logic using `fingerprint_hash` / `source_tx_id`
-- [ ] 6.5 Implement `apps/api/services/import_service.py` — orchestrates full import pipeline (detect → parse → normalize → fingerprint → upsert → statement → match)
+- [x] 6.1 Define `packages/importers/base.py` — `BaseImporter` interface (`SOURCE_NAME`, `detect()`, `parse()`) and `ImportResult` dataclass
+- [x] 6.2 Implement `packages/importers/registry.py` — auto-detects importer from file bytes + filename
+- [x] 6.3 Implement `apps/api/services/fingerprint_service.py` — wraps core fingerprint logic
+- [x] 6.4 Implement `apps/api/services/dedupe_service.py` — upsert logic using `fingerprint_hash` / `source_tx_id`
+- [x] 6.5 Implement `apps/api/services/import_service.py` — orchestrates full import pipeline (detect → parse → normalize → fingerprint → upsert → statement → match)
 
 ---
 
