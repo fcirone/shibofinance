@@ -1,5 +1,8 @@
 # Finance OS — Local Personal Finance System
 
+> See also: [docs/UI_SPEC.md](docs/UI_SPEC.md) — Frontend UI specification (Cycle 1)
+> See also: [docs/TASKS.md](docs/TASKS.md) — Execution plan with phase-by-phase tasks
+
 ## Objective
 
 Build a local-first personal finance system capable of importing financial data from:
@@ -683,3 +686,282 @@ Transactions imported
 Reimport same file produces duplicates only
 
 Queries return expected results
+
+---
+
+# Backend Status (Stable — Do Not Change)
+
+The backend is complete and stable. All phases 1–13 are done (112 tests passing).
+
+**Do NOT modify backend code or database schema** unless strictly necessary to expose an already-existing capability via a new read-only endpoint. Currently planned minimal additions:
+- `GET /imports` — list import batches (existing table, not yet exposed)
+- `GET /imports/{id}` — single batch detail
+- CORS middleware — required for browser-based frontend to call the API
+
+**Existing API endpoints:**
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | /health | Health check |
+| GET | /instruments | List instruments |
+| POST | /instruments | Create instrument |
+| PATCH | /instruments/{id} | Update instrument name/metadata |
+| POST | /imports/upload | Upload + process statement file |
+| GET | /bank-transactions | List bank transactions (filter: instrument_id, date_from, date_to, limit, offset) |
+| GET | /card-transactions | List card transactions (filter: instrument_id, date_from, date_to, limit, offset) |
+| GET | /card-statements | List card statements (filter: instrument_id) |
+| GET | /categories | List categories |
+| POST | /categorize | Categorize a transaction |
+| GET | /spending-summary | Spending totals (required: date_from, date_to; optional: instrument_id) |
+
+OpenAPI schema available at: `http://localhost:8000/openapi.json`
+
+---
+
+# Frontend
+
+## Scope
+
+### Cycle 1 (MVP UI) — In Scope
+- Create and manage instruments (bank accounts + credit cards)
+- Upload statement files (PDF/CSV) for an instrument
+- View import history and batch results
+- View all transactions (bank + card) with filters, date range, pagination
+- View credit card statements with detail drawer
+- Dashboard overview: spending summary chart + recent imports + quick actions
+
+### Out of Scope for Cycle 1
+- Categorization UI (assign categories to transactions)
+- Categorization rules engine / auto-categorization
+- Budget goals
+- Multi-user / authentication
+- Cloud deployment
+- CSV export
+- Mobile app
+
+---
+
+## Frontend Technology Stack
+
+| Layer | Choice |
+|-------|--------|
+| Framework | Next.js 15 (App Router) + TypeScript |
+| Styling | Tailwind CSS v4 |
+| Component library | shadcn/ui |
+| Data fetching / caching | TanStack Query (React Query) v5 |
+| Form management | React Hook Form v7 |
+| Validation | Zod v3 |
+| Charts | Recharts v2 |
+| API types | openapi-typescript (generated from `/openapi.json`) |
+| Icons | Lucide React |
+| Notifications | shadcn/ui Sonner (toast) |
+
+---
+
+## Repository Structure (Frontend)
+
+```
+apps/
+  web/
+    src/
+      app/                    # Next.js App Router pages
+        layout.tsx            # Root layout with AppShell
+        page.tsx              # / Dashboard
+        instruments/
+          page.tsx            # /instruments
+        import/
+          new/
+            page.tsx          # /import/new
+        imports/
+          page.tsx            # /imports
+        transactions/
+          page.tsx            # /transactions
+        statements/
+          page.tsx            # /statements
+      components/
+        shell/
+          AppShell.tsx
+          Sidebar.tsx
+          Topbar.tsx
+        instruments/
+          InstrumentCard.tsx
+          InstrumentPicker.tsx
+          CreateInstrumentDialog.tsx
+          EditInstrumentDialog.tsx
+        imports/
+          UploadDropzone.tsx
+          ImportBatchCard.tsx
+          BatchDetailDrawer.tsx
+        transactions/
+          TransactionsTable.tsx
+          TransactionFilters.tsx
+          AmountDisplay.tsx
+        statements/
+          StatementCard.tsx
+          StatementDetailDrawer.tsx
+        dashboard/
+          SummaryCards.tsx
+          SpendingChart.tsx
+          RecentImportsWidget.tsx
+        ui/                   # shadcn/ui primitives (generated)
+        shared/
+          EmptyState.tsx
+          LoadingSkeleton.tsx
+          StatusBadge.tsx
+          SourceBadge.tsx
+          DateRangePicker.tsx
+          PageHeader.tsx
+      lib/
+        api.ts                # Typed API client (wraps fetch)
+        api-types.ts          # Generated from OpenAPI (do not edit by hand)
+        utils.ts              # Currency formatting, date helpers
+        query-client.ts       # TanStack Query client singleton
+      hooks/
+        useInstruments.ts
+        useImports.ts
+        useBankTransactions.ts
+        useCardTransactions.ts
+        useStatements.ts
+        useSpendingSummary.ts
+    public/
+    package.json
+    tsconfig.json
+    tailwind.config.ts
+    next.config.ts
+    Dockerfile
+```
+
+---
+
+## API Client Conventions
+
+### Type Generation
+```bash
+# Run after any backend schema change
+npx openapi-typescript http://localhost:8000/openapi.json -o src/lib/api-types.ts
+```
+
+### API Client (`src/lib/api.ts`)
+- Base URL read from `process.env.NEXT_PUBLIC_API_BASE_URL` (default: `http://localhost:8000`)
+- All functions return typed responses
+- Non-2xx responses throw `ApiError` with `.message` and `.status`
+- No third-party HTTP library — raw `fetch` only
+
+```typescript
+// Pattern for every API call
+export async function getInstruments(): Promise<InstrumentOut[]> {
+  const res = await apiFetch("/instruments");
+  return res.json();
+}
+```
+
+### TanStack Query Conventions
+- One custom hook per resource (`useInstruments`, `useBankTransactions`, etc.)
+- Query keys follow the pattern `["resource", filters]`
+- `staleTime: 30_000` (30s) for reference data (instruments, categories)
+- `staleTime: 0` for transactions (always fresh)
+- Mutations call `queryClient.invalidateQueries` on success
+
+---
+
+## Routing Conventions
+
+- All pages are Server Components by default (Next.js App Router)
+- Data-fetching interactive components use `"use client"` + TanStack Query
+- URL search params are the source of truth for filters (instrument_id, date_from, date_to, tab, page)
+- Use `useRouter` + `useSearchParams` for filter state — no separate React state for filters
+
+---
+
+## Forms & Validation Conventions
+
+```typescript
+// Pattern for every form
+const schema = z.object({ name: z.string().min(2) });
+type FormData = z.infer<typeof schema>;
+
+const form = useForm<FormData>({ resolver: zodResolver(schema) });
+```
+
+- All form schemas defined with Zod, co-located with the component
+- `React Hook Form` + `zodResolver` for all forms
+- Inline error messages under each field
+- Submit button disabled while `form.formState.isSubmitting`
+
+---
+
+## Error Handling Conventions
+
+- **Query errors:** caught by TanStack Query; display toast via `onError` callback
+- **Mutation errors:** `onError` callback shows toast with `error.message`
+- **Form errors:** inline field messages from RHF
+- **Network down:** global error boundary catches query failures with helpful message
+- Never swallow errors silently
+
+---
+
+## Amount Display Convention
+
+All monetary values arrive as integer minor units. Always format before display:
+
+```typescript
+// src/lib/utils.ts
+export function formatAmount(minor: number, currency: string): string {
+  const value = minor / 100;
+  if (currency === "BRL") return `R$ ${value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
+  if (currency === "UYU") return `$ U ${value.toLocaleString("es-UY", { minimumFractionDigits: 2 })}`;
+  return `$ ${value.toLocaleString("en-US", { minimumFractionDigits: 2 })}`;  // USD default
+}
+```
+
+Negative amounts → red text (`text-destructive`).
+Positive amounts → default foreground.
+
+---
+
+## Docker Compose (Planned Addition)
+
+Add a `web` service to `docker-compose.yml`:
+
+```yaml
+web:
+  build:
+    context: ./apps/web
+    dockerfile: Dockerfile
+  ports:
+    - "3000:3000"
+  environment:
+    NEXT_PUBLIC_API_BASE_URL: http://api:8000
+  volumes:
+    - ./apps/web:/app
+    - /app/node_modules
+    - /app/.next
+  depends_on:
+    - api
+  command: npm run dev
+```
+
+The `api` service must add CORS middleware to allow requests from `http://localhost:3000`.
+
+---
+
+## Makefile Commands (Planned)
+
+```makefile
+web-dev:    docker compose run --rm --service-ports web npm run dev
+web-build:  docker compose run --rm web npm run build
+web-test:   docker compose run --rm web npm test
+web-lint:   docker compose run --rm web npm run lint
+web-types:  docker compose run --rm web npx openapi-typescript http://api:8000/openapi.json -o src/lib/api-types.ts
+```
+
+---
+
+## UX Principles
+
+1. **Premium SaaS feel** — generous whitespace, consistent spacing, polished hover/focus states
+2. **Data density without clutter** — tables show what matters; secondary info in drawers
+3. **Zero ambiguity** — every empty state tells the user what to do next
+4. **Skeleton-first loading** — no layout shift; skeletons match real content shape
+5. **Errors are informative** — toast messages include the backend error message when available
+6. **Neutral copy** — not personalized; works for any user with any bank
