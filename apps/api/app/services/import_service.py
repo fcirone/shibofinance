@@ -109,7 +109,12 @@ async def run_import(
                 select(CreditCard).where(CreditCard.instrument_id == instrument.id)
             )
             if credit_card is None:
-                raise ValueError(f"No credit_card record for instrument {instrument.id}")
+                credit_card = CreditCard(
+                    instrument_id=instrument.id,
+                    statement_currency=instrument.currency,
+                )
+                session.add(credit_card)
+                await session.flush()
 
             # Upsert statements first
             for stmt_row in result.card_statements:

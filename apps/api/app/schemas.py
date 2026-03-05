@@ -6,6 +6,7 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict
 
 from app.models import (
+    CategorizationSource,
     CategoryKind,
     ImportStatus,
     InstrumentSource,
@@ -84,6 +85,8 @@ class BankTransactionOut(BaseModel):
     currency: str
     fingerprint_hash: str
     created_at: datetime
+    category_id: uuid.UUID | None = None
+    category_name: str | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -126,6 +129,8 @@ class CardTransactionOut(BaseModel):
     installment_number: int | None
     fingerprint_hash: str
     created_at: datetime
+    category_id: uuid.UUID | None = None
+    category_name: str | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -142,11 +147,23 @@ class CategoryOut(BaseModel):
     parent_id: uuid.UUID | None
 
 
+class CategoryCreate(BaseModel):
+    name: str
+    kind: CategoryKind
+    parent_id: uuid.UUID | None = None
+
+
+class CategoryUpdate(BaseModel):
+    name: str | None = None
+    kind: CategoryKind | None = None
+
+
 class CategorizeRequest(BaseModel):
     target_type: TargetType
     target_id: uuid.UUID
     category_id: uuid.UUID
     confidence: float | None = None
+    source: CategorizationSource = CategorizationSource.manual
 
 
 class CategorizationOut(BaseModel):
@@ -157,7 +174,17 @@ class CategorizationOut(BaseModel):
     target_id: uuid.UUID
     category_id: uuid.UUID
     confidence: float | None
+    source: CategorizationSource
     created_at: datetime
+
+
+class BulkCategorizeRequest(BaseModel):
+    items: list[CategorizeRequest]
+
+
+class BulkCategorizeResult(BaseModel):
+    updated: int
+    created: int
 
 
 # ---------------------------------------------------------------------------

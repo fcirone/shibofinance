@@ -269,7 +269,7 @@ async def test_categorize_transaction(client, db_session):
     db_session.add(tx)
     await db_session.flush()
 
-    r = await client.post("/categories/categorize", json={
+    r = await client.post("/categorize", json={
         "target_type": "bank_transaction",
         "target_id": str(tx.id),
         "category_id": str(cat.id),

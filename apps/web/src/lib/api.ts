@@ -20,6 +20,14 @@ export type StatementStatus = components["schemas"]["StatementStatus"]
 
 export type SpendingSummaryOut = components["schemas"]["SpendingSummaryOut"]
 export type CategoryOut = components["schemas"]["CategoryOut"]
+export type CategoryCreate = components["schemas"]["CategoryCreate"]
+export type CategoryUpdate = components["schemas"]["CategoryUpdate"]
+export type CategoryKind = components["schemas"]["CategoryKind"]
+export type CategorizationOut = components["schemas"]["CategorizationOut"]
+export type CategorizeRequest = components["schemas"]["CategorizeRequest"]
+export type BulkCategorizeRequest = components["schemas"]["BulkCategorizeRequest"]
+export type BulkCategorizeResult = components["schemas"]["BulkCategorizeResult"]
+export type TargetType = components["schemas"]["TargetType"]
 
 // ---------------------------------------------------------------------------
 // Error type
@@ -143,6 +151,8 @@ export async function getBankTransactions(params: {
   instrument_id?: string
   date_from?: string
   date_to?: string
+  search?: string
+  category_id?: string
   limit?: number
   offset?: number
 }): Promise<BankTransactionOut[]> {
@@ -150,6 +160,8 @@ export async function getBankTransactions(params: {
   if (params.instrument_id) qs.set("instrument_id", params.instrument_id)
   if (params.date_from) qs.set("date_from", params.date_from)
   if (params.date_to) qs.set("date_to", params.date_to)
+  if (params.search) qs.set("search", params.search)
+  if (params.category_id) qs.set("category_id", params.category_id)
   if (params.limit != null) qs.set("limit", String(params.limit))
   if (params.offset != null) qs.set("offset", String(params.offset))
   const res = await apiFetch(`/bank-transactions?${qs}`)
@@ -164,6 +176,8 @@ export async function getCardTransactions(params: {
   instrument_id?: string
   date_from?: string
   date_to?: string
+  search?: string
+  category_id?: string
   limit?: number
   offset?: number
 }): Promise<CardTransactionOut[]> {
@@ -171,6 +185,8 @@ export async function getCardTransactions(params: {
   if (params.instrument_id) qs.set("instrument_id", params.instrument_id)
   if (params.date_from) qs.set("date_from", params.date_from)
   if (params.date_to) qs.set("date_to", params.date_to)
+  if (params.search) qs.set("search", params.search)
+  if (params.category_id) qs.set("category_id", params.category_id)
   if (params.limit != null) qs.set("limit", String(params.limit))
   if (params.offset != null) qs.set("offset", String(params.offset))
   const res = await apiFetch(`/card-transactions?${qs}`)
@@ -206,4 +222,49 @@ export async function getSpendingSummary(params: {
   if (params.instrument_id) qs.set("instrument_id", params.instrument_id)
   const res = await apiFetch(`/spending-summary?${qs}`)
   return res.json()
+}
+
+// ---------------------------------------------------------------------------
+// Categories
+// ---------------------------------------------------------------------------
+
+export async function getCategories(): Promise<CategoryOut[]> {
+  const res = await apiFetch("/categories")
+  return res.json()
+}
+
+export async function createCategory(data: CategoryCreate): Promise<CategoryOut> {
+  const res = await apiFetch("/categories", {
+    method: "POST",
+    body: JSON.stringify(data),
+  })
+  return res.json()
+}
+
+export async function updateCategory(id: string, data: CategoryUpdate): Promise<CategoryOut> {
+  const res = await apiFetch(`/categories/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  })
+  return res.json()
+}
+
+export async function deleteCategory(id: string): Promise<void> {
+  await apiFetch(`/categories/${id}`, { method: "DELETE" })
+}
+
+// ---------------------------------------------------------------------------
+// Categorizations
+// ---------------------------------------------------------------------------
+
+export async function categorize(data: CategorizeRequest): Promise<CategorizationOut> {
+  const res = await apiFetch("/categorize", {
+    method: "POST",
+    body: JSON.stringify(data),
+  })
+  return res.json()
+}
+
+export async function deleteCategorization(id: string): Promise<void> {
+  await apiFetch(`/categorizations/${id}`, { method: "DELETE" })
 }

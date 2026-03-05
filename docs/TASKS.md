@@ -225,13 +225,13 @@ Progress legend: `[ ]` pending · `[x]` done
 
 ## Phase 18 — Import Pages
 
-- [ ] 18.1 Create `useImports` hook — `GET /imports?instrument_id=…&limit=50&offset=…`
-- [ ] 18.2 Create `ImportBatchCard` — filename, instrument name (lookup from instruments list), status badge, inserted/dup/error counts, formatted date
-- [ ] 18.3 Create `BatchDetailDrawer` — shadcn `Sheet`; shows full batch metadata; "View transactions" link; triggered by clicking `ImportBatchCard`
-- [ ] 18.4 Create `/imports` page — `InstrumentPicker` filter (all instruments); list of `ImportBatchCard`; "Load more" pagination; `EmptyState` when no batches
-- [ ] 18.5 Create `UploadDropzone` component — `react-dropzone` or native drag-and-drop; accepted types: `.pdf`, `.csv`; max 20 MB; shows file name + size after pick; clear button
-- [ ] 18.6 Create `/import/new` page — `InstrumentPicker` (required) + `UploadDropzone`; "Import File" submit button; calls `POST /imports/upload`; on success shows `ImportBatchCard` with result; on error shows error toast + inline message
-- [ ] 18.7 Upload progress: show spinner/progress bar during upload; disable submit during in-flight request
+- [x] 18.1 Create `useImports` hook — `GET /imports?instrument_id=…&limit=50&offset=…`
+- [x] 18.2 Create `ImportBatchCard` — filename, instrument name (lookup from instruments list), status badge, inserted/dup/error counts, formatted date
+- [x] 18.3 Create `BatchDetailDrawer` — shadcn `Sheet`; shows full batch metadata; "View transactions" link; triggered by clicking `ImportBatchCard`
+- [x] 18.4 Create `/imports` page — `InstrumentPicker` filter (all instruments); list of `ImportBatchCard`; "Load more" pagination; `EmptyState` when no batches
+- [x] 18.5 Create `UploadDropzone` component — native drag-and-drop; accepted types: `.pdf`, `.csv`; max 20 MB; shows file name + size after pick; clear button
+- [x] 18.6 Create `/import/new` page — `InstrumentPicker` (required) + `UploadDropzone`; "Import File" submit button; calls `POST /imports/upload`; on success shows `ImportBatchCard` with result; on error shows error toast + inline message
+- [x] 18.7 Upload progress: show spinner/progress bar during upload; disable submit during in-flight request
 
 **Acceptance:** Can upload a PDF/CSV via UI. Result card shows inserted/duplicate/error counts. Import appears in `/imports` history. Selecting an instrument in history filters the list.
 
@@ -239,14 +239,14 @@ Progress legend: `[ ]` pending · `[x]` done
 
 ## Phase 19 — Transactions Page
 
-- [ ] 19.1 Create `useBankTransactions` hook — `GET /bank-transactions?…`; params: instrument_id, date_from, date_to, limit, offset
-- [ ] 19.2 Create `useCardTransactions` hook — `GET /card-transactions?…`; same params
-- [ ] 19.3 Create `TransactionFilters` component — `InstrumentPicker` + `DateRangePicker` + text search input; all values sync to URL search params
-- [ ] 19.4 Create `TransactionsTable` — shadcn `Table`; columns differ by type (bank vs card); `AmountDisplay` in amount cell; installment badge for card; sorted newest first
-- [ ] 19.5 Create `PaginationBar` — previous/next + page info ("51–100 of 312"); wired to offset param
-- [ ] 19.6 Create `/transactions` page — tab bar Bank / Card; `TransactionFilters`; `TransactionsTable` with `PaginationBar`; `LoadingSkeleton` (8 rows); `EmptyState` when no results
-- [ ] 19.7 Text search: client-side filter on `description_raw` within the current page (no backend change required for Cycle 1)
-- [ ] 19.8 Filter state in URL: `?tab=bank&instrument_id=…&date_from=…&date_to=…&page=2`
+- [x] 19.1 Create `useBankTransactions` hook — `GET /bank-transactions?…`; params: instrument_id, date_from, date_to, limit, offset
+- [x] 19.2 Create `useCardTransactions` hook — `GET /card-transactions?…`; same params
+- [x] 19.3 Create `TransactionFilters` component — `InstrumentPicker` + date inputs + text search input; all values sync to URL search params
+- [x] 19.4 Create `TransactionsTable` — shadcn `Table`; columns differ by type (bank vs card); `AmountDisplay` in amount cell; installment badge for card
+- [x] 19.5 Create `PaginationBar` — previous/next + page info; wired to offset param
+- [x] 19.6 Create `/transactions` page — tab bar Bank / Card; `TransactionFilters`; `TransactionsTable` with `PaginationBar`; `TableSkeleton` (8 rows); `EmptyState` when no results
+- [x] 19.7 Text search: client-side filter on `description_raw` within the current page
+- [x] 19.8 Filter state in URL: `?tab=bank&instrument_id=…&date_from=…&date_to=…&page=2`
 
 **Acceptance:** Transactions load with pagination (50/page). Instrument + date filters work. Tab switches between bank and card. Empty state shown when no results. URL reflects filter state (shareable/bookmarkable).
 
@@ -254,11 +254,11 @@ Progress legend: `[ ]` pending · `[x]` done
 
 ## Phase 20 — Statements Page
 
-- [ ] 20.1 Create `useStatements` hook — `GET /card-statements?instrument_id=…`
-- [ ] 20.2 Create `StatementCard` — period range, due date, total (`AmountDisplay`), status badge
-- [ ] 20.3 Create `StatementDetailDrawer` — shadcn `Sheet`; statement metadata; "View transactions" link → `/transactions?tab=card&instrument_id=…&date_from=…&date_to=…`
-- [ ] 20.4 Create `/statements` page — `InstrumentPicker` (credit_card type only); list of `StatementCard`; `LoadingSkeleton`; `EmptyState`
-- [ ] 20.5 Sort statements newest-first by `statement_end`
+- [x] 20.1 Create `useStatements` hook — `GET /card-statements?instrument_id=…`
+- [x] 20.2 Create `StatementCard` — period range, due date, total (`AmountDisplay`), status badge
+- [x] 20.3 Create `StatementDetailDrawer` — shadcn `Sheet`; statement metadata; "View transactions" link → `/transactions?tab=card&instrument_id=…&date_from=…&date_to=…`
+- [x] 20.4 Create `/statements` page — `InstrumentPicker` (credit_card type only); list of `StatementCard`; `LoadingSkeleton`; `EmptyState`
+- [x] 20.5 Sort statements newest-first by `statement_end`
 
 **Acceptance:** Statements list filtered by card instrument. "View transactions" link opens transactions page pre-filtered to that statement's date range.
 
@@ -266,13 +266,13 @@ Progress legend: `[ ]` pending · `[x]` done
 
 ## Phase 21 — Dashboard
 
-- [ ] 21.1 Create `useSpendingSummary` hook — `GET /spending-summary?date_from=…&date_to=…`; default to current calendar month
-- [ ] 21.2 Create `SummaryCards` — 3 stat cards: Total Expenses (current month), Total Transactions, Last Import date; `LoadingSkeleton` per card
-- [ ] 21.3 Create `SpendingChart` — Recharts `BarChart` (horizontal) or `PieChart`; categories on y-axis; amounts on x-axis; "Uncategorized" bucket at bottom; empty state if no data
-- [ ] 21.4 Create `RecentImportsWidget` — last 5 batches (`GET /imports?limit=5`); compact list; "View all" link
-- [ ] 21.5 Create QuickActions section — two `Card` CTAs: "Import a statement" → `/import/new`, "View transactions" → `/transactions`
-- [ ] 21.6 Create `/` (Dashboard) page — month picker in topbar; `SummaryCards` + `SpendingChart` + `RecentImportsWidget` + `QuickActions`
-- [ ] 21.7 Full-page `EmptyState` (onboarding) when no instruments exist — step list: Add instrument → Import file → View data
+- [x] 21.1 Create `useSpendingSummary` hook — `GET /spending-summary?date_from=…&date_to=…`; default to current calendar month
+- [x] 21.2 Create `SummaryCards` — 3 stat cards: Total Expenses (current month), Total Transactions, Last Import date; `LoadingSkeleton` per card
+- [x] 21.3 Create `SpendingChart` — Recharts `BarChart` (horizontal) or `PieChart`; categories on y-axis; amounts on x-axis; "Uncategorized" bucket at bottom; empty state if no data
+- [x] 21.4 Create `RecentImportsWidget` — last 5 batches (`GET /imports?limit=5`); compact list; "View all" link
+- [x] 21.5 Create QuickActions section — two `Card` CTAs: "Import a statement" → `/import/new`, "View transactions" → `/transactions`
+- [x] 21.6 Create `/` (Dashboard) page — month picker in topbar; `SummaryCards` + `SpendingChart` + `RecentImportsWidget` + `QuickActions`
+- [x] 21.7 Full-page `EmptyState` (onboarding) when no instruments exist — step list: Add instrument → Import file → View data
 
 **Acceptance:** Dashboard loads with current month spending summary. Chart renders. Recent imports show. Quick actions navigate correctly. Empty/onboarding state shown on first run.
 
@@ -280,16 +280,78 @@ Progress legend: `[ ]` pending · `[x]` done
 
 ## Phase 22 — UI Polish & Accessibility
 
-- [ ] 22.1 Add `LoadingSkeleton` to every page and component that fetches data (audit all pages)
-- [ ] 22.2 Add `EmptyState` to every list view (audit all pages)
-- [ ] 22.3 Verify all error cases show toast with informative message (network error, 422, 404, 500)
-- [ ] 22.4 Responsive audit: test all pages at 375px (mobile), 768px (tablet), 1280px (desktop)
-- [ ] 22.5 Mobile nav: hamburger opens sidebar as a `Sheet` overlay
-- [ ] 22.6 Accessibility audit: keyboard navigation through all forms and tables; ARIA labels on icon-only buttons; focus ring visible
-- [ ] 22.7 Color contrast: verify all text passes WCAG AA (4.5:1 for normal, 3:1 for large)
-- [ ] 22.8 Consistent spacing pass: verify `p-6` page padding, `gap-4` card grids, `space-y-6` sections across all pages
+- [x] 22.1 Add `LoadingSkeleton` to every page and component that fetches data (audit all pages)
+- [x] 22.2 Add `EmptyState` to every list view (audit all pages)
+- [x] 22.3 Verify all error cases show toast with informative message (network error, 422, 404, 500)
+- [x] 22.4 Responsive audit: test all pages at 375px (mobile), 768px (tablet), 1280px (desktop)
+- [x] 22.5 Mobile nav: hamburger opens sidebar as a `Sheet` overlay
+- [x] 22.6 Accessibility audit: keyboard navigation through all forms and tables; ARIA labels on icon-only buttons; focus ring visible
+- [x] 22.7 Color contrast: verify all text passes WCAG AA (4.5:1 for normal, 3:1 for large)
+- [x] 22.8 Consistent spacing pass: verify `p-6` page padding, `gap-4` card grids, `space-y-6` sections across all pages
 
 **Acceptance:** All pages usable on mobile. No layout shift on load. Keyboard-navigable. All errors surfaced via toast. Skeletons match content shape.
+
+---
+
+---
+
+## Phase 23 — Categorization (Cycle 1)
+
+> Manual categorization via UI. No rules engine. No auto-categorization.
+
+### Backend
+
+- [x] 23.1 Add `source` column (`manual | rule | system`) to `categorizations` via Alembic migration; backfill existing rows with `source = 'system'`
+- [x] 23.2 Verify `categories` and `categorizations` tables match documented schema; adjust if needed
+- [x] 23.3 Seed default categories on startup (Food & Drink, Transport, Shopping, Health, Housing, Entertainment, Travel, Income, Transfer)
+- [x] 23.4 `GET /categories` — return flat list with optional `?kind=expense|income|transfer` filter; include `parent_id` and `kind`
+- [x] 23.5 `POST /categories` — create category; validate name uniqueness within same parent
+- [x] 23.6 `PATCH /categories/{id}` — rename or reparent; reject if would create circular parent chain
+- [x] 23.7 `DELETE /categories/{id}` — reject if category has active categorizations
+- [x] 23.8 `POST /categorize` (existing) — update to set `source = 'manual'`; upsert on `(target_type, target_id)`
+- [x] 23.9 `POST /categorize/bulk` — accept list of `{target_type, target_id, category_id}`; set `source = 'manual'`; return count
+- [x] 23.10 `DELETE /categorizations/{id}` — remove a categorization (uncategorize); 404 if not found
+- [x] 23.11 Extend `GET /bank-transactions` response to include `category_id` (nullable) and `category_name` (nullable) via LEFT JOIN
+- [x] 23.12 Extend `GET /card-transactions` response to include `category_id` (nullable) and `category_name` (nullable) via LEFT JOIN
+- [x] 23.13 Update OpenAPI schema and regenerate `api-types.ts` on frontend
+- [x] 23.14 Write tests: category CRUD, bulk categorize, uncategorize, transaction responses include category fields
+
+### Frontend
+
+- [x] 23.15 Create `useCategories` hook — `GET /categories`; `staleTime: 30_000`
+- [x] 23.16 Create `CategoryBadge` component — compact pill showing category name; muted if uncategorized
+- [x] 23.17 Create `CategoryPicker` component — searchable `<Select>` of categories grouped by kind; "None" option to uncategorize
+- [x] 23.18 Add category column to `TransactionsTable` (bank + card) — shows `CategoryBadge`; clicking opens `CategoryPicker` inline
+- [x] 23.19 Implement inline categorization — clicking a row's category cell opens `CategoryPicker`; on select calls `POST /categorize`; invalidates query
+- [x] 23.20 Add category filter to `TransactionFilters` — `CategoryPicker` with `allowAll`; syncs to `?category_id=` URL param; pass to API query
+- [ ] 23.21 Create bulk categorization — checkbox column in `TransactionsTable`; "Categorize N selected" action bar appears when rows are checked; calls `POST /categorize/bulk`
+- [x] 23.22 Create `/categories` page — list of all categories with kind badge; inline rename; delete (disabled if in use); "Add category" form
+- [x] 23.23 Add "Categories" link to Sidebar nav
+
+**Acceptance:** User can click any transaction row to assign a category. Bulk selection + categorize works. Category filter narrows the list. `/categories` page shows all categories with CRUD.
+
+---
+
+## Phase 24 — Categorization Rules (Cycle 2)
+
+> Automated rule-based categorization. Builds on Cycle 1. Do not implement until Cycle 1 is complete and verified.
+
+- [ ] 24.1 Add `category_rules` table via Alembic migration (match_field, match_operator, match_value, target_type, priority, enabled)
+- [ ] 24.2 Add `categorization_events` audit log table
+- [ ] 24.3 Implement rule evaluation engine — ordered by priority; first match wins; skips `source = 'manual'` transactions
+- [ ] 24.4 `GET /category-rules` — list rules with category name
+- [ ] 24.5 `POST /category-rules` — create rule; validate match_field + match_operator combination
+- [ ] 24.6 `PATCH /category-rules/{id}` — update rule; toggle enabled
+- [ ] 24.7 `DELETE /category-rules/{id}` — delete rule
+- [ ] 24.8 `POST /category-rules/dry-run` — apply rules to all uncategorized transactions without saving; return preview count per category
+- [ ] 24.9 `POST /category-rules/apply` — run rule engine on all uncategorized transactions; return applied count
+- [ ] 24.10 Hook rule engine into import pipeline — run after upsert, before returning result
+- [ ] 24.11 Frontend: rules management page (`/categories/rules`)
+- [ ] 24.12 Frontend: "Apply to similar" button on categorized transaction — pre-fills a rule with the transaction's description
+- [ ] 24.13 Frontend: dry-run preview before applying rules
+- [ ] 24.14 Frontend: show rule name in category badge tooltip when `source = 'rule'`
+
+**Acceptance:** Rules auto-categorize matching transactions on import. Manual categorizations are never overwritten by rules. Dry-run shows preview before committing.
 
 ---
 

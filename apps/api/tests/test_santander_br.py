@@ -169,15 +169,22 @@ def test_card_payment_is_negative():
 
 
 def test_card_international_brl_amount():
-    """International transactions should use the BRL amount, not UYU/USD."""
+    """International transactions should use the BRL amount (R$ column), not the foreign currency amount."""
     _skip_if_missing(CARD_PDF)
     from importers.santander_br.card_parser_pdf import SantanderBrCardImporter
 
     meta = {"pdf_password": CARD_PASSWORD}
     result = SantanderBrCardImporter().parse(CARD_PDF.read_bytes(), "inst-id", meta)
+    # Line: "07/11 BROTHAUS 477,01 PESO URUGUAI 68,78 12,14"
+    # 477,01 is the UYU amount; 68,78 is the BRL amount (R$ column).
     brothaus = next((t for t in result.card_transactions if "BROTHAUS" in t.description_raw), None)
     assert brothaus is not None
-    assert brothaus.amount_minor == 47701  # R$ 477,01
+    assert brothaus.amount_minor == 6878  # R$ 68,78 (not the UYU 477,01)
+
+    # Also verify ANA ARGIBAY: 6.600,00 UYU → 961,00 BRL
+    argibay = next((t for t in result.card_transactions if "ARGIBAY" in t.description_raw), None)
+    assert argibay is not None
+    assert argibay.amount_minor == 96100  # R$ 961,00
 
 
 def test_card_fingerprints_unique():

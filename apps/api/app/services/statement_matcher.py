@@ -21,6 +21,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models import (
     BankTransaction,
     Categorization,
+    CategorizationSource,
     Category,
     CategoryKind,
     CreditCard,
@@ -85,6 +86,7 @@ async def _categorize_bank_tx(
             target_id=bank_tx.id,
             category_id=category.id,
             confidence=1.0,
+            source=CategorizationSource.system,
         )
     )
 

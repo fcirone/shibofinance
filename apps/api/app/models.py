@@ -69,6 +69,12 @@ class TargetType(str, enum.Enum):
     card_transaction = "card_transaction"
 
 
+class CategorizationSource(str, enum.Enum):
+    manual = "manual"
+    rule = "rule"
+    system = "system"
+
+
 # ---------------------------------------------------------------------------
 # Instruments
 # ---------------------------------------------------------------------------
@@ -312,6 +318,12 @@ class Categorization(Base):
     )
     confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
     rule_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True)
+    source: Mapped[CategorizationSource] = mapped_column(
+        Enum(CategorizationSource),
+        nullable=False,
+        default=CategorizationSource.manual,
+        server_default="manual",
+    )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()

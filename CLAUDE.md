@@ -965,3 +965,114 @@ web-types:  docker compose run --rm web npx openapi-typescript http://api:8000/o
 4. **Skeleton-first loading** — no layout shift; skeletons match real content shape
 5. **Errors are informative** — toast messages include the backend error message when available
 6. **Neutral copy** — not personalized; works for any user with any bank
+
+---
+
+# Transaction Categorization System
+
+## Concept
+
+- Categories are shared between bank and credit card transactions.
+- A transaction can have at most one active categorization (unique constraint on `target_type, target_id`).
+- Manual categorization always takes precedence over system or rule-based categorization.
+- Categories are hierarchical: a category may have a `parent_id` pointing to another category.
+- Each category has a `kind` (expense | income | transfer) that determines how it affects spending summaries.
+- Seed categories are pre-loaded at startup; users can create additional ones.
+
+---
+
+## Data Model
+
+### categories
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | uuid pk | |
+| name | text | e.g. "Food & Drink", "Transport" |
+| parent_id | uuid nullable → categories.id | for subcategories |
+| kind | enum | expense \| income \| transfer |
+| created_at | timestamptz | |
+| updated_at | timestamptz | |
+
+### categorizations
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | uuid pk | |
+| target_type | enum | bank_transaction \| card_transaction |
+| target_id | uuid | FK to the respective transaction |
+| category_id | uuid → categories.id | |
+| source | enum | manual \| rule \| system |
+| confidence | float nullable | 0.0–1.0; null for manual |
+| rule_id | uuid nullable | FK to category_rules (Cycle 2) |
+| created_at | timestamptz | |
+| updated_at | timestamptz | |
+
+Unique constraint: `(target_type, target_id)` — one categorization per transaction.
+
+---
+
+## Source Values
+
+| Value | Meaning |
+|-------|---------|
+| `manual` | User explicitly assigned the category via UI |
+| `rule` | Matched by a categorization rule (Cycle 2) |
+| `system` | Assigned automatically during import (e.g. transfer detection) |
+
+Manual always wins — if a user manually categorizes a transaction, re-running rules must not overwrite it.
+
+---
+
+## API Endpoints (Cycle 1)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | /categories | List all categories (tree or flat) |
+| POST | /categories | Create a new category |
+| PATCH | /categories/{id} | Rename or reparent a category |
+| DELETE | /categories/{id} | Delete if unused |
+| POST | /categorize | Categorize a single transaction |
+| POST | /categorize/bulk | Categorize multiple transactions at once |
+| DELETE | /categorizations/{id} | Remove a categorization (uncategorize) |
+| GET | /bank-transactions | (existing) — now includes `category_id`, `category_name` in response |
+| GET | /card-transactions | (existing) — now includes `category_id`, `category_name` in response |
+
+---
+
+## Future Model (Cycle 2 — Not Implemented Yet)
+
+The rules engine will be added in a later cycle. The schema is planned but not yet created.
+
+### category_rules (planned)
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | uuid pk | |
+| category_id | uuid → categories.id | |
+| match_field | enum | description_raw \| description_norm \| merchant_raw \| amount_minor |
+| match_operator | enum | contains \| equals \| regex \| gte \| lte |
+| match_value | text | the value to match against |
+| target_type | enum | bank_transaction \| card_transaction \| both |
+| priority | int | lower = higher priority |
+| enabled | bool | |
+| created_at | timestamptz | |
+| updated_at | timestamptz | |
+
+### categorization_events (planned)
+
+Audit log of every categorization change — who/what changed it and when.
+
+---
+
+## Implementation Strategy (Cycle 1)
+
+1. Add `source` column to existing `categorizations` table via Alembic migration.
+2. Backfill `source = 'system'` for existing rows where `rule_id IS NULL`.
+3. Expose CRUD for categories (`GET/POST/PATCH/DELETE /categories`).
+4. Expose `POST /categorize/bulk` for bulk manual categorization.
+5. Expose `DELETE /categorizations/{id}` to uncategorize a transaction.
+6. Extend `GET /bank-transactions` and `GET /card-transactions` response schemas to include `category_id` and `category_name` via a LEFT JOIN.
+7. Frontend: category picker in transaction row (click to assign), bulk select + categorize, filter by category.
+
+Do NOT implement rule evaluation or auto-categorization in Cycle 1.

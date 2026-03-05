@@ -169,14 +169,33 @@ export interface paths {
         /** List Categories */
         get: operations["list_categories_categories_get"];
         put?: never;
-        post?: never;
+        /** Create Category */
+        post: operations["create_category_categories_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/categories/categorize": {
+    "/categories/{category_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Category */
+        delete: operations["delete_category_categories__category_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Category */
+        patch: operations["update_category_categories__category_id__patch"];
+        trace?: never;
+    };
+    "/categorize": {
         parameters: {
             query?: never;
             header?: never;
@@ -186,8 +205,42 @@ export interface paths {
         get?: never;
         put?: never;
         /** Categorize */
-        post: operations["categorize_categories_categorize_post"];
+        post: operations["categorize_categorize_post"];
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/categorize/bulk": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Categorize Bulk */
+        post: operations["categorize_bulk_categorize_bulk_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/categorizations/{categorization_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Categorization */
+        delete: operations["delete_categorization_categorizations__categorization_id__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -246,11 +299,27 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+            /** Category Id */
+            category_id?: string | null;
+            /** Category Name */
+            category_name?: string | null;
         };
         /** Body_upload_file_imports_upload_post */
         Body_upload_file_imports_upload_post: {
             /** File */
             file: string;
+        };
+        /** BulkCategorizeRequest */
+        BulkCategorizeRequest: {
+            /** Items */
+            items: components["schemas"]["CategorizeRequest"][];
+        };
+        /** BulkCategorizeResult */
+        BulkCategorizeResult: {
+            /** Updated */
+            updated: number;
+            /** Created */
+            created: number;
         };
         /** CardStatementOut */
         CardStatementOut: {
@@ -327,6 +396,10 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+            /** Category Id */
+            category_id?: string | null;
+            /** Category Name */
+            category_name?: string | null;
         };
         /** CategorizationOut */
         CategorizationOut: {
@@ -348,12 +421,18 @@ export interface components {
             category_id: string;
             /** Confidence */
             confidence: number | null;
+            source: components["schemas"]["CategorizationSource"];
             /**
              * Created At
              * Format: date-time
              */
             created_at: string;
         };
+        /**
+         * CategorizationSource
+         * @enum {string}
+         */
+        CategorizationSource: "manual" | "rule" | "system";
         /** CategorizeRequest */
         CategorizeRequest: {
             target_type: components["schemas"]["TargetType"];
@@ -369,6 +448,16 @@ export interface components {
             category_id: string;
             /** Confidence */
             confidence?: number | null;
+            /** @default manual */
+            source: components["schemas"]["CategorizationSource"];
+        };
+        /** CategoryCreate */
+        CategoryCreate: {
+            /** Name */
+            name: string;
+            kind: components["schemas"]["CategoryKind"];
+            /** Parent Id */
+            parent_id?: string | null;
         };
         /**
          * CategoryKind
@@ -387,6 +476,12 @@ export interface components {
             kind: components["schemas"]["CategoryKind"];
             /** Parent Id */
             parent_id: string | null;
+        };
+        /** CategoryUpdate */
+        CategoryUpdate: {
+            /** Name */
+            name?: string | null;
+            kind?: components["schemas"]["CategoryKind"] | null;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -798,6 +893,8 @@ export interface operations {
                 instrument_id?: string | null;
                 date_from?: string | null;
                 date_to?: string | null;
+                search?: string | null;
+                category_id?: string | null;
                 limit?: number;
                 offset?: number;
             };
@@ -833,6 +930,8 @@ export interface operations {
                 instrument_id?: string | null;
                 date_from?: string | null;
                 date_to?: string | null;
+                search?: string | null;
+                category_id?: string | null;
                 limit?: number;
                 offset?: number;
             };
@@ -913,7 +1012,104 @@ export interface operations {
             };
         };
     };
-    categorize_categories_categorize_post: {
+    create_category_categories_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CategoryCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_category_categories__category_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                category_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_category_categories__category_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                category_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CategoryUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    categorize_categorize_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -934,6 +1130,68 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["CategorizationOut"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    categorize_bulk_categorize_bulk_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BulkCategorizeRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulkCategorizeResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_categorization_categorizations__categorization_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                categorization_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {

@@ -162,15 +162,16 @@ def _parse_tx_line(
     day_month = m.group(2)
     rest = m.group(3).strip()
 
-    # International lines: "DESC BRL_AMOUNT PESO URUGUAI UYU_AMOUNT USD_AMOUNT"
-    # Detect by looking for a foreign-currency name after the BRL amount.
+    # International lines format: "DESC FOREIGN_AMOUNT CURRENCY_NAME BRL_AMOUNT USD_AMOUNT"
+    # e.g. "BROTHAUS 477,01 PESO URUGUAI 68,78 12,14"
+    # The BRL amount is the first number AFTER the currency keyword (+ optional word).
     _FOREIGN_CURR_RE = re.compile(
-        r"(.+?)\s+(\d{1,3}(?:\.\d{3})*,\d{2})\s+(PESO|EURO|POUND|FRANC)",
+        r"(.+?)\s+\d[\d.,]*\s+(?:PESO|EURO|POUND|FRANC)\w*(?:\s+\w+)?\s+(\d{1,3}(?:\.\d{3})*,\d{2})",
         re.IGNORECASE,
     )
     fc = _FOREIGN_CURR_RE.search(rest)
     if fc:
-        amount_str = fc.group(2)
+        amount_str = fc.group(2)   # BRL amount (after currency name)
         desc_raw = fc.group(1).strip()
     else:
         am = _AMOUNT_END_RE.search(rest)

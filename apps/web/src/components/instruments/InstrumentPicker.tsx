@@ -10,12 +10,15 @@ import {
 import { useInstruments } from "@/hooks/useInstruments"
 import type { InstrumentType } from "@/lib/api"
 
+const ALL_SENTINEL = "__all__"
+
 interface InstrumentPickerProps {
-  value: string
-  onChange: (value: string) => void
+  value: string | undefined
+  onChange: (value: string | undefined) => void
   typeFilter?: InstrumentType
   placeholder?: string
   allowAll?: boolean
+  allLabel?: string
 }
 
 export function InstrumentPicker({
@@ -24,6 +27,7 @@ export function InstrumentPicker({
   typeFilter,
   placeholder = "Select instrument",
   allowAll = false,
+  allLabel = "All instruments",
 }: InstrumentPickerProps) {
   const { data: instruments = [], isLoading } = useInstruments()
 
@@ -31,14 +35,21 @@ export function InstrumentPicker({
     ? instruments.filter((i) => i.type === typeFilter)
     : instruments
 
+  function handleChange(v: string) {
+    if (v === ALL_SENTINEL) onChange(undefined)
+    else onChange(v)
+  }
+
+  const selectValue = value ?? (allowAll ? ALL_SENTINEL : "")
+
   return (
-    <Select value={value} onValueChange={onChange} disabled={isLoading}>
+    <Select value={selectValue} onValueChange={handleChange} disabled={isLoading}>
       <SelectTrigger>
         <SelectValue placeholder={isLoading ? "Loading…" : placeholder} />
       </SelectTrigger>
       <SelectContent>
         {allowAll && (
-          <SelectItem value="all">All instruments</SelectItem>
+          <SelectItem value={ALL_SENTINEL}>{allLabel}</SelectItem>
         )}
         {filtered.map((inst) => (
           <SelectItem key={inst.id} value={inst.id}>

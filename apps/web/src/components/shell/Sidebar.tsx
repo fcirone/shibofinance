@@ -9,6 +9,7 @@ import {
   History,
   List,
   FileText,
+  Tag,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -19,6 +20,7 @@ const NAV = [
   { label: "Import History", href: "/imports", icon: History },
   { label: "Transactions", href: "/transactions", icon: List },
   { label: "Statements", href: "/statements", icon: FileText },
+  { label: "Categories", href: "/categories", icon: Tag },
 ]
 
 interface SidebarProps {
@@ -66,6 +68,7 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
               collapsed && "justify-center px-2",
             )}
             title={collapsed ? label : undefined}
+          aria-label={collapsed ? label : undefined}
           >
             <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
             {!collapsed && <span>{label}</span>}
