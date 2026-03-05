@@ -157,7 +157,7 @@ Progress legend: `[ ]` pending · `[x]` done
 - [x] Transactions appear in `GET /bank-transactions` or `GET /card-transactions`
 - [x] Re-importing the same file produces zero new rows (idempotency)
 - [x] `GET /spending-summary` returns correct totals
-- [x] 112 tests passing (`make test`)
+- [x] 117 tests passing (`make test`)
 
 ---
 
@@ -165,11 +165,11 @@ Progress legend: `[ ]` pending · `[x]` done
 
 > Minimal read-only additions to expose already-existing data. Do NOT change models or migrations.
 
-- [ ] 14.1 Add CORS middleware to `apps/api/app/main.py` — allow `http://localhost:3000` (and env-configurable origins)
-- [ ] 14.2 Add `GET /imports` endpoint (`apps/api/app/routers/imports.py`) — list import batches; params: `instrument_id` (optional), `limit` (default 50), `offset` (default 0); response: `list[ImportBatchOut]`
-- [ ] 14.3 Add `GET /imports/{batch_id}` endpoint — single batch detail; response: `ImportBatchOut`; 404 if not found
-- [ ] 14.4 Write tests for new endpoints (`tests/test_imports_list.py`)
-- [ ] 14.5 Confirm `make test` still passes with all tests green
+- [x] 14.1 Add CORS middleware to `apps/api/app/main.py` — allow `http://localhost:3000` (and env-configurable origins)
+- [x] 14.2 Add `GET /imports` endpoint (`apps/api/app/routers/imports.py`) — list import batches; params: `instrument_id` (optional), `limit` (default 50), `offset` (default 0); response: `list[ImportBatchOut]`
+- [x] 14.3 Add `GET /imports/{batch_id}` endpoint — single batch detail; response: `ImportBatchOut`; 404 if not found
+- [x] 14.4 Write tests for new endpoints (added to `tests/test_api.py`)
+- [x] 14.5 Confirm `make test` still passes with all tests green — 117/117 passing
 
 **Acceptance:** `GET /imports` returns paginated list of batches. `GET /imports/{id}` returns single batch or 404. CORS allows requests from localhost:3000.
 
