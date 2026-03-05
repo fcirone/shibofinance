@@ -211,13 +211,13 @@ Progress legend: `[ ]` pending · `[x]` done
 
 ## Phase 17 — Instruments Page
 
-- [ ] 17.1 Create `useInstruments` hook — `GET /instruments`, `staleTime: 30_000`
-- [ ] 17.2 Create `InstrumentCard` component — name, type badge, source badge, currency, created date
-- [ ] 17.3 Create `InstrumentPicker` component — searchable `<Select>` populated from `useInstruments`; accepts optional `typeFilter` prop
-- [ ] 17.4 Create `CreateInstrumentDialog` — shadcn `Dialog` with RHF + Zod form; fields: name, type, source, currency, source_instrument_id, metadata (JSON textarea); `POST /instruments` on submit; invalidates instruments query on success; toast on error
-- [ ] 17.5 Create `EditInstrumentDialog` — prefills name + metadata; `PATCH /instruments/{id}` on submit
-- [ ] 17.6 Create `/instruments` page — grid of `InstrumentCard`; "Add Instrument" button in `PageHeader`; `LoadingSkeleton` while loading; `EmptyState` when empty
-- [ ] 17.7 Metadata JSON field: validate `JSON.parse` in Zod; show inline error if invalid JSON
+- [x] 17.1 Create `useInstruments` hook — `GET /instruments`, `staleTime: 30_000`
+- [x] 17.2 Create `InstrumentCard` component — name, type badge, source badge, currency, created date
+- [x] 17.3 Create `InstrumentPicker` component — searchable `<Select>` populated from `useInstruments`; accepts optional `typeFilter` prop
+- [x] 17.4 Create `CreateInstrumentDialog` — shadcn `Dialog` with RHF + Zod form; all fields; `POST /instruments` on submit; invalidates query; toast on error
+- [x] 17.5 Create `EditInstrumentDialog` — prefills name + metadata; `PATCH /instruments/{id}` on submit
+- [x] 17.6 Create `/instruments` page — responsive grid, `LoadingSkeleton`, `EmptyState`, both dialogs
+- [x] 17.7 Metadata JSON field: validated with Zod refine + `JSON.parse`; inline error shown
 
 **Acceptance:** Can create a new instrument from the UI. Instrument appears in list immediately (optimistic or after invalidation). Edit updates name/metadata. Empty state shown when no instruments exist.
 
