@@ -81,3 +81,8 @@ data/samples/
 *.key
 *.crt
 *.p12
+
+# Node / Next.js
+apps/web/node_modules/
+apps/web/.next/
+apps/web/.env*.local

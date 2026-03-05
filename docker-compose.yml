@@ -35,6 +35,22 @@ services:
       db:
         condition: service_healthy
 
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8000
+    volumes:
+      - ./apps/web:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - api
+
   pgadmin:
     image: dpage/pgadmin4:latest
     restart: unless-stopped
