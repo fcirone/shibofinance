@@ -186,7 +186,7 @@ Progress legend: `[ ]` pending · `[x]` done
 - [x] 15.7 Create `apps/web/Dockerfile` — Node 22 alpine, hot-reload dev server
 - [x] 15.8 Update `docker-compose.yml` — add `web` service (port 3000, volume mounts)
 - [x] 15.9 Add Makefile targets: `web-dev`, `web-build`, `web-lint`, `web-types`
-- [ ] 15.10 Verify `make up` starts web at `http://localhost:3000` and API is reachable from browser
+- [x] 15.10 Verify `make up` starts web at `http://localhost:3000` and API is reachable from browser — ✓ 200 OK, CORS confirmed
 
 **Acceptance:** Next.js dev server starts. `/api-types.ts` has typed interfaces matching backend schemas. `apiFetch("/health")` returns `{status: "ok"}`.
 
