@@ -194,16 +194,16 @@ Progress legend: `[ ]` pending · `[x]` done
 
 ## Phase 16 — AppShell & Core Layout
 
-- [ ] 16.1 Create `AppShell` component — sidebar + topbar wrapper layout
-- [ ] 16.2 Create `Sidebar` — nav links: Dashboard, Instruments, Import, Import History, Transactions, Statements; active state; collapse to icons on `lg`
-- [ ] 16.3 Create `Topbar` — page title slot + breadcrumb; hamburger for mobile
-- [ ] 16.4 Wrap root `layout.tsx` with `QueryClientProvider` + `Toaster` (Sonner)
-- [ ] 16.5 Create `EmptyState` component — icon prop, title, description, optional CTA button
-- [ ] 16.6 Create `LoadingSkeleton` component — accepts `className` for sizing; uses shadcn `Skeleton`
-- [ ] 16.7 Create `PageHeader` component — title + optional right-side action
-- [ ] 16.8 Create `StatusBadge` component — maps `ImportStatus` / `StatementStatus` → color + label
-- [ ] 16.9 Create `SourceBadge` component — maps `santander_br` / `xp_br` / `bbva_uy` → label + color
-- [ ] 16.10 Create `AmountDisplay` component — formats minor units + currency; red if negative
+- [x] 16.1 Create `AppShell` component — sidebar + topbar wrapper layout
+- [x] 16.2 Create `Sidebar` — nav links: Dashboard, Instruments, Import, Import History, Transactions, Statements; active state; collapse to icons on `lg`
+- [x] 16.3 Create `Topbar` — hamburger for mobile (Sheet), desktop collapse toggle
+- [x] 16.4 Wrap root `layout.tsx` with `QueryClientProvider` + `Toaster` (Sonner) + Inter font
+- [x] 16.5 Create `EmptyState` component — icon prop, title, description, optional CTA button
+- [x] 16.6 Create `LoadingSkeleton` — generic + `CardSkeleton` + `TableSkeleton` variants
+- [x] 16.7 Create `PageHeader` component — title + optional right-side action
+- [x] 16.8 Create `ImportStatusBadge` / `StatementStatusBadge` — color-coded per status
+- [x] 16.9 Create `SourceBadge` — santander_br / xp_br / bbva_uy color-coded
+- [x] 16.10 Create `AmountDisplay` — formats minor units + currency; red if negative
 
 **Acceptance:** Navigating between pages shows correct sidebar active state. AppShell renders on all pages. Components render in Storybook or a test page without errors.
 
