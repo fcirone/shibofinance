@@ -1,4 +1,6 @@
 import importers.santander_br  # noqa: F401 — registers importers on startup
+import importers.xp_br  # noqa: F401 — registers importers on startup
+import importers.bbva_uy  # noqa: F401 — registers importers on startup
 
 from fastapi import FastAPI
 

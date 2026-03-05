@@ -1,6 +1,7 @@
 """Shared pytest fixtures for API integration tests."""
 import os
 
+import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
@@ -12,6 +13,19 @@ DATABASE_URL = os.environ.get(
 
 _engine = create_async_engine(DATABASE_URL, echo=False, poolclass=NullPool)
 _AsyncSession = sessionmaker(_engine, class_=AsyncSession, expire_on_commit=False)
+
+
+@pytest.fixture(autouse=True)
+def restore_importer_registry():
+    """Restore the importer registry after each test.
+
+    test_importer_framework.py clears the registry for isolation; this fixture
+    ensures all other tests still see the real importers.
+    """
+    from importers import registry
+    saved = registry._registry[:]
+    yield
+    registry._registry[:] = saved
 
 
 @pytest_asyncio.fixture

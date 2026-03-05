@@ -42,6 +42,11 @@ class InstrumentOut(BaseModel):
     created_at: datetime
 
 
+class InstrumentUpdate(BaseModel):
+    name: str | None = None
+    metadata_: dict[str, Any] | None = None
+
+
 # ---------------------------------------------------------------------------
 # Import batches
 # ---------------------------------------------------------------------------

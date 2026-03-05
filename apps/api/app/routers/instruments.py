@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db import get_db
 from app.models import CreditCard, Instrument, InstrumentType
-from app.schemas import InstrumentCreate, InstrumentOut
+from app.schemas import InstrumentCreate, InstrumentOut, InstrumentUpdate
 
 router = APIRouter(prefix="/instruments", tags=["instruments"])
 
@@ -42,4 +42,20 @@ async def get_instrument(instrument_id: str, db: AsyncSession = Depends(get_db))
     inst = await db.get(Instrument, instrument_id)
     if not inst:
         raise HTTPException(status_code=404, detail="Instrument not found")
+    return inst
+
+
+@router.patch("/{instrument_id}", response_model=InstrumentOut)
+async def update_instrument(
+    instrument_id: str, body: InstrumentUpdate, db: AsyncSession = Depends(get_db)
+):
+    inst = await db.get(Instrument, instrument_id)
+    if not inst:
+        raise HTTPException(status_code=404, detail="Instrument not found")
+    if body.name is not None:
+        inst.name = body.name
+    if body.metadata_ is not None:
+        inst.metadata_ = body.metadata_
+    await db.commit()
+    await db.refresh(inst)
     return inst

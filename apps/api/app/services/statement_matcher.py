@@ -41,7 +41,9 @@ PARTIAL_THRESHOLD = 0.5  # candidate must be >= 50% of statement total
 
 _PAYMENT_RE = re.compile(
     r"(PAGAMENTO\s+(DE\s+)?FATURA|PAGTO\s+CART[AÃ]O|CARD\s+PAYMENT"
-    r"|PAGTO\s+FATURA|PAG\s+FATURA|PAGAMENTO\s+CART[AÃ]O)",
+    r"|PAGTO\s+FATURA|PAG\s+FATURA|PAGAMENTO\s+CART[AÃ]O"
+    r"|PAGAMENTO\s+DE\s+BOLETO\s+BANCO\s+(SANTANDER|XP)"
+    r"|PAGO\s+VISA|PAGO\s+TARJETA)",
     re.IGNORECASE,
 )
 

@@ -91,7 +91,7 @@ async def run_import(
     await session.flush()  # get batch.id
 
     try:
-        importer = registry.detect(file_bytes, filename)
+        importer = registry.detect(file_bytes, filename, source_hint=instrument.source.value)
         result = importer.parse(file_bytes, str(instrument.id), instrument.metadata_ or {})
 
         inserted_total = 0

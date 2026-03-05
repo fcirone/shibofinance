@@ -112,39 +112,39 @@ Progress legend: `[ ]` pending · `[x]` done
 
 ## Phase 10 — CLI Tool
 
-- [ ] 10.1 Implement `tools/import_cli.py`
-  - [ ] 10.1.1 `import` command (`--file`, `--instrument`, `--source auto`)
-  - [ ] 10.1.2 `list-transactions` command (`--instrument`)
+- [x] 10.1 Implement `tools/import_cli.py`
+  - [x] 10.1.1 `import` command (`--file`, `--instrument`, `--source auto`)
+  - [x] 10.1.2 `list-transactions` command (`--instrument`)
 
 ---
 
 ## Phase 11 — Tests
 
-- [ ] 11.1 `tests/test_health.py` — health endpoint returns 200
-- [ ] 11.2 `tests/test_import_idempotency.py` — reimporting same file produces no new rows
-- [ ] 11.3 Fingerprint consistency test — same input always produces same hash
-- [ ] 11.4 Basic query test — imported transactions appear in GET endpoints
-- [ ] 11.5 Confirm `make test` passes with all tests green
+- [x] 11.1 `tests/test_health.py` — health endpoint returns 200
+- [x] 11.2 `tests/test_import_idempotency.py` — reimporting same file produces no new rows
+- [x] 11.3 Fingerprint consistency test — same input always produces same hash
+- [x] 11.4 Basic query test — imported transactions appear in GET endpoints
+- [x] 11.5 Confirm `make test` passes with all tests green
 
 ---
 
 ## Phase 12 — XP Brazil Importer
 
-- [ ] 12.1 `packages/importers/xp_br/detector.py`
-- [ ] 12.2 `packages/importers/xp_br/bank_parser_csv.py`
-- [ ] 12.3 `packages/importers/xp_br/card_parser_csv.py`
-- [ ] 12.4 Add sample files to `data/samples/xp_br/`
-- [ ] 12.5 Write and run tests
+- [x] 12.1 `packages/importers/xp_br/detector.py`
+- [x] 12.2 `packages/importers/xp_br/bank_parser_pdf.py` (PDF, not CSV — spec updated)
+- [x] 12.3 `packages/importers/xp_br/card_parser_pdf.py` (PDF, not CSV — spec updated)
+- [x] 12.4 Add sample files to `data/samples/xp_br/`
+- [x] 12.5 Write and run tests — 21/21 passing (`tests/test_xp_br.py`)
 
 ---
 
 ## Phase 13 — BBVA Uruguay Importer
 
-- [ ] 13.1 `packages/importers/bbva_uy/detector.py`
-- [ ] 13.2 `packages/importers/bbva_uy/bank_parser_csv.py`
-- [ ] 13.3 `packages/importers/bbva_uy/card_parser_pdf.py`
-- [ ] 13.4 Add sample files to `data/samples/bbva_uy/`
-- [ ] 13.5 Write and run tests
+- [x] 13.1 `packages/importers/bbva_uy/detector.py`
+- [x] 13.2 `packages/importers/bbva_uy/bank_parser_pdf.py` (PDF, not CSV — bank statement is a PDF)
+- [x] 13.3 `packages/importers/bbva_uy/card_parser_pdf.py`
+- [x] 13.4 Add sample files to `data/samples/bbva_uy/`
+- [x] 13.5 Write and run tests — 24/24 passing (`tests/test_bbva_uy.py`)
 
 ---
 
