@@ -3,6 +3,7 @@ import importers.xp_br  # noqa: F401 — registers importers on startup
 import importers.bbva_uy  # noqa: F401 — registers importers on startup
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.routers import (
     bank_transactions,
@@ -16,6 +17,13 @@ from app.routers import (
 )
 
 app = FastAPI(title="Finance OS", version="0.1.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(health.router)
 app.include_router(instruments.router)

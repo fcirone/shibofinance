@@ -321,3 +321,76 @@ async def test_spending_summary(client, db_session):
 async def test_spending_summary_missing_params(client):
     r = await client.get("/spending-summary")
     assert r.status_code == 422
+
+
+# ---------------------------------------------------------------------------
+# Import batches
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_list_import_batches(client, db_session):
+    bank_inst, _, _, batch = await _seed(db_session)
+    r = await client.get("/imports")
+    assert r.status_code == 200
+    ids = [b["id"] for b in r.json()]
+    assert str(batch.id) in ids
+
+
+@pytest.mark.asyncio
+async def test_list_import_batches_filter_by_instrument(client, db_session):
+    bank_inst, card_inst, _, batch = await _seed(db_session)
+    # Create a second batch for card_inst
+    batch2 = ImportBatch(
+        instrument_id=card_inst.id,
+        filename="card.csv",
+        sha256="b" * 64,
+        status=ImportStatus.processed,
+    )
+    db_session.add(batch2)
+    await db_session.flush()
+
+    r = await client.get("/imports", params={"instrument_id": str(bank_inst.id)})
+    assert r.status_code == 200
+    data = r.json()
+    assert len(data) == 1
+    assert data[0]["id"] == str(batch.id)
+
+
+@pytest.mark.asyncio
+async def test_get_import_batch(client, db_session):
+    bank_inst, _, _, batch = await _seed(db_session)
+    r = await client.get(f"/imports/{batch.id}")
+    assert r.status_code == 200
+    data = r.json()
+    assert data["id"] == str(batch.id)
+    assert data["filename"] == "test.pdf"
+    assert data["status"] == "processed"
+
+
+@pytest.mark.asyncio
+async def test_get_import_batch_not_found(client):
+    r = await client.get(f"/imports/{uuid.uuid4()}")
+    assert r.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_list_import_batches_pagination(client, db_session):
+    """limit/offset params are respected."""
+    bank_inst, _, _, _ = await _seed(db_session)
+    for i in range(3):
+        db_session.add(ImportBatch(
+            instrument_id=bank_inst.id,
+            filename=f"file{i}.csv",
+            sha256=str(i) * 64,
+            status=ImportStatus.processed,
+        ))
+    await db_session.flush()
+
+    r = await client.get("/imports", params={"instrument_id": str(bank_inst.id), "limit": 2, "offset": 0})
+    assert r.status_code == 200
+    assert len(r.json()) == 2
+
+    r2 = await client.get("/imports", params={"instrument_id": str(bank_inst.id), "limit": 2, "offset": 2})
+    assert r2.status_code == 200
+    assert len(r2.json()) == 2  # 1 original + 3 added = 4 total; offset 2 → 2 remaining
