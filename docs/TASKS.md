@@ -177,15 +177,15 @@ Progress legend: `[ ]` pending · `[x]` done
 
 ## Phase 15 — Web Service Scaffold
 
-- [ ] 15.1 Create `apps/web/` with `npx create-next-app@latest` — App Router, TypeScript, Tailwind CSS
-- [ ] 15.2 Install dependencies: `shadcn/ui` (init), `@tanstack/react-query`, `react-hook-form`, `zod`, `@hookform/resolvers`, `recharts`, `openapi-typescript`, `lucide-react`, `sonner`
-- [ ] 15.3 Run `npx openapi-typescript http://localhost:8000/openapi.json -o src/lib/api-types.ts` — generate API types
-- [ ] 15.4 Create `apps/web/src/lib/api.ts` — typed API client wrapping `fetch`; reads `NEXT_PUBLIC_API_BASE_URL`; throws `ApiError` on non-2xx
-- [ ] 15.5 Create `apps/web/src/lib/utils.ts` — `formatAmount(minor, currency)`, `formatDate(date)` helpers
-- [ ] 15.6 Create `apps/web/src/lib/query-client.ts` — TanStack Query client singleton
-- [ ] 15.7 Create `apps/web/Dockerfile` — Node 20 alpine, hot-reload dev server
-- [ ] 15.8 Update `docker-compose.yml` — add `web` service (port 3000, volume mounts, `NEXT_PUBLIC_API_BASE_URL=http://api:8000`)
-- [ ] 15.9 Add Makefile targets: `web-dev`, `web-build`, `web-lint`, `web-types`
+- [x] 15.1 Create `apps/web/` with `npx create-next-app@latest` — App Router, TypeScript, Tailwind CSS
+- [x] 15.2 Install dependencies: `shadcn/ui` (init), `@tanstack/react-query`, `react-hook-form`, `zod`, `@hookform/resolvers`, `recharts`, `openapi-typescript`, `lucide-react`, `sonner`
+- [x] 15.3 Run `npx openapi-typescript http://localhost:8000/openapi.json -o src/lib/api-types.ts` — generate API types
+- [x] 15.4 Create `apps/web/src/lib/api.ts` — typed API client wrapping `fetch`; reads `NEXT_PUBLIC_API_BASE_URL`; throws `ApiError` on non-2xx
+- [x] 15.5 Create `apps/web/src/lib/utils.ts` — `formatAmount(minor, currency)`, `formatDate(date)`, `formatDateTime` helpers
+- [x] 15.6 Create `apps/web/src/lib/query-client.ts` — TanStack Query client singleton
+- [x] 15.7 Create `apps/web/Dockerfile` — Node 22 alpine, hot-reload dev server
+- [x] 15.8 Update `docker-compose.yml` — add `web` service (port 3000, volume mounts)
+- [x] 15.9 Add Makefile targets: `web-dev`, `web-build`, `web-lint`, `web-types`
 - [ ] 15.10 Verify `make up` starts web at `http://localhost:3000` and API is reachable from browser
 
 **Acceptance:** Next.js dev server starts. `/api-types.ts` has typed interfaces matching backend schemas. `apiFetch("/health")` returns `{status: "ok"}`.
