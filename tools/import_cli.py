@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Finance OS CLI — import files and query transactions via the API."""
+"""Shibo Finance CLI — import files and query transactions via the API."""
 import argparse
 import json
 import os
@@ -187,7 +187,7 @@ def cmd_list_transactions(args: argparse.Namespace) -> int:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="import_cli.py",
-        description="Finance OS CLI",
+        description="Shibo Finance CLI",
     )
     parser.add_argument(
         "--api-base",

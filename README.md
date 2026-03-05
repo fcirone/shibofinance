@@ -1,4 +1,4 @@
-# Finance OS
+# Shibo Finance
 
 Local-first personal finance system. Imports bank and credit card statements from Brazilian and Uruguayan banks into a unified ledger with categorization.
 

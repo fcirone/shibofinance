@@ -1,4 +1,4 @@
-# Finance OS — Local Personal Finance System
+# Shibo Finance — Local Personal Finance System
 
 > See also: [docs/UI_SPEC.md](docs/UI_SPEC.md) — Frontend UI specification (Cycle 1)
 > See also: [docs/TASKS.md](docs/TASKS.md) — Execution plan with phase-by-phase tasks

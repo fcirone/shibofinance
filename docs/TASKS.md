@@ -1,4 +1,4 @@
-# Finance OS — Execution Plan
+# Shibo Finance — Execution Plan
 
 Progress legend: `[ ]` pending · `[x]` done
 

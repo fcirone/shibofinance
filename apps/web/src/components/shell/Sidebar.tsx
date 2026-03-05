@@ -48,7 +48,7 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
         )}
       >
         <span className="text-lg font-bold text-sidebar-primary select-none">
-          {collapsed ? "F" : "Finance OS"}
+          {collapsed ? "S" : "Shibo Finance"}
         </span>
       </div>
 

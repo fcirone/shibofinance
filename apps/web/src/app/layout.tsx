@@ -8,7 +8,7 @@ import { Toaster } from "@/components/ui/sonner"
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" })
 
 export const metadata: Metadata = {
-  title: "Finance OS",
+  title: "Shibo Finance",
   description: "Local-first personal finance dashboard",
 }
 

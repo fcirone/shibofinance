@@ -1,4 +1,4 @@
-# Finance OS — Frontend UI Specification (Cycle 1)
+# Shibo Finance — Frontend UI Specification (Cycle 1)
 
 > Spec version: 1.0 · Cycle: MVP UI
 > Reference: [CLAUDE.md](../CLAUDE.md) · [TASKS.md](TASKS.md)
@@ -7,7 +7,7 @@
 
 ## 1. Product Vision
 
-Finance OS is a local-first personal finance tool for people who manage money across multiple banks and countries. The UI must feel like a **premium SaaS dashboard** — not a side project. Clear hierarchy, generous whitespace, smooth interactions, and zero ambiguity.
+Shibo Finance is a local-first personal finance tool for people who manage money across multiple banks and countries. The UI must feel like a **premium SaaS dashboard** — not a side project. Clear hierarchy, generous whitespace, smooth interactions, and zero ambiguity.
 
 **Productization principle:** copywriting and component design should be neutral and reusable — not tied to a specific user's name, bank, or country. Anyone onboarding should immediately understand the workflow.
 

@@ -16,7 +16,7 @@ from app.routers import (
     statements,
 )
 
-app = FastAPI(title="Finance OS", version="0.1.0")
+app = FastAPI(title="Shibo Finance", version="0.1.0")
 
 app.add_middleware(
     CORSMiddleware,
