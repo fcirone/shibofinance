@@ -24,6 +24,7 @@ from app.models import (
     StatementStatus,
 )
 from app.services.dedupe_service import upsert_bank_transactions, upsert_card_transactions
+from app.services.rule_engine import apply_rules
 from importers import registry
 from importers.base import CardStatementRow
 
@@ -98,11 +99,13 @@ async def run_import(
         duplicate_total = 0
 
         if instrument.type == InstrumentType.bank_account:
-            ins, dup = await upsert_bank_transactions(
+            ins, dup, new_ids = await upsert_bank_transactions(
                 session, result.bank_transactions, instrument.id, batch
             )
             inserted_total += ins
             duplicate_total += dup
+            if new_ids:
+                await apply_rules(session, transaction_ids=new_ids)
 
         elif instrument.type == InstrumentType.credit_card:
             credit_card = await session.scalar(
@@ -120,11 +123,13 @@ async def run_import(
             for stmt_row in result.card_statements:
                 await _get_or_create_statement(session, credit_card.id, stmt_row, batch)
 
-            ins, dup = await upsert_card_transactions(
+            ins, dup, new_ids = await upsert_card_transactions(
                 session, result.card_transactions, credit_card.id, batch
             )
             inserted_total += ins
             duplicate_total += dup
+            if new_ids:
+                await apply_rules(session, transaction_ids=new_ids)
 
         batch.status = ImportStatus.processed
         batch.inserted_count = inserted_total

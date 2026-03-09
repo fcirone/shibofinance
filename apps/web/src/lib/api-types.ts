@@ -246,6 +246,76 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/category-rules/dry-run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Dry Run Rules */
+        post: operations["dry_run_rules_category_rules_dry_run_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/category-rules/apply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Apply Rules Endpoint */
+        post: operations["apply_rules_endpoint_category_rules_apply_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/category-rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Rules */
+        get: operations["list_rules_category_rules_get"];
+        put?: never;
+        /** Create Rule */
+        post: operations["create_rule_category_rules_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/category-rules/{rule_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Rule */
+        delete: operations["delete_rule_category_rules__rule_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Rule */
+        patch: operations["update_rule_category_rules__rule_id__patch"];
+        trace?: never;
+    };
     "/spending-summary": {
         parameters: {
             query?: never;
@@ -267,6 +337,13 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** ApplyRulesResult */
+        ApplyRulesResult: {
+            /** Applied */
+            applied: number;
+            /** By Category */
+            by_category: components["schemas"]["RulePreviewItem"][];
+        };
         /** BankTransactionOut */
         BankTransactionOut: {
             /**
@@ -303,6 +380,9 @@ export interface components {
             category_id?: string | null;
             /** Category Name */
             category_name?: string | null;
+            category_source?: components["schemas"]["CategorizationSource"] | null;
+            /** Category Rule Name */
+            category_rule_name?: string | null;
         };
         /** Body_upload_file_imports_upload_post */
         Body_upload_file_imports_upload_post: {
@@ -400,6 +480,9 @@ export interface components {
             category_id?: string | null;
             /** Category Name */
             category_name?: string | null;
+            category_source?: components["schemas"]["CategorizationSource"] | null;
+            /** Category Rule Name */
+            category_rule_name?: string | null;
         };
         /** CategorizationOut */
         CategorizationOut: {
@@ -477,11 +560,84 @@ export interface components {
             /** Parent Id */
             parent_id: string | null;
         };
+        /** CategoryRuleCreate */
+        CategoryRuleCreate: {
+            /**
+             * Category Id
+             * Format: uuid
+             */
+            category_id: string;
+            match_field: components["schemas"]["MatchField"];
+            match_operator: components["schemas"]["MatchOperator"];
+            /** Match Value */
+            match_value: string;
+            target_type: components["schemas"]["RuleTargetType"];
+            /**
+             * Priority
+             * @default 100
+             */
+            priority: number;
+            /**
+             * Enabled
+             * @default true
+             */
+            enabled: boolean;
+        };
+        /** CategoryRuleOut */
+        CategoryRuleOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Category Id
+             * Format: uuid
+             */
+            category_id: string;
+            /** Category Name */
+            category_name: string;
+            match_field: components["schemas"]["MatchField"];
+            match_operator: components["schemas"]["MatchOperator"];
+            /** Match Value */
+            match_value: string;
+            target_type: components["schemas"]["RuleTargetType"];
+            /** Priority */
+            priority: number;
+            /** Enabled */
+            enabled: boolean;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** CategoryRuleUpdate */
+        CategoryRuleUpdate: {
+            /** Category Id */
+            category_id?: string | null;
+            match_field?: components["schemas"]["MatchField"] | null;
+            match_operator?: components["schemas"]["MatchOperator"] | null;
+            /** Match Value */
+            match_value?: string | null;
+            target_type?: components["schemas"]["RuleTargetType"] | null;
+            /** Priority */
+            priority?: number | null;
+            /** Enabled */
+            enabled?: boolean | null;
+        };
         /** CategoryUpdate */
         CategoryUpdate: {
             /** Name */
             name?: string | null;
             kind?: components["schemas"]["CategoryKind"] | null;
+        };
+        /** DryRunResult */
+        DryRunResult: {
+            /** Would Categorize */
+            would_categorize: number;
+            /** By Category */
+            by_category: components["schemas"]["RulePreviewItem"][];
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -586,6 +742,28 @@ export interface components {
                 [key: string]: unknown;
             } | null;
         };
+        /**
+         * MatchField
+         * @enum {string}
+         */
+        MatchField: "description_raw" | "description_norm" | "merchant_raw" | "amount_minor";
+        /**
+         * MatchOperator
+         * @enum {string}
+         */
+        MatchOperator: "contains" | "equals" | "regex" | "gte" | "lte";
+        /** RulePreviewItem */
+        RulePreviewItem: {
+            /** Category Name */
+            category_name: string;
+            /** Count */
+            count: number;
+        };
+        /**
+         * RuleTargetType
+         * @enum {string}
+         */
+        RuleTargetType: "bank_transaction" | "card_transaction" | "both";
         /** SpendingByCategory */
         SpendingByCategory: {
             /** Category Name */
@@ -614,6 +792,10 @@ export interface components {
             by_category: components["schemas"]["SpendingByCategory"][];
             /** Uncategorized Minor */
             uncategorized_minor: number;
+            /** Uncategorized Income By Currency */
+            uncategorized_income_by_currency: {
+                [key: string]: number;
+            };
             /** Total Minor */
             total_minor: number;
         };
@@ -895,6 +1077,7 @@ export interface operations {
                 date_to?: string | null;
                 search?: string | null;
                 category_id?: string | null;
+                uncategorized?: boolean;
                 limit?: number;
                 offset?: number;
             };
@@ -932,6 +1115,7 @@ export interface operations {
                 date_to?: string | null;
                 search?: string | null;
                 category_id?: string | null;
+                uncategorized?: boolean;
                 limit?: number;
                 offset?: number;
             };
@@ -1192,6 +1376,163 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    dry_run_rules_category_rules_dry_run_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DryRunResult"];
+                };
+            };
+        };
+    };
+    apply_rules_endpoint_category_rules_apply_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApplyRulesResult"];
+                };
+            };
+        };
+    };
+    list_rules_category_rules_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryRuleOut"][];
+                };
+            };
+        };
+    };
+    create_rule_category_rules_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CategoryRuleCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryRuleOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_rule_category_rules__rule_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                rule_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_rule_category_rules__rule_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                rule_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CategoryRuleUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryRuleOut"];
+                };
             };
             /** @description Validation Error */
             422: {

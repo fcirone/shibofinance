@@ -1,13 +1,14 @@
 from datetime import date
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy import select
+from sqlalchemy import exists, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.db import get_db
 from app.models import Categorization, CreditCard, CreditCardTransaction
 from app.schemas import CardTransactionOut
+from app.services.rule_engine import rule_label
 
 router = APIRouter(prefix="/card-transactions", tags=["card-transactions"])
 
@@ -16,8 +17,11 @@ def _enrich(tx: CreditCardTransaction) -> CardTransactionOut:
     out = CardTransactionOut.model_validate(tx)
     if tx.categorization:
         out.category_id = tx.categorization.category_id
+        out.category_source = tx.categorization.source
         if tx.categorization.category:
             out.category_name = tx.categorization.category.name
+        if tx.categorization.rule:
+            out.category_rule_name = rule_label(tx.categorization.rule)
     return out
 
 
@@ -28,6 +32,7 @@ async def list_card_transactions(
     date_to: date | None = Query(None),
     search: str | None = Query(None),
     category_id: str | None = Query(None),
+    uncategorized: bool = Query(False),
     limit: int = Query(200, le=1000),
     offset: int = Query(0),
     db: AsyncSession = Depends(get_db),
@@ -35,7 +40,10 @@ async def list_card_transactions(
     q = (
         select(CreditCardTransaction)
         .options(
-            selectinload(CreditCardTransaction.categorization).selectinload(Categorization.category)
+            selectinload(CreditCardTransaction.categorization).options(
+                selectinload(Categorization.category),
+                selectinload(Categorization.rule),
+            )
         )
         .order_by(CreditCardTransaction.posted_date.desc())
     )
@@ -55,6 +63,13 @@ async def list_card_transactions(
             (Categorization.target_id == CreditCardTransaction.id)
             & (Categorization.target_type == "card_transaction"),
         ).where(Categorization.category_id == category_id)
+    if uncategorized:
+        q = q.where(
+            ~exists().where(
+                (Categorization.target_id == CreditCardTransaction.id)
+                & (Categorization.target_type == "card_transaction")
+            )
+        )
     q = q.limit(limit).offset(offset)
     rows = (await db.scalars(q)).all()
     return [_enrich(tx) for tx in rows]

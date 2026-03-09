@@ -11,6 +11,9 @@ from app.models import (
     ImportStatus,
     InstrumentSource,
     InstrumentType,
+    MatchField,
+    MatchOperator,
+    RuleTargetType,
     StatementStatus,
     TargetType,
 )
@@ -87,6 +90,8 @@ class BankTransactionOut(BaseModel):
     created_at: datetime
     category_id: uuid.UUID | None = None
     category_name: str | None = None
+    category_source: CategorizationSource | None = None
+    category_rule_name: str | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -131,6 +136,8 @@ class CardTransactionOut(BaseModel):
     created_at: datetime
     category_id: uuid.UUID | None = None
     category_name: str | None = None
+    category_source: CategorizationSource | None = None
+    category_rule_name: str | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -204,5 +211,61 @@ class SpendingSummaryOut(BaseModel):
     date_from: date
     date_to: date
     by_category: list[SpendingByCategory]
-    uncategorized_minor: int
+    uncategorized_minor: int                         # uncategorized expenses (BRL-based sum)
+    uncategorized_income_by_currency: dict[str, int]  # uncategorized income per currency
     total_minor: int
+
+
+# ---------------------------------------------------------------------------
+# Category rules
+# ---------------------------------------------------------------------------
+
+
+class CategoryRuleCreate(BaseModel):
+    category_id: uuid.UUID
+    match_field: MatchField
+    match_operator: MatchOperator
+    match_value: str
+    target_type: RuleTargetType
+    priority: int = 100
+    enabled: bool = True
+
+
+class CategoryRuleUpdate(BaseModel):
+    category_id: uuid.UUID | None = None
+    match_field: MatchField | None = None
+    match_operator: MatchOperator | None = None
+    match_value: str | None = None
+    target_type: RuleTargetType | None = None
+    priority: int | None = None
+    enabled: bool | None = None
+
+
+class CategoryRuleOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    category_id: uuid.UUID
+    category_name: str
+    match_field: MatchField
+    match_operator: MatchOperator
+    match_value: str
+    target_type: RuleTargetType
+    priority: int
+    enabled: bool
+    created_at: datetime
+
+
+class RulePreviewItem(BaseModel):
+    category_name: str
+    count: int
+
+
+class DryRunResult(BaseModel):
+    would_categorize: int
+    by_category: list[RulePreviewItem]
+
+
+class ApplyRulesResult(BaseModel):
+    applied: int
+    by_category: list[RulePreviewItem]

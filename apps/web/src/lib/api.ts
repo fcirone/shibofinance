@@ -29,6 +29,15 @@ export type BulkCategorizeRequest = components["schemas"]["BulkCategorizeRequest
 export type BulkCategorizeResult = components["schemas"]["BulkCategorizeResult"]
 export type TargetType = components["schemas"]["TargetType"]
 
+export type CategoryRuleOut = components["schemas"]["CategoryRuleOut"]
+export type CategoryRuleCreate = components["schemas"]["CategoryRuleCreate"]
+export type CategoryRuleUpdate = components["schemas"]["CategoryRuleUpdate"]
+export type MatchField = components["schemas"]["MatchField"]
+export type MatchOperator = components["schemas"]["MatchOperator"]
+export type RuleTargetType = components["schemas"]["RuleTargetType"]
+export type DryRunResult = components["schemas"]["DryRunResult"]
+export type ApplyRulesResult = components["schemas"]["ApplyRulesResult"]
+
 // ---------------------------------------------------------------------------
 // Error type
 // ---------------------------------------------------------------------------
@@ -153,6 +162,7 @@ export async function getBankTransactions(params: {
   date_to?: string
   search?: string
   category_id?: string
+  uncategorized?: boolean
   limit?: number
   offset?: number
 }): Promise<BankTransactionOut[]> {
@@ -162,6 +172,7 @@ export async function getBankTransactions(params: {
   if (params.date_to) qs.set("date_to", params.date_to)
   if (params.search) qs.set("search", params.search)
   if (params.category_id) qs.set("category_id", params.category_id)
+  if (params.uncategorized) qs.set("uncategorized", "true")
   if (params.limit != null) qs.set("limit", String(params.limit))
   if (params.offset != null) qs.set("offset", String(params.offset))
   const res = await apiFetch(`/bank-transactions?${qs}`)
@@ -178,6 +189,7 @@ export async function getCardTransactions(params: {
   date_to?: string
   search?: string
   category_id?: string
+  uncategorized?: boolean
   limit?: number
   offset?: number
 }): Promise<CardTransactionOut[]> {
@@ -187,6 +199,7 @@ export async function getCardTransactions(params: {
   if (params.date_to) qs.set("date_to", params.date_to)
   if (params.search) qs.set("search", params.search)
   if (params.category_id) qs.set("category_id", params.category_id)
+  if (params.uncategorized) qs.set("uncategorized", "true")
   if (params.limit != null) qs.set("limit", String(params.limit))
   if (params.offset != null) qs.set("offset", String(params.offset))
   const res = await apiFetch(`/card-transactions?${qs}`)
@@ -265,6 +278,53 @@ export async function categorize(data: CategorizeRequest): Promise<Categorizatio
   return res.json()
 }
 
+export async function bulkCategorize(data: BulkCategorizeRequest): Promise<BulkCategorizeResult> {
+  const res = await apiFetch("/categorize/bulk", {
+    method: "POST",
+    body: JSON.stringify(data),
+  })
+  return res.json()
+}
+
 export async function deleteCategorization(id: string): Promise<void> {
   await apiFetch(`/categorizations/${id}`, { method: "DELETE" })
+}
+
+// ---------------------------------------------------------------------------
+// Category rules
+// ---------------------------------------------------------------------------
+
+export async function getCategoryRules(): Promise<CategoryRuleOut[]> {
+  const res = await apiFetch("/category-rules")
+  return res.json()
+}
+
+export async function createCategoryRule(data: CategoryRuleCreate): Promise<CategoryRuleOut> {
+  const res = await apiFetch("/category-rules", {
+    method: "POST",
+    body: JSON.stringify(data),
+  })
+  return res.json()
+}
+
+export async function updateCategoryRule(id: string, data: CategoryRuleUpdate): Promise<CategoryRuleOut> {
+  const res = await apiFetch(`/category-rules/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  })
+  return res.json()
+}
+
+export async function deleteCategoryRule(id: string): Promise<void> {
+  await apiFetch(`/category-rules/${id}`, { method: "DELETE" })
+}
+
+export async function applyRules(): Promise<ApplyRulesResult> {
+  const res = await apiFetch("/category-rules/apply", { method: "POST" })
+  return res.json()
+}
+
+export async function dryRunRules(): Promise<DryRunResult> {
+  const res = await apiFetch("/category-rules/dry-run", { method: "POST" })
+  return res.json()
 }

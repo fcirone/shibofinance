@@ -98,7 +98,7 @@ async def test_bank_tx_first_import_inserts(db_session):
         _bank_row(str(inst.id), "SALARIO", 300000, date(2025, 12, 5)),
     ]
 
-    inserted, duplicates = await upsert_bank_transactions(db_session, rows, inst.id, batch)
+    inserted, duplicates, _ = await upsert_bank_transactions(db_session, rows, inst.id, batch)
 
     assert inserted == 2
     assert duplicates == 0
@@ -117,7 +117,7 @@ async def test_bank_tx_reimport_produces_no_new_rows(db_session):
     await db_session.flush()
 
     # Second import — same rows
-    inserted, duplicates = await upsert_bank_transactions(db_session, rows, inst.id, batch)
+    inserted, duplicates, _ = await upsert_bank_transactions(db_session, rows, inst.id, batch)
 
     assert inserted == 0
     assert duplicates == 2
@@ -134,7 +134,7 @@ async def test_bank_tx_partial_reimport(db_session):
     await db_session.flush()
 
     # Second import: both rows — row_a is duplicate, row_b is new
-    inserted, duplicates = await upsert_bank_transactions(
+    inserted, duplicates, _ = await upsert_bank_transactions(
         db_session, [row_a, row_b], inst.id, batch
     )
 
@@ -166,7 +166,7 @@ async def test_card_tx_reimport_produces_no_new_rows(db_session):
     await db_session.flush()
 
     # Second import — same rows
-    inserted, duplicates = await upsert_card_transactions(db_session, rows, cc.id, batch)
+    inserted, duplicates, _ = await upsert_card_transactions(db_session, rows, cc.id, batch)
 
     assert inserted == 0
     assert duplicates == 2

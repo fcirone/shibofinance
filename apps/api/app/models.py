@@ -75,6 +75,33 @@ class CategorizationSource(str, enum.Enum):
     system = "system"
 
 
+class MatchField(str, enum.Enum):
+    description_raw = "description_raw"
+    description_norm = "description_norm"
+    merchant_raw = "merchant_raw"
+    amount_minor = "amount_minor"
+
+
+class MatchOperator(str, enum.Enum):
+    contains = "contains"
+    equals = "equals"
+    regex = "regex"
+    gte = "gte"
+    lte = "lte"
+
+
+class RuleTargetType(str, enum.Enum):
+    bank_transaction = "bank_transaction"
+    card_transaction = "card_transaction"
+    both = "both"
+
+
+class EventAction(str, enum.Enum):
+    created = "created"
+    updated = "updated"
+    deleted = "deleted"
+
+
 # ---------------------------------------------------------------------------
 # Instruments
 # ---------------------------------------------------------------------------
@@ -299,6 +326,7 @@ class Category(Base):
 
     parent: Mapped["Category | None"] = relationship("Category", remote_side="Category.id")
     categorizations: Mapped[list["Categorization"]] = relationship(back_populates="category")
+    rules: Mapped[list["CategoryRule"]] = relationship(back_populates="category")
 
 
 # ---------------------------------------------------------------------------
@@ -317,7 +345,9 @@ class Categorization(Base):
         UUID(as_uuid=True), ForeignKey("categories.id"), nullable=False
     )
     confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
-    rule_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True)
+    rule_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("category_rules.id", ondelete="SET NULL"), nullable=True
+    )
     source: Mapped[CategorizationSource] = mapped_column(
         Enum(CategorizationSource),
         nullable=False,
@@ -330,6 +360,7 @@ class Categorization(Base):
     )
 
     category: Mapped["Category"] = relationship(back_populates="categorizations")
+    rule: Mapped["CategoryRule | None"] = relationship(back_populates="categorizations", foreign_keys=[rule_id])
     bank_transaction: Mapped["BankTransaction | None"] = relationship(
         back_populates="categorization",
         primaryjoin="and_(Categorization.target_type=='bank_transaction', "
@@ -344,3 +375,52 @@ class Categorization(Base):
         uselist=False,
         overlaps="bank_transaction",
     )
+
+
+# ---------------------------------------------------------------------------
+# Category Rules
+# ---------------------------------------------------------------------------
+
+
+class CategoryRule(Base):
+    __tablename__ = "category_rules"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    category_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("categories.id"), nullable=False
+    )
+    match_field: Mapped[MatchField] = mapped_column(Enum(MatchField), nullable=False)
+    match_operator: Mapped[MatchOperator] = mapped_column(Enum(MatchOperator), nullable=False)
+    match_value: Mapped[str] = mapped_column(Text, nullable=False)
+    target_type: Mapped[RuleTargetType] = mapped_column(Enum(RuleTargetType), nullable=False)
+    priority: Mapped[int] = mapped_column(Integer, nullable=False, default=100)
+    enabled: Mapped[bool] = mapped_column(nullable=False, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    category: Mapped["Category"] = relationship(back_populates="rules")
+    categorizations: Mapped[list["Categorization"]] = relationship(
+        back_populates="rule", foreign_keys="Categorization.rule_id"
+    )
+
+
+# ---------------------------------------------------------------------------
+# Categorization Events
+# ---------------------------------------------------------------------------
+
+
+class CategorizationEvent(Base):
+    __tablename__ = "categorization_events"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    categorization_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True)
+    target_type: Mapped[RuleTargetType] = mapped_column(Enum(RuleTargetType), nullable=False)
+    target_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
+    category_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("categories.id", ondelete="SET NULL"), nullable=True
+    )
+    rule_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True)
+    action: Mapped[EventAction] = mapped_column(Enum(EventAction), nullable=False)
+    source: Mapped[CategorizationSource] = mapped_column(Enum(CategorizationSource), nullable=False)
+    confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

@@ -14,13 +14,14 @@ async def upsert_bank_transactions(
     rows: list[BankTransactionRow],
     instrument_id: uuid.UUID,
     batch: ImportBatch,
-) -> tuple[int, int]:
+) -> tuple[int, int, list[uuid.UUID]]:
     """Insert new bank transactions, skip duplicates.
 
-    Returns (inserted_count, duplicate_count).
+    Returns (inserted_count, duplicate_count, inserted_ids).
     """
     inserted = 0
     duplicates = 0
+    inserted_ids: list[uuid.UUID] = []
 
     for row in rows:
         existing = await session.scalar(
@@ -44,9 +45,11 @@ async def upsert_bank_transactions(
             raw_payload=row.raw_payload,
         )
         session.add(tx)
+        await session.flush()
+        inserted_ids.append(tx.id)
         inserted += 1
 
-    return inserted, duplicates
+    return inserted, duplicates, inserted_ids
 
 
 async def upsert_card_transactions(
@@ -54,13 +57,14 @@ async def upsert_card_transactions(
     rows: list[CardTransactionRow],
     credit_card_id: uuid.UUID,
     batch: ImportBatch,
-) -> tuple[int, int]:
+) -> tuple[int, int, list[uuid.UUID]]:
     """Insert new card transactions, skip duplicates.
 
-    Returns (inserted_count, duplicate_count).
+    Returns (inserted_count, duplicate_count, inserted_ids).
     """
     inserted = 0
     duplicates = 0
+    inserted_ids: list[uuid.UUID] = []
 
     for row in rows:
         existing = await session.scalar(
@@ -89,6 +93,8 @@ async def upsert_card_transactions(
             raw_payload=row.raw_payload,
         )
         session.add(tx)
+        await session.flush()
+        inserted_ids.append(tx.id)
         inserted += 1
 
-    return inserted, duplicates
+    return inserted, duplicates, inserted_ids

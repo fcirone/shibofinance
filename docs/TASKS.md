@@ -324,7 +324,7 @@ Progress legend: `[ ]` pending · `[x]` done
 - [x] 23.18 Add category column to `TransactionsTable` (bank + card) — shows `CategoryBadge`; clicking opens `CategoryPicker` inline
 - [x] 23.19 Implement inline categorization — clicking a row's category cell opens `CategoryPicker`; on select calls `POST /categorize`; invalidates query
 - [x] 23.20 Add category filter to `TransactionFilters` — `CategoryPicker` with `allowAll`; syncs to `?category_id=` URL param; pass to API query
-- [ ] 23.21 Create bulk categorization — checkbox column in `TransactionsTable`; "Categorize N selected" action bar appears when rows are checked; calls `POST /categorize/bulk`
+- [x] 23.21 Create bulk categorization — checkbox column in `TransactionsTable`; "Categorize N selected" action bar appears when rows are checked; calls `POST /categorize/bulk`
 - [x] 23.22 Create `/categories` page — list of all categories with kind badge; inline rename; delete (disabled if in use); "Add category" form
 - [x] 23.23 Add "Categories" link to Sidebar nav
 
@@ -336,20 +336,20 @@ Progress legend: `[ ]` pending · `[x]` done
 
 > Automated rule-based categorization. Builds on Cycle 1. Do not implement until Cycle 1 is complete and verified.
 
-- [ ] 24.1 Add `category_rules` table via Alembic migration (match_field, match_operator, match_value, target_type, priority, enabled)
-- [ ] 24.2 Add `categorization_events` audit log table
-- [ ] 24.3 Implement rule evaluation engine — ordered by priority; first match wins; skips `source = 'manual'` transactions
-- [ ] 24.4 `GET /category-rules` — list rules with category name
-- [ ] 24.5 `POST /category-rules` — create rule; validate match_field + match_operator combination
-- [ ] 24.6 `PATCH /category-rules/{id}` — update rule; toggle enabled
-- [ ] 24.7 `DELETE /category-rules/{id}` — delete rule
-- [ ] 24.8 `POST /category-rules/dry-run` — apply rules to all uncategorized transactions without saving; return preview count per category
-- [ ] 24.9 `POST /category-rules/apply` — run rule engine on all uncategorized transactions; return applied count
-- [ ] 24.10 Hook rule engine into import pipeline — run after upsert, before returning result
-- [ ] 24.11 Frontend: rules management page (`/categories/rules`)
-- [ ] 24.12 Frontend: "Apply to similar" button on categorized transaction — pre-fills a rule with the transaction's description
-- [ ] 24.13 Frontend: dry-run preview before applying rules
-- [ ] 24.14 Frontend: show rule name in category badge tooltip when `source = 'rule'`
+- [x] 24.1 Add `category_rules` table via Alembic migration (match_field, match_operator, match_value, target_type, priority, enabled)
+- [x] 24.2 Add `categorization_events` audit log table
+- [x] 24.3 Implement rule evaluation engine — ordered by priority; first match wins; skips `source = 'manual'` transactions
+- [x] 24.4 `GET /category-rules` — list rules with category name
+- [x] 24.5 `POST /category-rules` — create rule; validate match_field + match_operator combination
+- [x] 24.6 `PATCH /category-rules/{id}` — update rule; toggle enabled
+- [x] 24.7 `DELETE /category-rules/{id}` — delete rule
+- [x] 24.8 `POST /category-rules/dry-run` — apply rules to all uncategorized transactions without saving; return preview count per category
+- [x] 24.9 `POST /category-rules/apply` — run rule engine on all uncategorized transactions; return applied count
+- [x] 24.10 Hook rule engine into import pipeline — run after upsert, before returning result
+- [x] 24.11 Frontend: rules management page (`/categories/rules`)
+- [x] 24.12 Frontend: "Apply to similar" button on categorized transaction — pre-fills a rule with the transaction's description
+- [x] 24.13 Frontend: dry-run preview before applying rules
+- [x] 24.14 Frontend: show rule name in category badge tooltip when `source = 'rule'`
 
 **Acceptance:** Rules auto-categorize matching transactions on import. Manual categorizations are never overwritten by rules. Dry-run shows preview before committing.
 

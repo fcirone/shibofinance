@@ -10,6 +10,7 @@ import {
   List,
   FileText,
   Tag,
+  Sliders,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -21,6 +22,7 @@ const NAV = [
   { label: "Transactions", href: "/transactions", icon: List },
   { label: "Statements", href: "/statements", icon: FileText },
   { label: "Categories", href: "/categories", icon: Tag },
+  { label: "Rules", href: "/categories/rules", icon: Sliders },
 ]
 
 interface SidebarProps {

@@ -3,7 +3,8 @@
 import { TrendingDown, Receipt, Clock } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
-import { formatAmount, formatDateTime } from "@/lib/utils"
+import { formatUSD, formatDateTime } from "@/lib/utils"
+import { useExchangeRates, toUSDMinor } from "@/hooks/useExchangeRates"
 import type { SpendingSummaryOut, ImportBatchOut } from "@/lib/api"
 
 interface Props {
@@ -44,9 +45,21 @@ function StatCard({
 }
 
 export function SummaryCards({ summary, lastImport, summaryLoading, importsLoading }: Props) {
-  const totalExpenses = summary
-    ? formatAmount(summary.total_minor, "BRL")
-    : "—"
+  const { data: fx } = useExchangeRates()
+
+  // Sum all category totals converted to USD
+  let totalUSDMinor: number | null = null
+  if (summary && fx) {
+    totalUSDMinor = 0
+    for (const cat of summary.by_category) {
+      const usd = toUSDMinor(cat.total_minor, cat.currency, fx.rates)
+      if (usd != null) totalUSDMinor += usd
+    }
+    const uncatUSD = toUSDMinor(summary.uncategorized_minor, "BRL", fx.rates)
+    if (uncatUSD != null) totalUSDMinor += uncatUSD
+  }
+
+  const totalExpenses = totalUSDMinor != null ? formatUSD(totalUSDMinor) : summary ? "…" : "—"
 
   const totalTxs = summary
     ? String(summary.by_category.reduce((acc, c) => acc + c.transaction_count, 0))
@@ -58,7 +71,7 @@ export function SummaryCards({ summary, lastImport, summaryLoading, importsLoadi
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
       <StatCard
         icon={TrendingDown}
-        label="Total Expenses"
+        label="Total Expenses (USD)"
         value={totalExpenses}
         loading={summaryLoading}
       />

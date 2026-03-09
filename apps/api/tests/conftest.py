@@ -1,8 +1,10 @@
 """Shared pytest fixtures for API integration tests."""
 import os
+import uuid
 
 import pytest
 import pytest_asyncio
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import NullPool
@@ -26,6 +28,56 @@ def restore_importer_registry():
     saved = registry._registry[:]
     yield
     registry._registry[:] = saved
+
+
+@pytest_asyncio.fixture
+async def client(db_session):
+    """AsyncClient wired to the FastAPI app with a test DB session."""
+    from app.db import get_db
+    from app.main import app
+
+    async def override_get_db():
+        yield db_session
+
+    app.dependency_overrides[get_db] = override_get_db
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
+        yield c
+    app.dependency_overrides.clear()
+
+
+@pytest_asyncio.fixture
+async def instrument(db_session):
+    """A minimal bank account instrument for use in tests."""
+    from app.models import ImportStatus, Instrument, InstrumentSource, InstrumentType
+
+    inst = Instrument(
+        id=uuid.uuid4(),
+        name="Test Bank",
+        type=InstrumentType.bank_account,
+        source=InstrumentSource.santander_br,
+        currency="BRL",
+        source_instrument_id=str(uuid.uuid4()),
+    )
+    db_session.add(inst)
+    await db_session.flush()
+    return inst
+
+
+@pytest_asyncio.fixture
+async def batch(db_session, instrument):
+    """A minimal import batch for use in tests."""
+    from app.models import ImportBatch, ImportStatus
+
+    b = ImportBatch(
+        id=uuid.uuid4(),
+        instrument_id=instrument.id,
+        filename="test.csv",
+        sha256="b" * 64,
+        status=ImportStatus.processed,
+    )
+    db_session.add(b)
+    await db_session.flush()
+    return b
 
 
 @pytest_asyncio.fixture

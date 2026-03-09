@@ -30,10 +30,13 @@ from importers.santander_br.detector import is_santander_bank
 # New-date line: DD/MM followed by 2+ spaces
 _DATE_RE = re.compile(r"^(\d{2}/\d{2})\s{2,}(.*)")
 
-# Amount at end of line:  "- NNN,NN[-]" optionally followed by a balance column
+# Amount at end of line, two formats:
+#   "- NNN,NN[-]"          — no document number (leading dash is separator)
+#   "DDDDDD NNN,NN[-]"     — 5-6 digit document number precedes amount
+# Optionally followed by a balance column (which may itself end with "-").
 _AMOUNT_RE = re.compile(
-    r"[-–]\s*(\d{1,3}(?:\.\d{3})*,\d{2})(-?)"
-    r"(?:\s+\d{1,3}(?:\.\d{3})*,\d{2})?\s*$"
+    r"(?:[-–]\s*|(?P<doc_num>\b\d{5,6})\s+)(\d{1,3}(?:\.\d{3})*,\d{2})(-?)"
+    r"(?:\s+\d{1,3}(?:\.\d{3})*,\d{2}-?)?\s*$"
 )
 
 # Months PT → int
@@ -95,8 +98,9 @@ def _build_tx(
     if not m:
         return None
 
-    raw_amount = m.group(1).replace(".", "").replace(",", ".")
-    is_debit = m.group(2) == "-"
+    doc_num = m.group("doc_num")  # 5-6 digit document number, or None
+    raw_amount = m.group(2).replace(".", "").replace(",", ".")
+    is_debit = m.group(3) == "-"
     amount_minor = to_minor(raw_amount)
     signed = -amount_minor if is_debit else amount_minor
 
@@ -106,7 +110,11 @@ def _build_tx(
         return None
 
     desc_norm = normalize_description(desc_raw)
-    fp = compute_fingerprint(instrument_id, d, "BRL", signed, desc_norm)
+    # When a document number is present, include it in the fingerprint so that
+    # identical-description transactions on the same day (e.g. repeated tolls)
+    # are treated as distinct entries.
+    fp_desc = f"{desc_norm} {doc_num}" if doc_num else desc_norm
+    fp = compute_fingerprint(instrument_id, d, "BRL", signed, fp_desc)
     posted_at = datetime(d.year, d.month, d.day, 12, 0, 0, tzinfo=timezone.utc)
 
     return BankTransactionRow(
@@ -116,7 +124,7 @@ def _build_tx(
         description_norm=desc_norm,
         amount_minor=signed,
         currency="BRL",
-        source_tx_id=None,
+        source_tx_id=doc_num,
         fingerprint_hash=fp,
         raw_payload={"raw": full},
     )

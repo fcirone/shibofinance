@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Check, ChevronsUpDown, Loader2, Tag } from "lucide-react"
+import { Check, ChevronsUpDown, Loader2, Tag, Wand2 } from "lucide-react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import {
@@ -22,6 +22,8 @@ interface Props {
   targetId: string
   categoryId?: string | null
   categoryName?: string | null
+  categorySource?: string | null
+  categoryRuleName?: string | null
   onSaved?: () => void
 }
 
@@ -30,6 +32,8 @@ export function CategoryPicker({
   targetId,
   categoryId,
   categoryName,
+  categorySource,
+  categoryRuleName,
   onSaved,
 }: Props) {
   const [open, setOpen] = useState(false)
@@ -48,6 +52,9 @@ export function CategoryPicker({
     onError: (err: Error) => toast.error(err.message),
   })
 
+  const isRuleCategorized = categorySource === "rule" && categoryRuleName
+  const tooltipTitle = isRuleCategorized ? `Auto-categorized by rule: ${categoryRuleName}` : undefined
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -59,9 +66,12 @@ export function CategoryPicker({
             !categoryId && "text-muted-foreground",
           )}
           aria-label="Set category"
+          title={tooltipTitle}
         >
           {isPending ? (
             <Loader2 className="h-3 w-3 animate-spin" />
+          ) : isRuleCategorized ? (
+            <Wand2 className="h-3 w-3 shrink-0 text-purple-500" aria-hidden />
           ) : (
             <Tag className="h-3 w-3 shrink-0" aria-hidden />
           )}

@@ -9,6 +9,7 @@ interface Params {
   date_to?: string
   search?: string
   category_id?: string
+  uncategorized?: boolean
   limit?: number
   offset?: number
 }

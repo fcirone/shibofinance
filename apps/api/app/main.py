@@ -15,6 +15,7 @@ from app.routers import (
     card_transactions,
     categories,
     categorizations,
+    category_rules,
     health,
     imports,
     instruments,
@@ -69,4 +70,5 @@ app.include_router(card_transactions.router)
 app.include_router(statements.router)
 app.include_router(categories.router)
 app.include_router(categorizations.router)
+app.include_router(category_rules.router)
 app.include_router(spending_summary.router)

@@ -4,6 +4,7 @@ import { useCallback } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { X } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import { InstrumentPicker } from "@/components/instruments/InstrumentPicker"
 import { useCategories } from "@/hooks/useCategories"
 import type { InstrumentType } from "@/lib/api"
@@ -22,6 +23,7 @@ export function TransactionFilters({ typeFilter }: Props) {
   const dateTo = searchParams.get("date_to") ?? ""
   const search = searchParams.get("search") ?? ""
   const categoryId = searchParams.get("category_id") ?? ""
+  const uncategorized = searchParams.get("uncategorized") === "true"
 
   const update = useCallback(
     (key: string, value: string | undefined) => {
@@ -34,7 +36,20 @@ export function TransactionFilters({ typeFilter }: Props) {
     [router, searchParams],
   )
 
-  const hasFilters = !!(instrumentId || dateFrom || dateTo || search || categoryId)
+  function toggleUncategorized(checked: boolean) {
+    const params = new URLSearchParams(searchParams.toString())
+    if (checked) {
+      params.set("uncategorized", "true")
+      // Uncategorized is mutually exclusive with category_id filter
+      params.delete("category_id")
+    } else {
+      params.delete("uncategorized")
+    }
+    params.delete("page")
+    router.replace(`/transactions?${params}`)
+  }
+
+  const hasFilters = !!(instrumentId || dateFrom || dateTo || search || categoryId || uncategorized)
 
   function clearAll() {
     const params = new URLSearchParams(searchParams.toString())
@@ -43,6 +58,7 @@ export function TransactionFilters({ typeFilter }: Props) {
     params.delete("date_to")
     params.delete("search")
     params.delete("category_id")
+    params.delete("uncategorized")
     params.delete("page")
     router.replace(`/transactions?${params}`)
   }
@@ -86,8 +102,9 @@ export function TransactionFilters({ typeFilter }: Props) {
       <select
         value={categoryId}
         onChange={(e) => update("category_id", e.target.value || undefined)}
+        disabled={uncategorized}
         aria-label="Filter by category"
-        className="h-9 w-full sm:w-44 rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+        className="h-9 w-full sm:w-44 rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
       >
         <option value="">All categories</option>
         {categories.map((cat) => (
@@ -96,6 +113,15 @@ export function TransactionFilters({ typeFilter }: Props) {
           </option>
         ))}
       </select>
+
+      <label className="flex items-center gap-2 cursor-pointer select-none">
+        <Checkbox
+          checked={uncategorized}
+          onCheckedChange={(v) => toggleUncategorized(v === true)}
+          id="uncategorized-filter"
+        />
+        <span className="text-sm text-muted-foreground">Uncategorized only</span>
+      </label>
 
       {hasFilters && (
         <Button variant="ghost" size="sm" onClick={clearAll} className="gap-1 text-muted-foreground">
