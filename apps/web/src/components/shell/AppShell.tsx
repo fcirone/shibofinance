@@ -24,10 +24,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* Main area */}
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-        <Topbar onToggleCollapse={() => setCollapsed((c) => !c)} />
+        <Topbar
+          onToggleCollapse={() => setCollapsed((c) => !c)}
+          collapsed={collapsed}
+        />
         <main
           id="main-content"
-          className="flex-1 overflow-y-auto p-4 md:p-6"
+          className="flex-1 overflow-y-auto p-5 md:p-7"
         >
           {children}
         </main>

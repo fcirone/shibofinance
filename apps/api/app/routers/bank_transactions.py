@@ -1,7 +1,7 @@
 from datetime import date
 
-from fastapi import APIRouter, Depends, Query
-from sqlalchemy import select
+from fastapi import APIRouter, Depends, Query, Response
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from sqlalchemy import exists
@@ -36,9 +36,39 @@ async def list_bank_transactions(
     uncategorized: bool = Query(False),
     limit: int = Query(200, le=1000),
     offset: int = Query(0),
+    response: Response = None,
     db: AsyncSession = Depends(get_db),
 ):
-    q = (
+    def _apply_filters(q):
+        if instrument_id:
+            q = q.where(BankTransaction.instrument_id == instrument_id)
+        if date_from:
+            q = q.where(BankTransaction.posted_date >= date_from)
+        if date_to:
+            q = q.where(BankTransaction.posted_date <= date_to)
+        if search:
+            q = q.where(BankTransaction.description_raw.ilike(f"%{search}%"))
+        if category_id:
+            q = q.join(
+                Categorization,
+                (Categorization.target_id == BankTransaction.id)
+                & (Categorization.target_type == "bank_transaction"),
+            ).where(Categorization.category_id == category_id)
+        if uncategorized:
+            q = q.where(
+                ~exists().where(
+                    (Categorization.target_id == BankTransaction.id)
+                    & (Categorization.target_type == "bank_transaction")
+                )
+            )
+        return q
+
+    count_q = _apply_filters(select(func.count()).select_from(BankTransaction))
+    total = await db.scalar(count_q)
+    if response is not None:
+        response.headers["X-Total-Count"] = str(total)
+
+    q = _apply_filters(
         select(BankTransaction)
         .options(
             selectinload(BankTransaction.categorization).options(
@@ -47,28 +77,6 @@ async def list_bank_transactions(
             )
         )
         .order_by(BankTransaction.posted_date.desc())
-    )
-    if instrument_id:
-        q = q.where(BankTransaction.instrument_id == instrument_id)
-    if date_from:
-        q = q.where(BankTransaction.posted_date >= date_from)
-    if date_to:
-        q = q.where(BankTransaction.posted_date <= date_to)
-    if search:
-        q = q.where(BankTransaction.description_raw.ilike(f"%{search}%"))
-    if category_id:
-        q = q.join(
-            Categorization,
-            (Categorization.target_id == BankTransaction.id)
-            & (Categorization.target_type == "bank_transaction"),
-        ).where(Categorization.category_id == category_id)
-    if uncategorized:
-        q = q.where(
-            ~exists().where(
-                (Categorization.target_id == BankTransaction.id)
-                & (Categorization.target_type == "bank_transaction")
-            )
-        )
-    q = q.limit(limit).offset(offset)
+    ).limit(limit).offset(offset)
     rows = (await db.scalars(q)).all()
     return [_enrich(tx) for tx in rows]

@@ -39,6 +39,15 @@ export type DryRunResult = components["schemas"]["DryRunResult"]
 export type ApplyRulesResult = components["schemas"]["ApplyRulesResult"]
 
 // ---------------------------------------------------------------------------
+// Paged result wrapper
+// ---------------------------------------------------------------------------
+
+export interface PagedResult<T> {
+  data: T[]
+  total: number
+}
+
+// ---------------------------------------------------------------------------
 // Error type
 // ---------------------------------------------------------------------------
 
@@ -68,7 +77,19 @@ async function apiFetch(path: string, init?: RequestInit): Promise<Response> {
     let message = `HTTP ${res.status}`
     try {
       const body = await res.json()
-      message = body?.detail ?? JSON.stringify(body) ?? message
+      const detail = body?.detail
+      if (typeof detail === "string") {
+        message = detail
+      } else if (Array.isArray(detail)) {
+        // FastAPI validation errors: [{loc, msg, type}, ...]
+        message = detail
+          .map((d: { msg?: string; loc?: string[] }) =>
+            [d.loc?.slice(-1)[0], d.msg].filter(Boolean).join(": "),
+          )
+          .join("; ")
+      } else if (detail != null) {
+        message = JSON.stringify(detail)
+      }
     } catch {
       // ignore parse error
     }
@@ -115,13 +136,14 @@ export async function getImports(params: {
   instrument_id?: string
   limit?: number
   offset?: number
-}): Promise<ImportBatchOut[]> {
+}): Promise<PagedResult<ImportBatchOut>> {
   const qs = new URLSearchParams()
   if (params.instrument_id) qs.set("instrument_id", params.instrument_id)
   if (params.limit != null) qs.set("limit", String(params.limit))
   if (params.offset != null) qs.set("offset", String(params.offset))
   const res = await apiFetch(`/imports?${qs}`)
-  return res.json()
+  const total = Number(res.headers.get("X-Total-Count") ?? "0")
+  return { data: await res.json(), total }
 }
 
 export async function getImportBatch(id: string): Promise<ImportBatchOut> {
@@ -165,7 +187,7 @@ export async function getBankTransactions(params: {
   uncategorized?: boolean
   limit?: number
   offset?: number
-}): Promise<BankTransactionOut[]> {
+}): Promise<PagedResult<BankTransactionOut>> {
   const qs = new URLSearchParams()
   if (params.instrument_id) qs.set("instrument_id", params.instrument_id)
   if (params.date_from) qs.set("date_from", params.date_from)
@@ -176,7 +198,8 @@ export async function getBankTransactions(params: {
   if (params.limit != null) qs.set("limit", String(params.limit))
   if (params.offset != null) qs.set("offset", String(params.offset))
   const res = await apiFetch(`/bank-transactions?${qs}`)
-  return res.json()
+  const total = Number(res.headers.get("X-Total-Count") ?? "0")
+  return { data: await res.json(), total }
 }
 
 // ---------------------------------------------------------------------------
@@ -192,7 +215,7 @@ export async function getCardTransactions(params: {
   uncategorized?: boolean
   limit?: number
   offset?: number
-}): Promise<CardTransactionOut[]> {
+}): Promise<PagedResult<CardTransactionOut>> {
   const qs = new URLSearchParams()
   if (params.instrument_id) qs.set("instrument_id", params.instrument_id)
   if (params.date_from) qs.set("date_from", params.date_from)
@@ -203,7 +226,8 @@ export async function getCardTransactions(params: {
   if (params.limit != null) qs.set("limit", String(params.limit))
   if (params.offset != null) qs.set("offset", String(params.offset))
   const res = await apiFetch(`/card-transactions?${qs}`)
-  return res.json()
+  const total = Number(res.headers.get("X-Total-Count") ?? "0")
+  return { data: await res.json(), total }
 }
 
 // ---------------------------------------------------------------------------

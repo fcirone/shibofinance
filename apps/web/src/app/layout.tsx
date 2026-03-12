@@ -1,11 +1,23 @@
 import type { Metadata } from "next"
-import { Inter } from "next/font/google"
+import { DM_Sans, DM_Mono } from "next/font/google"
 import "./globals.css"
 import { AppShell } from "@/components/shell/AppShell"
 import { QueryProvider } from "@/components/providers/QueryProvider"
 import { Toaster } from "@/components/ui/sonner"
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" })
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  variable: "--font-dm-sans",
+  weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
+})
+
+const dmMono = DM_Mono({
+  subsets: ["latin"],
+  variable: "--font-dm-mono",
+  weight: ["400", "500"],
+  display: "swap",
+})
 
 export const metadata: Metadata = {
   title: "Shibo Finance",
@@ -18,7 +30,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="en" className={`dark ${dmSans.variable} ${dmMono.variable}`}>
       <body className="antialiased font-sans">
         <QueryProvider>
           <AppShell>{children}</AppShell>

@@ -34,7 +34,7 @@ export function ImportBatchCard({ batch, instrument, onClick }: Props) {
           )}
 
           <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1 text-green-600 dark:text-green-400">
+            <span className="flex items-center gap-1 text-teal-500 dark:text-teal-400">
               <CheckCircle2 className="h-3.5 w-3.5" />
               {batch.inserted_count} inserted
             </span>

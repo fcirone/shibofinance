@@ -10,6 +10,7 @@ import { LoadingSkeleton } from "@/components/shared/LoadingSkeleton"
 import { InstrumentPicker } from "@/components/instruments/InstrumentPicker"
 import { ImportBatchCard } from "@/components/imports/ImportBatchCard"
 import { BatchDetailDrawer } from "@/components/imports/BatchDetailDrawer"
+import { PaginationBar } from "@/components/shared/PaginationBar"
 import { useImports } from "@/hooks/useImports"
 import { useInstruments } from "@/hooks/useInstruments"
 import type { ImportBatchOut } from "@/lib/api"
@@ -23,11 +24,13 @@ export default function ImportsPage() {
   const page = Number(searchParams.get("page") ?? "1")
   const offset = (page - 1) * PAGE_SIZE
 
-  const { data: batches = [], isLoading } = useImports({
+  const { data: importsResult, isLoading } = useImports({
     instrument_id: instrumentId,
     limit: PAGE_SIZE,
     offset,
   })
+  const batches = importsResult?.data ?? []
+  const importsTotal = importsResult?.total ?? 0
   const { data: instruments = [] } = useInstruments()
 
   const [selected, setSelected] = useState<ImportBatchOut | null>(null)
@@ -100,34 +103,12 @@ export default function ImportsPage() {
             )
           })}
 
-          {/* Pagination */}
-          <div className="flex items-center justify-between pt-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page <= 1}
-              onClick={() => {
-                const params = new URLSearchParams(searchParams.toString())
-                params.set("page", String(page - 1))
-                router.replace(`/imports?${params}`)
-              }}
-            >
-              Previous
-            </Button>
-            <span className="text-sm text-muted-foreground">Page {page}</span>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={batches.length < PAGE_SIZE}
-              onClick={() => {
-                const params = new URLSearchParams(searchParams.toString())
-                params.set("page", String(page + 1))
-                router.replace(`/imports?${params}`)
-              }}
-            >
-              Next
-            </Button>
-          </div>
+          <PaginationBar
+            page={page}
+            pageSize={PAGE_SIZE}
+            total={importsTotal}
+            basePath="/imports"
+          />
         </div>
       )}
 

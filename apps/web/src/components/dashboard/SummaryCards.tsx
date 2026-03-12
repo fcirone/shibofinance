@@ -55,8 +55,10 @@ export function SummaryCards({ summary, lastImport, summaryLoading, importsLoadi
       const usd = toUSDMinor(cat.total_minor, cat.currency, fx.rates)
       if (usd != null) totalUSDMinor += usd
     }
-    const uncatUSD = toUSDMinor(summary.uncategorized_minor, "BRL", fx.rates)
-    if (uncatUSD != null) totalUSDMinor += uncatUSD
+    for (const [cur, amt] of Object.entries(summary.uncategorized_by_currency)) {
+      const uncatUSD = toUSDMinor(amt, cur, fx.rates)
+      if (uncatUSD != null) totalUSDMinor += uncatUSD
+    }
   }
 
   const totalExpenses = totalUSDMinor != null ? formatUSD(totalUSDMinor) : summary ? "…" : "—"

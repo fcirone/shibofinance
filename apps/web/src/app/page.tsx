@@ -22,11 +22,18 @@ function currentYearMonth() {
 }
 
 function monthToRange(ym: string): { date_from: string; date_to: string } {
-  const [year, month] = ym.split("-").map(Number)
-  const date_from = `${year}-${String(month).padStart(2, "0")}-01`
+  const match = ym.match(/^(\d{4})-(\d{2})$/)
+  if (!match) return monthToRange(currentYearMonth())
+  const year = parseInt(match[1], 10)
+  const month = parseInt(match[2], 10)
+  if (month < 1 || month > 12 || year < 1900 || year > 2200) return monthToRange(currentYearMonth())
+  const y = String(year).padStart(4, "0")
+  const m = String(month).padStart(2, "0")
   const lastDay = new Date(year, month, 0).getDate()
-  const date_to = `${year}-${String(month).padStart(2, "0")}-${lastDay}`
-  return { date_from, date_to }
+  return {
+    date_from: `${y}-${m}-01`,
+    date_to: `${y}-${m}-${String(lastDay).padStart(2, "0")}`,
+  }
 }
 
 // ── Inline stat pill ──────────────────────────────────────────────────────────
@@ -111,9 +118,11 @@ export default function DashboardPage() {
       if (cat.category_kind === "income") creditsUSD += usd
       else if (cat.category_kind === "expense") debitsUSD += usd
     }
-    // Uncategorized expenses (assumed BRL as fallback — same as before)
-    debitsUSD += toUSDMinor(summary.uncategorized_minor, "BRL", fx.rates) ?? 0
-    // Uncategorized income
+    // Uncategorized expenses per currency
+    for (const [cur, amt] of Object.entries(summary.uncategorized_by_currency)) {
+      debitsUSD += toUSDMinor(amt, cur, fx.rates) ?? 0
+    }
+    // Uncategorized income per currency
     for (const [cur, amt] of Object.entries(summary.uncategorized_income_by_currency)) {
       creditsUSD += toUSDMinor(amt, cur, fx.rates) ?? 0
     }
@@ -150,7 +159,7 @@ export default function DashboardPage() {
             label="Credits"
             value={formatUSD(creditsUSD)}
             loading={statsLoading}
-            valueClass="text-green-600 dark:text-green-400"
+            valueClass="text-teal-500 dark:text-teal-400"
           />
           <div className="w-px h-8 bg-border" />
           <StatPill
@@ -164,7 +173,7 @@ export default function DashboardPage() {
             label="Balance"
             value={formatUSD(balanceUSD)}
             loading={statsLoading}
-            valueClass={balanceUSD >= 0 ? "text-green-600 dark:text-green-400" : "text-destructive"}
+            valueClass={balanceUSD >= 0 ? "text-teal-500 dark:text-teal-400" : "text-destructive"}
           />
         </div>
       </div>

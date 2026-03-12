@@ -1,7 +1,7 @@
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, status
-from sqlalchemy import select
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, UploadFile, status
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db import get_db
@@ -17,8 +17,16 @@ async def list_import_batches(
     instrument_id: uuid.UUID | None = Query(None),
     limit: int = Query(50, le=200),
     offset: int = Query(0),
+    response: Response = None,
     db: AsyncSession = Depends(get_db),
 ):
+    count_q = select(func.count()).select_from(ImportBatch)
+    if instrument_id:
+        count_q = count_q.where(ImportBatch.instrument_id == instrument_id)
+    total = await db.scalar(count_q)
+    if response is not None:
+        response.headers["X-Total-Count"] = str(total)
+
     q = select(ImportBatch).order_by(ImportBatch.created_at.desc())
     if instrument_id:
         q = q.where(ImportBatch.instrument_id == instrument_id)

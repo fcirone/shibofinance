@@ -25,6 +25,7 @@ from app.models import (
 )
 from app.services.dedupe_service import upsert_bank_transactions, upsert_card_transactions
 from app.services.rule_engine import apply_rules
+from app.services.statement_matcher import match_statement_payments
 from importers import registry
 from importers.base import CardStatementRow
 
@@ -106,6 +107,7 @@ async def run_import(
             duplicate_total += dup
             if new_ids:
                 await apply_rules(session, transaction_ids=new_ids)
+            await match_statement_payments(session, instrument_ids=[instrument.id])
 
         elif instrument.type == InstrumentType.credit_card:
             credit_card = await session.scalar(

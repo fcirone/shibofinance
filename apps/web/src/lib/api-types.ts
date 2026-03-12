@@ -790,8 +790,10 @@ export interface components {
             date_to: string;
             /** By Category */
             by_category: components["schemas"]["SpendingByCategory"][];
-            /** Uncategorized Minor */
-            uncategorized_minor: number;
+            /** Uncategorized By Currency */
+            uncategorized_by_currency: {
+                [key: string]: number;
+            };
             /** Uncategorized Income By Currency */
             uncategorized_income_by_currency: {
                 [key: string]: number;

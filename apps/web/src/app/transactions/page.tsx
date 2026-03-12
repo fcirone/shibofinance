@@ -44,7 +44,8 @@ export default function TransactionsPage() {
       : {},
   )
 
-  const rows = tab === "bank" ? (bankQuery.data ?? []) : (cardQuery.data ?? [])
+  const rows = tab === "bank" ? (bankQuery.data?.data ?? []) : (cardQuery.data?.data ?? [])
+  const total = tab === "bank" ? (bankQuery.data?.total ?? 0) : (cardQuery.data?.total ?? 0)
   const isLoading = tab === "bank" ? bankQuery.isLoading : cardQuery.isLoading
   const targetType: TargetType = tab === "bank" ? "bank_transaction" : "card_transaction"
 
@@ -100,7 +101,7 @@ export default function TransactionsPage() {
             <PaginationBar
               page={page}
               pageSize={PAGE_SIZE}
-              count={rows.length}
+              total={total}
               basePath="/transactions"
             />
           </>

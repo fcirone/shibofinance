@@ -1,23 +1,32 @@
 "use client"
 
+import { useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
+import {
+  ChevronFirst,
+  ChevronLast,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react"
 
 interface Props {
   page: number
   pageSize: number
-  count: number
+  total: number
   basePath: string
 }
 
-export function PaginationBar({ page, pageSize, count, basePath }: Props) {
+export function PaginationBar({ page, pageSize, total, basePath }: Props) {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const [jumpValue, setJumpValue] = useState("")
 
-  const from = (page - 1) * pageSize + 1
-  const to = (page - 1) * pageSize + count
+  const totalPages = Math.max(1, Math.ceil(total / pageSize))
+  const from = total === 0 ? 0 : (page - 1) * pageSize + 1
+  const to = Math.min(page * pageSize, total)
   const hasPrev = page > 1
-  const hasNext = count === pageSize
+  const hasNext = page < totalPages
 
   function go(p: number) {
     const params = new URLSearchParams(searchParams.toString())
@@ -25,19 +34,86 @@ export function PaginationBar({ page, pageSize, count, basePath }: Props) {
     router.replace(`${basePath}?${params}`)
   }
 
-  if (!hasPrev && !hasNext) return null
+  function handleJump(e: React.FormEvent) {
+    e.preventDefault()
+    const n = parseInt(jumpValue, 10)
+    if (!isNaN(n) && n >= 1 && n <= totalPages) {
+      go(n)
+      setJumpValue("")
+    }
+  }
+
+  if (total === 0) return null
 
   return (
-    <div className="flex items-center justify-between pt-2">
-      <Button variant="outline" size="sm" disabled={!hasPrev} onClick={() => go(page - 1)}>
-        Previous
-      </Button>
-      <span className="text-sm text-muted-foreground">
-        {count === 0 ? "No results" : `${from}–${to}`}
+    <div className="flex items-center justify-between gap-4 pt-2 flex-wrap">
+      {/* Left: record/page info */}
+      <span className="text-sm text-muted-foreground whitespace-nowrap">
+        {from}–{to} of {total.toLocaleString()} records &middot; page {page} of {totalPages}
       </span>
-      <Button variant="outline" size="sm" disabled={!hasNext} onClick={() => go(page + 1)}>
-        Next
-      </Button>
+
+      {/* Center: nav buttons */}
+      <div className="flex items-center gap-1">
+        <Button
+          variant="outline"
+          size="icon"
+          className="h-8 w-8"
+          disabled={!hasPrev}
+          onClick={() => go(1)}
+          title="First page"
+        >
+          <ChevronFirst className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="outline"
+          size="icon"
+          className="h-8 w-8"
+          disabled={!hasPrev}
+          onClick={() => go(page - 1)}
+          title="Previous page"
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="outline"
+          size="icon"
+          className="h-8 w-8"
+          disabled={!hasNext}
+          onClick={() => go(page + 1)}
+          title="Next page"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="outline"
+          size="icon"
+          className="h-8 w-8"
+          disabled={!hasNext}
+          onClick={() => go(totalPages)}
+          title="Last page"
+        >
+          <ChevronLast className="h-4 w-4" />
+        </Button>
+      </div>
+
+      {/* Right: jump to page */}
+      {totalPages > 1 && (
+        <form onSubmit={handleJump} className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground whitespace-nowrap">Go to</span>
+          <input
+            type="number"
+            min={1}
+            max={totalPages}
+            value={jumpValue}
+            onChange={(e) => setJumpValue(e.target.value)}
+            className="h-8 w-16 rounded-md border border-input bg-background px-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            placeholder={String(page)}
+          />
+          <Button type="submit" variant="outline" size="sm" className="h-8">
+            Go
+          </Button>
+        </form>
+      )}
     </div>
   )
 }

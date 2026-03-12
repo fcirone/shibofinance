@@ -1,7 +1,7 @@
 from datetime import date
 
-from fastapi import APIRouter, Depends, Query
-from sqlalchemy import exists, select
+from fastapi import APIRouter, Depends, Query, Response
+from sqlalchemy import exists, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -35,9 +35,41 @@ async def list_card_transactions(
     uncategorized: bool = Query(False),
     limit: int = Query(200, le=1000),
     offset: int = Query(0),
+    response: Response = None,
     db: AsyncSession = Depends(get_db),
 ):
-    q = (
+    def _apply_filters(q):
+        if instrument_id:
+            q = q.join(CreditCard, CreditCardTransaction.credit_card_id == CreditCard.id).where(
+                CreditCard.instrument_id == instrument_id
+            )
+        if date_from:
+            q = q.where(CreditCardTransaction.posted_date >= date_from)
+        if date_to:
+            q = q.where(CreditCardTransaction.posted_date <= date_to)
+        if search:
+            q = q.where(CreditCardTransaction.description_raw.ilike(f"%{search}%"))
+        if category_id:
+            q = q.join(
+                Categorization,
+                (Categorization.target_id == CreditCardTransaction.id)
+                & (Categorization.target_type == "card_transaction"),
+            ).where(Categorization.category_id == category_id)
+        if uncategorized:
+            q = q.where(
+                ~exists().where(
+                    (Categorization.target_id == CreditCardTransaction.id)
+                    & (Categorization.target_type == "card_transaction")
+                )
+            )
+        return q
+
+    count_q = _apply_filters(select(func.count()).select_from(CreditCardTransaction))
+    total = await db.scalar(count_q)
+    if response is not None:
+        response.headers["X-Total-Count"] = str(total)
+
+    q = _apply_filters(
         select(CreditCardTransaction)
         .options(
             selectinload(CreditCardTransaction.categorization).options(
@@ -46,30 +78,6 @@ async def list_card_transactions(
             )
         )
         .order_by(CreditCardTransaction.posted_date.desc())
-    )
-    if instrument_id:
-        q = q.join(CreditCard, CreditCardTransaction.credit_card_id == CreditCard.id).where(
-            CreditCard.instrument_id == instrument_id
-        )
-    if date_from:
-        q = q.where(CreditCardTransaction.posted_date >= date_from)
-    if date_to:
-        q = q.where(CreditCardTransaction.posted_date <= date_to)
-    if search:
-        q = q.where(CreditCardTransaction.description_raw.ilike(f"%{search}%"))
-    if category_id:
-        q = q.join(
-            Categorization,
-            (Categorization.target_id == CreditCardTransaction.id)
-            & (Categorization.target_type == "card_transaction"),
-        ).where(Categorization.category_id == category_id)
-    if uncategorized:
-        q = q.where(
-            ~exists().where(
-                (Categorization.target_id == CreditCardTransaction.id)
-                & (Categorization.target_type == "card_transaction")
-            )
-        )
-    q = q.limit(limit).offset(offset)
+    ).limit(limit).offset(offset)
     rows = (await db.scalars(q)).all()
     return [_enrich(tx) for tx in rows]

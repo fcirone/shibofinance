@@ -73,7 +73,9 @@ export function MonthlyChart() {
         if (cat.category_kind === "income") credits += usd
         else if (cat.category_kind === "expense") debits += usd
       }
-      debits += toUSDMinor(summary.uncategorized_minor, "BRL", fx.rates) ?? 0
+      for (const [cur, amt] of Object.entries(summary.uncategorized_by_currency)) {
+        debits += toUSDMinor(amt, cur, fx.rates) ?? 0
+      }
       for (const [cur, amt] of Object.entries(summary.uncategorized_income_by_currency)) {
         credits += toUSDMinor(amt, cur, fx.rates) ?? 0
       }

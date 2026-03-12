@@ -78,7 +78,7 @@ async def spending_summary(
     # Group by (direction_prefix, category_name, currency) to avoid mixing currencies.
     # Key format: "{prefix}__{category_name}__{currency}"
     category_map: dict[str, SpendingByCategory] = {}
-    uncategorized = 0
+    uncategorized_by_currency: dict[str, int] = {}
     uncategorized_income_by_currency: dict[str, int] = {}
 
     async def _get_category(target_type: TargetType, target_id) -> Category | None:
@@ -110,7 +110,8 @@ async def spending_summary(
         if cat:
             _upsert("expense", cat, cat.kind, tx.amount_minor, tx.currency)
         else:
-            uncategorized += tx.amount_minor
+            cur = tx.currency
+            uncategorized_by_currency[cur] = uncategorized_by_currency.get(cur, 0) + tx.amount_minor
 
     for tx in bank_txs:
         cat = await _get_category(TargetType.bank_transaction, tx.id)
@@ -118,7 +119,8 @@ async def spending_summary(
         if cat:
             _upsert("expense", cat, cat.kind, amt, tx.currency)
         else:
-            uncategorized += amt
+            cur = tx.currency
+            uncategorized_by_currency[cur] = uncategorized_by_currency.get(cur, 0) + amt
 
     for tx in income_bank_txs:
         cat = await _get_category(TargetType.bank_transaction, tx.id)
@@ -131,13 +133,13 @@ async def spending_summary(
             uncategorized_income_by_currency[cur] = uncategorized_income_by_currency.get(cur, 0) + amt
 
     by_category = sorted(category_map.values(), key=lambda x: x.total_minor, reverse=True)
-    total = sum(s.total_minor for s in by_category if s.category_kind != CategoryKind.income) + uncategorized
+    total = sum(s.total_minor for s in by_category if s.category_kind != CategoryKind.income) + sum(uncategorized_by_currency.values())
 
     return SpendingSummaryOut(
         date_from=date_from,
         date_to=date_to,
         by_category=by_category,
-        uncategorized_minor=uncategorized,
+        uncategorized_by_currency=uncategorized_by_currency,
         uncategorized_income_by_currency=uncategorized_income_by_currency,
         total_minor=total,
     )

@@ -76,8 +76,11 @@ export function CategoryIncomeRatioChart({ summary, loading }: Props) {
     for (const [cur, amt] of Object.entries(summary.uncategorized_income_by_currency)) {
       totalIncomeUSD += toUSDMinor(amt, cur, fx.rates) ?? 0
     }
-    // Include uncategorized expenses as a bucket
-    const uncatExpense = toUSDMinor(summary.uncategorized_minor, "BRL", fx.rates) ?? 0
+    // Include uncategorized expenses as a bucket (per currency)
+    let uncatExpense = 0
+    for (const [cur, amt] of Object.entries(summary.uncategorized_by_currency)) {
+      uncatExpense += toUSDMinor(amt, cur, fx.rates) ?? 0
+    }
     if (uncatExpense > 0) expenseItems.push({ name: "Uncategorized", usd: uncatExpense })
 
     if (totalIncomeUSD > 0) {

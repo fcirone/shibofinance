@@ -65,9 +65,12 @@ export function SpendingChart({ summary, loading }: Props) {
     for (const [name, usd] of sorted) {
       if (usd > 0) entries.push({ name, usd })
     }
-    if (summary.uncategorized_minor > 0) {
-      const usd = toUSDMinor(summary.uncategorized_minor, "BRL", fx.rates)
-      if (usd != null) entries.push({ name: "Uncategorized", usd })
+    {
+      let uncatUSD = 0
+      for (const [cur, amt] of Object.entries(summary.uncategorized_by_currency)) {
+        uncatUSD += toUSDMinor(amt, cur, fx.rates) ?? 0
+      }
+      if (uncatUSD > 0) entries.push({ name: "Uncategorized", usd: uncatUSD })
     }
   }
 

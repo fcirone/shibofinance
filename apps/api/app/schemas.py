@@ -211,7 +211,7 @@ class SpendingSummaryOut(BaseModel):
     date_from: date
     date_to: date
     by_category: list[SpendingByCategory]
-    uncategorized_minor: int                         # uncategorized expenses (BRL-based sum)
+    uncategorized_by_currency: dict[str, int]         # uncategorized expenses per currency
     uncategorized_income_by_currency: dict[str, int]  # uncategorized income per currency
     total_minor: int
 
