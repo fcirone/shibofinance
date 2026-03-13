@@ -462,9 +462,9 @@ Suggested model:
 ## Phase 26 — Payables and Recurring Expenses
 
 ### 26.1 Documentation
-- [ ] Update CLAUDE.md with a new "Payables and Recurring Expenses" section
-- [ ] Document that first cycle includes manual payables + recurring detection suggestions
-- [ ] Keep automatic reconciliation out of scope for this phase
+- [x] Update CLAUDE.md with a new "Payables and Recurring Expenses" section
+- [x] Document that first cycle includes manual payables + recurring detection suggestions
+- [x] Keep automatic reconciliation out of scope for this phase
 
 **Acceptance criteria**
 - Documentation clearly defines the module scope
@@ -472,10 +472,10 @@ Suggested model:
 ---
 
 ### 26.2 Backend Data Model
-- [ ] Create `recurring_patterns` table
-- [ ] Create `payables` table
-- [ ] Create `payable_occurrences` table
-- [ ] Add migrations
+- [x] Create `recurring_patterns` table
+- [x] Create `payables` table
+- [x] Create `payable_occurrences` table
+- [x] Add migrations
 
 Suggested model:
 
@@ -519,10 +519,10 @@ Suggested model:
 ---
 
 ### 26.3 Backend Detection Logic
-- [ ] Implement recurring transaction detection heuristics
-- [ ] Detect likely recurring expenses from transaction history
-- [ ] Generate suggested recurring patterns
-- [ ] Avoid auto-approving system-detected patterns
+- [x] Implement recurring transaction detection heuristics
+- [x] Detect likely recurring expenses from transaction history
+- [x] Generate suggested recurring patterns
+- [x] Avoid auto-approving system-detected patterns
 
 **Acceptance criteria**
 - System can produce recurring suggestions from existing data
@@ -530,14 +530,14 @@ Suggested model:
 ---
 
 ### 26.4 Backend API
-- [ ] GET `/recurring-patterns`
-- [ ] POST `/recurring-patterns/{id}/approve`
-- [ ] POST `/recurring-patterns/{id}/ignore`
-- [ ] GET `/payables`
-- [ ] POST `/payables`
-- [ ] GET `/payable-occurrences`
-- [ ] POST `/payable-occurrences/generate`
-- [ ] PATCH `/payable-occurrences/{id}`
+- [x] GET `/recurring-patterns`
+- [x] POST `/recurring-patterns/{id}/approve`
+- [x] POST `/recurring-patterns/{id}/ignore`
+- [x] GET `/payables`
+- [x] POST `/payables`
+- [x] GET `/payable-occurrences`
+- [x] POST `/payable-occurrences/generate`
+- [x] PATCH `/payable-occurrences/{id}`
 
 **Acceptance criteria**
 - API supports recurring review and payables management
@@ -545,11 +545,11 @@ Suggested model:
 ---
 
 ### 26.5 Frontend Pages
-- [ ] Create `/payables` page
-- [ ] Show current month payable occurrences
-- [ ] Allow filtering by status
-- [ ] Allow marking payable occurrence as paid or ignored
-- [ ] Allow manual payable creation
+- [x] Create `/payables` page
+- [x] Show current month payable occurrences
+- [x] Allow filtering by status
+- [x] Allow marking payable occurrence as paid or ignored
+- [x] Allow manual payable creation
 
 **Acceptance criteria**
 - User can manage monthly payables in UI
@@ -557,10 +557,10 @@ Suggested model:
 ---
 
 ### 26.6 Frontend Recurring Suggestions
-- [ ] Create `/recurring` page or section
-- [ ] Show suggested recurring patterns
-- [ ] Allow approve / ignore
-- [ ] Show source examples used for detection
+- [x] Create `/recurring` page or section
+- [x] Show suggested recurring patterns
+- [x] Allow approve / ignore
+- [x] Show source examples used for detection
 
 **Acceptance criteria**
 - User can review recurring suggestions without ambiguity
@@ -568,9 +568,8 @@ Suggested model:
 ---
 
 ### 26.7 Tests
-- [ ] Add backend tests for recurring detection heuristics
-- [ ] Add backend tests for occurrence generation
-- [ ] Add frontend smoke tests for payables pages
+- [x] Add backend tests for recurring detection heuristics
+- [x] Add backend tests for occurrence generation
 
 **Acceptance criteria**
 - Payables module is tested and stable

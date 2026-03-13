@@ -1166,19 +1166,90 @@ Unique constraint: `(budget_period_id, category_id)` — one budget line per cat
 Goal:
 Add a lightweight payables and recurring-expense layer.
 
-Scope:
-- recurring expense detection from existing transaction history
-- suggested recurring patterns
-- manual approval or ignore flow
-- monthly payable occurrence generation
-- payable status tracking
-- manual payable creation
+### First-Cycle Scope
 
-Out of scope for this phase:
-- full bank reconciliation
-- auto-payment matching
-- invoices/documents
-- OCR
+This cycle includes:
+- **Manual payables**: user-created payables with monthly occurrences and status tracking (expected → paid/ignored).
+- **Recurring detection suggestions**: system analyzes existing transaction history and proposes recurring patterns. User must approve or ignore each suggestion — no auto-approval.
+
+This cycle excludes:
+- Full bank reconciliation
+- Automatic payment matching
+- Invoices / documents / OCR
+- Auto-categorization of payable transactions
+
+### Data Model
+
+#### recurring_patterns
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | uuid pk | |
+| name | text | human-readable label |
+| normalized_description | text | normalized text used for detection |
+| category_id | uuid nullable → categories.id | |
+| expected_amount_minor | bigint nullable | typical amount in minor units |
+| cadence | enum | monthly \| weekly \| yearly \| custom |
+| detection_source | enum | system \| manual |
+| status | enum | suggested \| approved \| ignored |
+| created_at | timestamptz | |
+| updated_at | timestamptz | |
+
+#### payables
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | uuid pk | |
+| name | text | |
+| category_id | uuid nullable → categories.id | |
+| default_amount_minor | bigint nullable | |
+| notes | text nullable | |
+| source_type | enum | manual \| recurring_pattern |
+| recurring_pattern_id | uuid nullable → recurring_patterns.id | |
+| created_at | timestamptz | |
+| updated_at | timestamptz | |
+
+#### payable_occurrences
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | uuid pk | |
+| payable_id | uuid → payables.id | |
+| due_date | date | |
+| expected_amount_minor | bigint | |
+| actual_amount_minor | bigint nullable | set when marked as paid |
+| status | enum | expected \| pending \| paid \| ignored |
+| notes | text nullable | |
+| created_at | timestamptz | |
+| updated_at | timestamptz | |
+
+### Recurring Detection Heuristics
+
+- Scan `bank_transactions` and `card_transactions` for normalized descriptions that appear 2+ times across different calendar months.
+- Group by normalized description; count distinct months; compute median amount.
+- Infer cadence from inter-occurrence gaps (≈30 days → monthly, ≈7 days → weekly, ≈365 days → yearly).
+- Only generate a suggestion if confidence threshold is met (≥3 occurrences, consistent cadence).
+- All system-detected patterns start with `status = 'suggested'` — never auto-approved.
+
+### API Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | /recurring-patterns | List patterns (filter: status) |
+| POST | /recurring-patterns/detect | Trigger detection scan, returns new suggestions |
+| POST | /recurring-patterns/{id}/approve | Approve a suggested pattern |
+| POST | /recurring-patterns/{id}/ignore | Ignore a suggested pattern |
+| GET | /payables | List payables |
+| POST | /payables | Create manual payable |
+| GET | /payable-occurrences | List occurrences (filter: month, year, status) |
+| POST | /payable-occurrences/generate | Generate occurrences for a given month/year from approved payables |
+| PATCH | /payable-occurrences/{id} | Update status (paid/ignored) and actual_amount_minor |
+
+### Frontend
+
+- `/payables` page — current month occurrences table, filter by status, mark paid/ignored, create manual payable.
+- `/recurring` page or section — list suggested patterns with example transactions, approve/ignore actions.
+- Sidebar entries: "Payables" and "Recurring" under a new "Control" nav group.
 
 ---
 

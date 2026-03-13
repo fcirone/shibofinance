@@ -453,3 +453,139 @@ export async function copyBudgetFrom(
   })
   return res.json()
 }
+
+// ---------------------------------------------------------------------------
+// Payables and Recurring Patterns
+// ---------------------------------------------------------------------------
+
+export type RecurringCadence = "monthly" | "weekly" | "yearly" | "custom"
+export type DetectionSource = "system" | "manual"
+export type RecurringPatternStatus = "suggested" | "approved" | "ignored"
+export type PayableSourceType = "manual" | "recurring_pattern"
+export type OccurrenceStatus = "expected" | "pending" | "paid" | "ignored"
+
+export interface RecurringPatternOut {
+  id: string
+  name: string
+  normalized_description: string
+  category_id: string | null
+  category_name: string | null
+  expected_amount_minor: number | null
+  cadence: RecurringCadence
+  detection_source: DetectionSource
+  status: RecurringPatternStatus
+  created_at: string
+}
+
+export interface RecurringPatternCreate {
+  name: string
+  normalized_description: string
+  category_id?: string | null
+  expected_amount_minor?: number | null
+  cadence?: RecurringCadence
+}
+
+export interface DetectResult {
+  created: number
+  skipped: number
+}
+
+export interface PayableOut {
+  id: string
+  name: string
+  category_id: string | null
+  category_name: string | null
+  default_amount_minor: number | null
+  notes: string | null
+  source_type: PayableSourceType
+  recurring_pattern_id: string | null
+  created_at: string
+}
+
+export interface PayableCreate {
+  name: string
+  category_id?: string | null
+  default_amount_minor?: number | null
+  notes?: string | null
+}
+
+export interface PayableOccurrenceOut {
+  id: string
+  payable_id: string
+  payable_name: string
+  due_date: string
+  expected_amount_minor: number
+  actual_amount_minor: number | null
+  status: OccurrenceStatus
+  notes: string | null
+  created_at: string
+}
+
+export interface OccurrenceUpdate {
+  status?: OccurrenceStatus | null
+  actual_amount_minor?: number | null
+  notes?: string | null
+}
+
+export interface GenerateOccurrencesResult {
+  created: number
+  skipped: number
+}
+
+export async function getRecurringPatterns(status?: RecurringPatternStatus): Promise<RecurringPatternOut[]> {
+  const params = status ? `?status=${status}` : ""
+  const res = await apiFetch(`/recurring-patterns${params}`)
+  return res.json()
+}
+
+export async function detectRecurringPatterns(): Promise<DetectResult> {
+  const res = await apiFetch("/recurring-patterns/detect", { method: "POST" })
+  return res.json()
+}
+
+export async function approveRecurringPattern(id: string): Promise<RecurringPatternOut> {
+  const res = await apiFetch(`/recurring-patterns/${id}/approve`, { method: "POST" })
+  return res.json()
+}
+
+export async function ignoreRecurringPattern(id: string): Promise<RecurringPatternOut> {
+  const res = await apiFetch(`/recurring-patterns/${id}/ignore`, { method: "POST" })
+  return res.json()
+}
+
+export async function getPayables(): Promise<PayableOut[]> {
+  const res = await apiFetch("/payables")
+  return res.json()
+}
+
+export async function createPayable(data: PayableCreate): Promise<PayableOut> {
+  const res = await apiFetch("/payables", { method: "POST", body: JSON.stringify(data) })
+  return res.json()
+}
+
+export async function getPayableOccurrences(
+  month: number,
+  year: number,
+  status?: OccurrenceStatus,
+): Promise<PayableOccurrenceOut[]> {
+  const params = new URLSearchParams({ month: String(month), year: String(year) })
+  if (status) params.set("status", status)
+  const res = await apiFetch(`/payable-occurrences?${params}`)
+  return res.json()
+}
+
+export async function generateOccurrences(month: number, year: number): Promise<GenerateOccurrencesResult> {
+  const res = await apiFetch("/payable-occurrences/generate", {
+    method: "POST",
+    body: JSON.stringify({ month, year }),
+  })
+  return res.json()
+}
+
+export async function updateOccurrence(id: string, data: OccurrenceUpdate): Promise<PayableOccurrenceOut> {
+  const res = await apiFetch(`/payable-occurrences/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  })
+  return res.json()
+}

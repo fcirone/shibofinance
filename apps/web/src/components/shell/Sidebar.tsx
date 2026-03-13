@@ -12,6 +12,8 @@ import {
   Tag,
   Sliders,
   Target,
+  CalendarCheck,
+  RefreshCw,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -35,6 +37,13 @@ const NAV_GROUPS = [
       { label: "Transactions", href: "/transactions", icon: List },
       { label: "Statements", href: "/statements", icon: FileText },
       { label: "Planning", href: "/planning", icon: Target },
+    ],
+  },
+  {
+    label: "Control",
+    items: [
+      { label: "Payables", href: "/payables", icon: CalendarCheck },
+      { label: "Recurring", href: "/recurring", icon: RefreshCw },
     ],
   },
   {

@@ -9,11 +9,16 @@ from app.models import (
     BudgetPeriodStatus,
     CategorizationSource,
     CategoryKind,
+    DetectionSource,
     ImportStatus,
     InstrumentSource,
     InstrumentType,
     MatchField,
     MatchOperator,
+    OccurrenceStatus,
+    PayableSourceType,
+    RecurringCadence,
+    RecurringPatternStatus,
     RuleTargetType,
     StatementStatus,
     TargetType,
@@ -324,3 +329,97 @@ class BudgetDetailOut(BaseModel):
     remaining_total_minor: int
     pct_consumed: float
     items: list[CategoryBudgetItemOut]
+
+
+# ---------------------------------------------------------------------------
+# Recurring patterns
+# ---------------------------------------------------------------------------
+
+
+class RecurringPatternOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    name: str
+    normalized_description: str
+    category_id: uuid.UUID | None
+    category_name: str | None
+    expected_amount_minor: int | None
+    cadence: RecurringCadence
+    detection_source: DetectionSource
+    status: RecurringPatternStatus
+    created_at: datetime
+
+
+class RecurringPatternCreate(BaseModel):
+    name: str
+    normalized_description: str
+    category_id: uuid.UUID | None = None
+    expected_amount_minor: int | None = None
+    cadence: RecurringCadence = RecurringCadence.monthly
+
+
+class DetectResult(BaseModel):
+    created: int
+    skipped: int
+
+
+# ---------------------------------------------------------------------------
+# Payables
+# ---------------------------------------------------------------------------
+
+
+class PayableCreate(BaseModel):
+    name: str
+    category_id: uuid.UUID | None = None
+    default_amount_minor: int | None = None
+    notes: str | None = None
+
+
+class PayableOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    name: str
+    category_id: uuid.UUID | None
+    category_name: str | None
+    default_amount_minor: int | None
+    notes: str | None
+    source_type: PayableSourceType
+    recurring_pattern_id: uuid.UUID | None
+    created_at: datetime
+
+
+# ---------------------------------------------------------------------------
+# Payable occurrences
+# ---------------------------------------------------------------------------
+
+
+class GenerateOccurrencesRequest(BaseModel):
+    month: int
+    year: int
+
+
+class OccurrenceUpdate(BaseModel):
+    status: OccurrenceStatus | None = None
+    actual_amount_minor: int | None = None
+    notes: str | None = None
+
+
+class PayableOccurrenceOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    payable_id: uuid.UUID
+    payable_name: str
+    due_date: date
+    expected_amount_minor: int
+    actual_amount_minor: int | None
+    status: OccurrenceStatus
+    notes: str | None
+    created_at: datetime
+
+
+class GenerateOccurrencesResult(BaseModel):
+    created: int
+    skipped: int

@@ -107,6 +107,36 @@ class BudgetPeriodStatus(str, enum.Enum):
     closed = "closed"
 
 
+class RecurringCadence(str, enum.Enum):
+    monthly = "monthly"
+    weekly = "weekly"
+    yearly = "yearly"
+    custom = "custom"
+
+
+class DetectionSource(str, enum.Enum):
+    system = "system"
+    manual = "manual"
+
+
+class RecurringPatternStatus(str, enum.Enum):
+    suggested = "suggested"
+    approved = "approved"
+    ignored = "ignored"
+
+
+class PayableSourceType(str, enum.Enum):
+    manual = "manual"
+    recurring_pattern = "recurring_pattern"
+
+
+class OccurrenceStatus(str, enum.Enum):
+    expected = "expected"
+    pending = "pending"
+    paid = "paid"
+    ignored = "ignored"
+
+
 # ---------------------------------------------------------------------------
 # Instruments
 # ---------------------------------------------------------------------------
@@ -458,6 +488,89 @@ class CategoryBudget(Base):
 
     budget_period: Mapped["BudgetPeriod"] = relationship(back_populates="category_budgets")
     category: Mapped["Category"] = relationship()
+
+
+# ---------------------------------------------------------------------------
+# Payables and Recurring Expenses
+# ---------------------------------------------------------------------------
+
+
+class RecurringPattern(Base):
+    __tablename__ = "recurring_patterns"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    normalized_description: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
+    category_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("categories.id"), nullable=True
+    )
+    expected_amount_minor: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    cadence: Mapped[RecurringCadence] = mapped_column(
+        Enum(RecurringCadence), nullable=False, default=RecurringCadence.monthly
+    )
+    detection_source: Mapped[DetectionSource] = mapped_column(
+        Enum(DetectionSource), nullable=False, default=DetectionSource.system
+    )
+    status: Mapped[RecurringPatternStatus] = mapped_column(
+        Enum(RecurringPatternStatus), nullable=False, default=RecurringPatternStatus.suggested
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+    category: Mapped["Category | None"] = relationship()
+    payables: Mapped[list["Payable"]] = relationship(back_populates="recurring_pattern")
+
+
+class Payable(Base):
+    __tablename__ = "payables"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    category_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("categories.id"), nullable=True
+    )
+    default_amount_minor: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    source_type: Mapped[PayableSourceType] = mapped_column(
+        Enum(PayableSourceType), nullable=False, default=PayableSourceType.manual
+    )
+    recurring_pattern_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("recurring_patterns.id", ondelete="SET NULL"), nullable=True
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+    category: Mapped["Category | None"] = relationship()
+    recurring_pattern: Mapped["RecurringPattern | None"] = relationship(back_populates="payables")
+    occurrences: Mapped[list["PayableOccurrence"]] = relationship(
+        back_populates="payable", cascade="all, delete-orphan"
+    )
+
+
+class PayableOccurrence(Base):
+    __tablename__ = "payable_occurrences"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    payable_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("payables.id", ondelete="CASCADE"), nullable=False
+    )
+    due_date: Mapped[date] = mapped_column(Date, nullable=False)
+    expected_amount_minor: Mapped[int] = mapped_column(BigInteger, nullable=False, default=0)
+    actual_amount_minor: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    status: Mapped[OccurrenceStatus] = mapped_column(
+        Enum(OccurrenceStatus), nullable=False, default=OccurrenceStatus.expected
+    )
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+    payable: Mapped["Payable"] = relationship(back_populates="occurrences")
 
 
 # ---------------------------------------------------------------------------
