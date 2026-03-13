@@ -2,7 +2,7 @@
 from collections import defaultdict
 from datetime import date
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -62,31 +62,51 @@ async def get_portfolio_summary(db: AsyncSession) -> PortfolioSummaryOut:
     )
 
 
-async def upsert_daily_snapshot(db: AsyncSession) -> PortfolioSnapshot:
-    """Create or update today's portfolio snapshot from current positions."""
-    today = date.today()
+async def _positions_as_of(db: AsyncSession, snapshot_date: date) -> list[AssetPosition]:
+    """Return the most recent position for each (account, asset) pair where as_of_date <= snapshot_date."""
+    # Subquery: for each (account, asset) pair, find the latest as_of_date up to snapshot_date
+    subq = (
+        select(
+            AssetPosition.investment_account_id,
+            AssetPosition.asset_id,
+            func.max(AssetPosition.as_of_date).label("max_date"),
+        )
+        .where(AssetPosition.as_of_date <= snapshot_date)
+        .group_by(AssetPosition.investment_account_id, AssetPosition.asset_id)
+        .subquery()
+    )
 
-    # Load all positions with asset + account info
-    result = await db.execute(
-        select(InvestmentAccount).options(
-            selectinload(InvestmentAccount.positions).selectinload(AssetPosition.asset)
+    q = (
+        select(AssetPosition)
+        .options(selectinload(AssetPosition.asset))
+        .join(
+            subq,
+            (AssetPosition.investment_account_id == subq.c.investment_account_id)
+            & (AssetPosition.asset_id == subq.c.asset_id)
+            & (AssetPosition.as_of_date == subq.c.max_date),
         )
     )
-    accounts = result.scalars().all()
+    result = await db.execute(q)
+    return result.scalars().all()
 
-    grand_total = sum(
-        (pos.current_value_minor or 0)
-        for account in accounts
-        for pos in account.positions
-    )
 
-    # Upsert the daily snapshot record
+async def upsert_snapshot_for_date(db: AsyncSession, snapshot_date: date) -> PortfolioSnapshot:
+    """Create or update a snapshot for a specific date.
+
+    Uses the most recent position for each (account, asset) pair with
+    as_of_date <= snapshot_date, so each snapshot reflects the portfolio
+    state known as of that date.
+    """
+    positions = await _positions_as_of(db, snapshot_date)
+    grand_total = sum(pos.current_value_minor or 0 for pos in positions)
+
+    # Upsert snapshot record for this date
     snapshot = await db.scalar(
-        select(PortfolioSnapshot).where(PortfolioSnapshot.snapshot_date == today)
+        select(PortfolioSnapshot).where(PortfolioSnapshot.snapshot_date == snapshot_date)
     )
     if snapshot is None:
         snapshot = PortfolioSnapshot(
-            snapshot_date=today,
+            snapshot_date=snapshot_date,
             total_value_minor=grand_total,
             currency="BRL",
         )
@@ -96,32 +116,36 @@ async def upsert_daily_snapshot(db: AsyncSession) -> PortfolioSnapshot:
         snapshot.total_value_minor = grand_total
         await db.flush()
 
-    # Replace snapshot items for today
+    # Replace snapshot items for this date
     await db.execute(
         delete(PortfolioSnapshotItem).where(PortfolioSnapshotItem.snapshot_id == snapshot.id)
     )
-    for account in accounts:
-        for pos in account.positions:
-            db.add(PortfolioSnapshotItem(
-                snapshot_id=snapshot.id,
-                asset_id=pos.asset_id,
-                investment_account_id=pos.investment_account_id,
-                asset_name=pos.asset.name,
-                asset_symbol=pos.asset.symbol,
-                asset_class=pos.asset.asset_class,
-                quantity=pos.quantity,
-                current_value_minor=pos.current_value_minor or 0,
-            ))
+    for pos in positions:
+        db.add(PortfolioSnapshotItem(
+            snapshot_id=snapshot.id,
+            asset_id=pos.asset_id,
+            investment_account_id=pos.investment_account_id,
+            asset_name=pos.asset.name,
+            asset_symbol=pos.asset.symbol,
+            asset_class=pos.asset.asset_class,
+            quantity=pos.quantity,
+            current_value_minor=pos.current_value_minor or 0,
+        ))
 
     await db.commit()
 
-    # Eagerly reload snapshot with items so callers can access .items synchronously
+    # Eagerly reload so callers can access .items without lazy loading
     result_snap = await db.execute(
         select(PortfolioSnapshot)
         .options(selectinload(PortfolioSnapshot.items))
         .where(PortfolioSnapshot.id == snapshot.id)
     )
     return result_snap.scalar_one()
+
+
+# Keep old name as alias for the manual "record today" endpoint
+async def upsert_daily_snapshot(db: AsyncSession) -> PortfolioSnapshot:
+    return await upsert_snapshot_for_date(db, date.today())
 
 
 async def get_portfolio_history(

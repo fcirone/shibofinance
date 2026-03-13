@@ -27,6 +27,7 @@ from app.services.portfolio_service import (
     get_portfolio_history,
     get_portfolio_summary,
     upsert_daily_snapshot,
+    upsert_snapshot_for_date,
 )
 
 router = APIRouter(tags=["investments"])
@@ -156,8 +157,8 @@ async def create_asset_position(
     )
     pos = result.scalar_one()
 
-    # Auto-snapshot today's portfolio state
-    await upsert_daily_snapshot(db)
+    # Auto-snapshot using the position's own as_of_date
+    await upsert_snapshot_for_date(db, body.as_of_date)
 
     return _position_out(pos)
 
@@ -191,8 +192,8 @@ async def update_asset_position(
     )
     pos = result.scalar_one()
 
-    # Auto-snapshot today's portfolio state
-    await upsert_daily_snapshot(db)
+    # Auto-snapshot using the position's own as_of_date
+    await upsert_snapshot_for_date(db, pos.as_of_date)
 
     return _position_out(pos)
 
