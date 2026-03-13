@@ -11,10 +11,20 @@ import {
   Pencil,
   Building2,
   BarChart3,
+  History,
+  Camera,
 } from "lucide-react"
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts"
 
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   Dialog,
@@ -35,6 +45,7 @@ import { Label } from "@/components/ui/label"
 import { formatAmount } from "@/lib/utils"
 import type {
   AssetClass,
+  AssetOut,
   AssetPositionOut,
   InvestmentAccountOut,
 } from "@/lib/api"
@@ -47,6 +58,9 @@ import {
   useCreateAssetPosition,
   useUpdateAssetPosition,
   usePortfolioSummary,
+  usePortfolioHistory,
+  useAssetHistory,
+  useRecordSnapshot,
 } from "@/hooks/useInvestments"
 
 // ---------------------------------------------------------------------------
@@ -587,12 +601,223 @@ function AllocationBar({ allocation }: { allocation: { asset_class: AssetClass; 
 }
 
 // ---------------------------------------------------------------------------
+// Portfolio history chart
+// ---------------------------------------------------------------------------
+
+function PortfolioHistoryChart() {
+  const { data: history, isLoading } = usePortfolioHistory()
+  const recordSnapshot = useRecordSnapshot()
+
+  async function handleSnapshot() {
+    try {
+      const snap = await recordSnapshot.mutateAsync()
+      toast.success(`Snapshot recorded: ${formatAmount(snap.total_value_minor, snap.currency)}`)
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Failed to record snapshot")
+    }
+  }
+
+  const chartData = (history ?? []).map((pt) => ({
+    date: pt.snapshot_date,
+    value: pt.total_value_minor / 100,
+    label: formatAmount(pt.total_value_minor, pt.currency),
+  }))
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-[14px] font-semibold">Portfolio Evolution</h2>
+          <p className="text-[12px] text-muted-foreground mt-0.5">
+            Total portfolio value over time. Record a snapshot to add today&apos;s data point.
+          </p>
+        </div>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={handleSnapshot}
+          disabled={recordSnapshot.isPending}
+        >
+          <Camera className="h-4 w-4 mr-1.5" />
+          Record Snapshot
+        </Button>
+      </div>
+
+      {isLoading ? (
+        <Skeleton className="h-64 rounded-lg" />
+      ) : chartData.length === 0 ? (
+        <div className="flex flex-col items-center justify-center h-64 rounded-lg border border-dashed border-border gap-3 text-center">
+          <History className="h-8 w-8 text-muted-foreground/40" />
+          <p className="text-sm text-muted-foreground">No history yet</p>
+          <p className="text-xs text-muted-foreground/70 max-w-xs">
+            Snapshots are recorded automatically when you add or update positions.
+            Click <strong>Record Snapshot</strong> to capture today&apos;s state manually.
+          </p>
+        </div>
+      ) : (
+        <div className="rounded-lg border border-border bg-card p-4">
+          <ResponsiveContainer width="100%" height={260}>
+            <LineChart data={chartData} margin={{ top: 8, right: 16, bottom: 0, left: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+              <XAxis
+                dataKey="date"
+                tick={{ fontSize: 11 }}
+                className="fill-muted-foreground"
+                tickLine={false}
+                axisLine={false}
+              />
+              <YAxis
+                tick={{ fontSize: 11 }}
+                className="fill-muted-foreground"
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={(v: number) => `R$${(v / 1000).toFixed(0)}k`}
+                width={60}
+              />
+              <Tooltip
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                formatter={(value: any) => [
+                  typeof value === "number"
+                    ? `R$ ${(value as number).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
+                    : String(value ?? ""),
+                  "Portfolio Value",
+                ]}
+                labelFormatter={(label) => `Date: ${label}`}
+                contentStyle={{
+                  fontSize: 12,
+                  borderRadius: 8,
+                  border: "1px solid hsl(var(--border))",
+                  background: "hsl(var(--card))",
+                  color: "hsl(var(--card-foreground))",
+                }}
+              />
+              <Line
+                type="monotone"
+                dataKey="value"
+                stroke="hsl(var(--primary))"
+                strokeWidth={2}
+                dot={{ r: 3, fill: "hsl(var(--primary))" }}
+                activeDot={{ r: 5 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Per-asset history chart
+// ---------------------------------------------------------------------------
+
+function AssetHistoryChart({ assets }: { assets: AssetOut[] }) {
+  const [selectedAssetId, setSelectedAssetId] = useState<string>(assets[0]?.id ?? "")
+  const { data: history, isLoading } = useAssetHistory(selectedAssetId)
+
+  const chartData = (history ?? []).map((pt) => ({
+    date: pt.snapshot_date,
+    value: pt.current_value_minor / 100,
+    quantity: pt.quantity,
+  }))
+
+  const selectedAsset = assets.find(a => a.id === selectedAssetId)
+  const assetLabel = selectedAsset?.name ?? "Value"
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h2 className="text-[14px] font-semibold">Asset Evolution</h2>
+          <p className="text-[12px] text-muted-foreground mt-0.5">
+            Value of a specific asset over time.
+          </p>
+        </div>
+        <Select value={selectedAssetId} onValueChange={setSelectedAssetId}>
+          <SelectTrigger className="h-8 w-56 text-[12px]">
+            <SelectValue placeholder="Select asset" />
+          </SelectTrigger>
+          <SelectContent>
+            {assets.map((a) => (
+              <SelectItem key={a.id} value={a.id} className="text-[12px]">
+                {a.symbol ? `${a.symbol} — ` : ""}{a.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {isLoading ? (
+        <Skeleton className="h-64 rounded-lg" />
+      ) : chartData.length === 0 ? (
+        <div className="flex flex-col items-center justify-center h-64 rounded-lg border border-dashed border-border gap-2 text-center">
+          <p className="text-sm text-muted-foreground">No history for {selectedAsset?.name ?? "this asset"}</p>
+          <p className="text-xs text-muted-foreground/70">Update the position to generate a snapshot.</p>
+        </div>
+      ) : (
+        <div className="rounded-lg border border-border bg-card p-4">
+          <ResponsiveContainer width="100%" height={260}>
+            <LineChart data={chartData} margin={{ top: 8, right: 16, bottom: 0, left: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+              <XAxis
+                dataKey="date"
+                tick={{ fontSize: 11 }}
+                className="fill-muted-foreground"
+                tickLine={false}
+                axisLine={false}
+              />
+              <YAxis
+                tick={{ fontSize: 11 }}
+                className="fill-muted-foreground"
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={(v: number) => `R$${(v / 1000).toFixed(0)}k`}
+                width={60}
+              />
+              <Tooltip
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                formatter={(value: any) => [
+                  typeof value === "number"
+                    ? `R$ ${(value as number).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
+                    : String(value ?? ""),
+                  assetLabel,
+                ]}
+                labelFormatter={(label) => `Date: ${label}`}
+                contentStyle={{
+                  fontSize: 12,
+                  borderRadius: 8,
+                  border: "1px solid hsl(var(--border))",
+                  background: "hsl(var(--card))",
+                  color: "hsl(var(--card-foreground))",
+                }}
+              />
+              <Line
+                type="monotone"
+                dataKey="value"
+                stroke="hsl(var(--primary))"
+                strokeWidth={2}
+                dot={{ r: 3, fill: "hsl(var(--primary))" }}
+                activeDot={{ r: 5 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
 
+type Tab = "portfolio" | "history"
+
 export default function InvestmentsPage() {
+  const [tab, setTab] = useState<Tab>("portfolio")
   const { data: accounts, isLoading: accountsLoading } = useInvestmentAccounts()
   const { data: positions, isLoading: positionsLoading } = useAssetPositions()
+  const { data: assets } = useAssets()
   const { data: summary, isLoading: summaryLoading } = usePortfolioSummary()
 
   const isLoading = accountsLoading || positionsLoading || summaryLoading
@@ -667,24 +892,56 @@ export default function InvestmentsPage() {
         </div>
       )}
 
-      {/* Positions by account */}
+      {/* Tab nav */}
       {!isLoading && accounts && accounts.length > 0 && (
-        <div className="flex flex-col gap-4">
-          <h2 className="text-[14px] font-semibold">Positions by Account</h2>
-          {isLoading ? (
-            <div className="space-y-4">
-              {[...Array(2)].map((_, i) => <Skeleton key={i} className="h-32 rounded-lg" />)}
+        <>
+          <div className="flex gap-1 border-b border-border">
+            <button
+              onClick={() => setTab("portfolio")}
+              className={`px-4 py-2 text-[13px] font-medium border-b-2 transition-colors ${
+                tab === "portfolio"
+                  ? "border-primary text-foreground"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Positions
+            </button>
+            <button
+              onClick={() => setTab("history")}
+              className={`flex items-center gap-1.5 px-4 py-2 text-[13px] font-medium border-b-2 transition-colors ${
+                tab === "history"
+                  ? "border-primary text-foreground"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <History className="h-3.5 w-3.5" />
+              Evolution
+            </button>
+          </div>
+
+          {/* Positions tab */}
+          {tab === "portfolio" && (
+            <div className="flex flex-col gap-4">
+              {accounts.map((account) => (
+                <AccountPositionsTable
+                  key={account.id}
+                  account={account}
+                  positions={positions ?? []}
+                />
+              ))}
             </div>
-          ) : (
-            accounts.map((account) => (
-              <AccountPositionsTable
-                key={account.id}
-                account={account}
-                positions={positions ?? []}
-              />
-            ))
           )}
-        </div>
+
+          {/* History tab */}
+          {tab === "history" && (
+            <div className="flex flex-col gap-8">
+              <PortfolioHistoryChart />
+              {assets && assets.length > 0 && (
+                <AssetHistoryChart assets={assets} />
+              )}
+            </div>
+          )}
+        </>
       )}
     </div>
   )

@@ -515,3 +515,26 @@ class PortfolioSummaryOut(BaseModel):
     total_value_minor: int
     accounts: list[AccountSummaryItem]
     allocation: list[AllocationItem]
+
+
+class PortfolioHistoryPoint(BaseModel):
+    snapshot_date: date
+    total_value_minor: int
+    currency: str
+
+
+class AssetHistoryPoint(BaseModel):
+    snapshot_date: date
+    asset_id: str
+    asset_name: str
+    asset_symbol: str | None
+    asset_class: AssetClass
+    quantity: float
+    current_value_minor: int
+
+
+class SnapshotOut(BaseModel):
+    snapshot_date: date
+    total_value_minor: int
+    currency: str
+    item_count: int

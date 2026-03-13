@@ -1,4 +1,4 @@
-"""Investment accounts, assets, and positions endpoints."""
+"""Investment accounts, assets, positions, and portfolio history endpoints."""
 import uuid
 from datetime import date
 
@@ -10,18 +10,24 @@ from sqlalchemy.orm import selectinload
 from app.db import get_db
 from app.models import Asset, AssetPosition, InvestmentAccount
 from app.schemas import (
-    AccountSummaryItem,
-    AllocationItem,
     AssetCreate,
+    AssetHistoryPoint,
     AssetOut,
     AssetPositionCreate,
     AssetPositionOut,
     AssetPositionUpdate,
     InvestmentAccountCreate,
     InvestmentAccountOut,
+    PortfolioHistoryPoint,
     PortfolioSummaryOut,
+    SnapshotOut,
 )
-from app.services.portfolio_service import get_portfolio_summary
+from app.services.portfolio_service import (
+    get_asset_history,
+    get_portfolio_history,
+    get_portfolio_summary,
+    upsert_daily_snapshot,
+)
 
 router = APIRouter(tags=["investments"])
 
@@ -127,7 +133,6 @@ async def create_asset_position(
     body: AssetPositionCreate,
     db: AsyncSession = Depends(get_db),
 ):
-    # Verify account and asset exist
     account = await db.get(InvestmentAccount, body.investment_account_id)
     if not account:
         raise HTTPException(status_code=404, detail="Investment account not found")
@@ -145,12 +150,15 @@ async def create_asset_position(
     )
     db.add(pos)
     await db.commit()
-    await db.refresh(pos)
-    # reload with asset relationship
+
     result = await db.execute(
         select(AssetPosition).options(selectinload(AssetPosition.asset)).where(AssetPosition.id == pos.id)
     )
     pos = result.scalar_one()
+
+    # Auto-snapshot today's portfolio state
+    await upsert_daily_snapshot(db)
+
     return _position_out(pos)
 
 
@@ -177,19 +185,57 @@ async def update_asset_position(
         pos.as_of_date = body.as_of_date
 
     await db.commit()
-    await db.refresh(pos)
+
     result = await db.execute(
         select(AssetPosition).options(selectinload(AssetPosition.asset)).where(AssetPosition.id == pos.id)
     )
     pos = result.scalar_one()
+
+    # Auto-snapshot today's portfolio state
+    await upsert_daily_snapshot(db)
+
     return _position_out(pos)
 
 
 # ---------------------------------------------------------------------------
-# Portfolio Summary
+# Portfolio Summary & History
 # ---------------------------------------------------------------------------
 
 
 @router.get("/portfolio/summary", response_model=PortfolioSummaryOut)
 async def portfolio_summary(db: AsyncSession = Depends(get_db)):
     return await get_portfolio_summary(db)
+
+
+@router.post("/portfolio/snapshot", response_model=SnapshotOut, status_code=status.HTTP_201_CREATED)
+async def record_portfolio_snapshot(db: AsyncSession = Depends(get_db)):
+    """Manually record a snapshot of the current portfolio state."""
+    snapshot = await upsert_daily_snapshot(db)
+    item_count = len(snapshot.items) if snapshot.items else 0
+    return SnapshotOut(
+        snapshot_date=snapshot.snapshot_date,
+        total_value_minor=snapshot.total_value_minor,
+        currency=snapshot.currency,
+        item_count=item_count,
+    )
+
+
+@router.get("/portfolio/history", response_model=list[PortfolioHistoryPoint])
+async def portfolio_history(
+    date_from: date | None = None,
+    date_to: date | None = None,
+    db: AsyncSession = Depends(get_db),
+):
+    """Total portfolio value over time."""
+    return await get_portfolio_history(db, date_from=date_from, date_to=date_to)
+
+
+@router.get("/portfolio/history/assets", response_model=list[AssetHistoryPoint])
+async def asset_history(
+    asset_id: uuid.UUID,
+    date_from: date | None = None,
+    date_to: date | None = None,
+    db: AsyncSession = Depends(get_db),
+):
+    """Value of a specific asset over time."""
+    return await get_asset_history(db, str(asset_id), date_from=date_from, date_to=date_to)

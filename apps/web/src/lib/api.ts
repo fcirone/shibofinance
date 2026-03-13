@@ -716,3 +716,54 @@ export async function getPortfolioSummary(): Promise<PortfolioSummaryOut> {
   const res = await apiFetch("/portfolio/summary")
   return res.json()
 }
+
+export interface PortfolioHistoryPoint {
+  snapshot_date: string
+  total_value_minor: number
+  currency: string
+}
+
+export interface AssetHistoryPoint {
+  snapshot_date: string
+  asset_id: string
+  asset_name: string
+  asset_symbol: string | null
+  asset_class: AssetClass
+  quantity: number
+  current_value_minor: number
+}
+
+export interface SnapshotOut {
+  snapshot_date: string
+  total_value_minor: number
+  currency: string
+  item_count: number
+}
+
+export async function getPortfolioHistory(params?: {
+  date_from?: string
+  date_to?: string
+}): Promise<PortfolioHistoryPoint[]> {
+  const qs = new URLSearchParams()
+  if (params?.date_from) qs.set("date_from", params.date_from)
+  if (params?.date_to) qs.set("date_to", params.date_to)
+  const q = qs.toString()
+  const res = await apiFetch(`/portfolio/history${q ? `?${q}` : ""}`)
+  return res.json()
+}
+
+export async function getAssetHistory(
+  asset_id: string,
+  params?: { date_from?: string; date_to?: string },
+): Promise<AssetHistoryPoint[]> {
+  const qs = new URLSearchParams({ asset_id })
+  if (params?.date_from) qs.set("date_from", params.date_from)
+  if (params?.date_to) qs.set("date_to", params.date_to)
+  const res = await apiFetch(`/portfolio/history/assets?${qs}`)
+  return res.json()
+}
+
+export async function recordSnapshot(): Promise<SnapshotOut> {
+  const res = await apiFetch("/portfolio/snapshot", { method: "POST" })
+  return res.json()
+}

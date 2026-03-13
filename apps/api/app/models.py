@@ -647,6 +647,7 @@ class AssetPosition(Base):
 
 class PortfolioSnapshot(Base):
     __tablename__ = "portfolio_snapshots"
+    __table_args__ = (UniqueConstraint("snapshot_date"),)
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     snapshot_date: Mapped[date] = mapped_column(Date, nullable=False)
@@ -654,6 +655,33 @@ class PortfolioSnapshot(Base):
     currency: Mapped[str] = mapped_column(String(3), nullable=False, default="BRL")
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    items: Mapped[list["PortfolioSnapshotItem"]] = relationship(
+        back_populates="snapshot", cascade="all, delete-orphan"
+    )
+
+
+class PortfolioSnapshotItem(Base):
+    __tablename__ = "portfolio_snapshot_items"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    snapshot_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("portfolio_snapshots.id", ondelete="CASCADE"), nullable=False
+    )
+    asset_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("assets.id"), nullable=False
+    )
+    investment_account_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("investment_accounts.id"), nullable=False
+    )
+    asset_name: Mapped[str] = mapped_column(Text, nullable=False)
+    asset_symbol: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    asset_class: Mapped[AssetClass] = mapped_column(Enum(AssetClass), nullable=False)
+    quantity: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    current_value_minor: Mapped[int] = mapped_column(BigInteger, nullable=False, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    snapshot: Mapped["PortfolioSnapshot"] = relationship(back_populates="items")
 
 
 # ---------------------------------------------------------------------------

@@ -9,10 +9,13 @@ import {
   createAsset,
   createAssetPosition,
   createInvestmentAccount,
+  getAssetHistory,
   getAssetPositions,
   getAssets,
   getInvestmentAccounts,
+  getPortfolioHistory,
   getPortfolioSummary,
+  recordSnapshot,
   updateAssetPosition,
 } from "@/lib/api"
 
@@ -88,5 +91,34 @@ export function usePortfolioSummary() {
     queryKey: ["portfolio-summary"],
     queryFn: getPortfolioSummary,
     staleTime: 0,
+  })
+}
+
+export function usePortfolioHistory(params?: { date_from?: string; date_to?: string }) {
+  return useQuery({
+    queryKey: ["portfolio-history", params],
+    queryFn: () => getPortfolioHistory(params),
+    staleTime: 0,
+  })
+}
+
+export function useAssetHistory(asset_id: string, params?: { date_from?: string; date_to?: string }) {
+  return useQuery({
+    queryKey: ["asset-history", asset_id, params],
+    queryFn: () => getAssetHistory(asset_id, params),
+    staleTime: 0,
+    enabled: !!asset_id,
+  })
+}
+
+export function useRecordSnapshot() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: recordSnapshot,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["portfolio-history"] })
+      qc.invalidateQueries({ queryKey: ["asset-history"] })
+      qc.invalidateQueries({ queryKey: ["portfolio-summary"] })
+    },
   })
 }
