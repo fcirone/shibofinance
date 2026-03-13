@@ -9,6 +9,7 @@ import {
   createAsset,
   createAssetPosition,
   createInvestmentAccount,
+  deleteAssetPosition,
   getAssetHistory,
   getAssetPositions,
   getAssets,
@@ -82,6 +83,21 @@ export function useUpdateAssetPosition() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["asset-positions"] })
       qc.invalidateQueries({ queryKey: ["portfolio-summary"] })
+      qc.invalidateQueries({ queryKey: ["portfolio-history"] })
+      qc.invalidateQueries({ queryKey: ["asset-history"] })
+    },
+  })
+}
+
+export function useDeleteAssetPosition() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => deleteAssetPosition(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["asset-positions"] })
+      qc.invalidateQueries({ queryKey: ["portfolio-summary"] })
+      qc.invalidateQueries({ queryKey: ["portfolio-history"] })
+      qc.invalidateQueries({ queryKey: ["asset-history"] })
     },
   })
 }

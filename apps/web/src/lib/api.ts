@@ -712,6 +712,10 @@ export async function updateAssetPosition(id: string, data: AssetPositionUpdate)
   return res.json()
 }
 
+export async function deleteAssetPosition(id: string): Promise<void> {
+  await apiFetch(`/asset-positions/${id}`, { method: "DELETE" })
+}
+
 export async function getPortfolioSummary(): Promise<PortfolioSummaryOut> {
   const res = await apiFetch("/portfolio/summary")
   return res.json()

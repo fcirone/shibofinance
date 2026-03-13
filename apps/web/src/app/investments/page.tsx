@@ -13,6 +13,7 @@ import {
   BarChart3,
   History,
   Camera,
+  Trash2,
 } from "lucide-react"
 import {
   LineChart,
@@ -57,6 +58,7 @@ import {
   useAssetPositions,
   useCreateAssetPosition,
   useUpdateAssetPosition,
+  useDeleteAssetPosition,
   usePortfolioSummary,
   usePortfolioHistory,
   useAssetHistory,
@@ -382,6 +384,38 @@ function AddPositionDialog({
 // Update Position Dialog
 // ---------------------------------------------------------------------------
 
+function DeletePositionButton({ position }: { position: AssetPositionOut }) {
+  const [confirm, setConfirm] = useState(false)
+  const del = useDeleteAssetPosition()
+
+  async function handleDelete() {
+    if (!confirm) {
+      setConfirm(true)
+      return
+    }
+    try {
+      await del.mutateAsync(position.id)
+      toast.success("Position deleted")
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Failed to delete position")
+    }
+  }
+
+  return (
+    <Button
+      size="icon"
+      variant={confirm ? "destructive" : "ghost"}
+      className="h-7 w-7"
+      title={confirm ? "Click again to confirm" : "Delete position"}
+      onClick={handleDelete}
+      disabled={del.isPending}
+      onBlur={() => setConfirm(false)}
+    >
+      <Trash2 className="h-3.5 w-3.5" />
+    </Button>
+  )
+}
+
 function UpdatePositionDialog({ position }: { position: AssetPositionOut }) {
   const [open, setOpen] = useState(false)
   const update = useUpdateAssetPosition()
@@ -549,7 +583,10 @@ function AccountPositionsTable({
                   {pos.as_of_date}
                 </td>
                 <td className="py-2.5 px-4">
-                  <UpdatePositionDialog position={pos} />
+                  <div className="flex items-center gap-1">
+                    <UpdatePositionDialog position={pos} />
+                    <DeletePositionButton position={pos} />
+                  </div>
                 </td>
               </tr>
             ))}

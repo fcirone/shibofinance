@@ -198,6 +198,23 @@ async def update_asset_position(
     return _position_out(pos)
 
 
+@router.delete("/asset-positions/{position_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_asset_position(
+    position_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+):
+    pos = await db.get(AssetPosition, position_id)
+    if not pos:
+        raise HTTPException(status_code=404, detail="Position not found")
+
+    snapshot_date = pos.as_of_date
+    await db.delete(pos)
+    await db.commit()
+
+    # Rebuild snapshot for the affected date
+    await upsert_snapshot_for_date(db, snapshot_date)
+
+
 # ---------------------------------------------------------------------------
 # Portfolio Summary & History
 # ---------------------------------------------------------------------------
