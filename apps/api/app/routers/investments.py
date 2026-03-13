@@ -26,6 +26,7 @@ from app.services.portfolio_service import (
     get_asset_history,
     get_portfolio_history,
     get_portfolio_summary,
+    rebuild_snapshot_history,
     upsert_daily_snapshot,
     upsert_snapshot_for_date,
 )
@@ -223,6 +224,13 @@ async def delete_asset_position(
 @router.get("/portfolio/summary", response_model=PortfolioSummaryOut)
 async def portfolio_summary(db: AsyncSession = Depends(get_db)):
     return await get_portfolio_summary(db)
+
+
+@router.post("/portfolio/rebuild-snapshots")
+async def rebuild_snapshots(db: AsyncSession = Depends(get_db)):
+    """Delete all snapshots and rebuild one per distinct position as_of_date."""
+    count = await rebuild_snapshot_history(db)
+    return {"rebuilt": count}
 
 
 @router.post("/portfolio/snapshot", response_model=SnapshotOut, status_code=status.HTTP_201_CREATED)

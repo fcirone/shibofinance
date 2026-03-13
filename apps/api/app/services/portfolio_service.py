@@ -148,6 +148,28 @@ async def upsert_daily_snapshot(db: AsyncSession) -> PortfolioSnapshot:
     return await upsert_snapshot_for_date(db, date.today())
 
 
+async def rebuild_snapshot_history(db: AsyncSession) -> int:
+    """Delete all snapshots and rebuild one per distinct position as_of_date.
+
+    Returns the number of snapshots created.
+    """
+    # Get all distinct as_of_dates that have at least one position
+    result = await db.execute(
+        select(AssetPosition.as_of_date).distinct().order_by(AssetPosition.as_of_date)
+    )
+    dates = result.scalars().all()
+
+    # Wipe all existing snapshots (cascade deletes items via FK)
+    await db.execute(delete(PortfolioSnapshot))
+    await db.flush()
+
+    # Rebuild one snapshot per date
+    for d in dates:
+        await upsert_snapshot_for_date(db, d)
+
+    return len(dates)
+
+
 async def get_portfolio_history(
     db: AsyncSession,
     date_from: date | None = None,

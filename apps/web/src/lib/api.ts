@@ -771,3 +771,8 @@ export async function recordSnapshot(): Promise<SnapshotOut> {
   const res = await apiFetch("/portfolio/snapshot", { method: "POST" })
   return res.json()
 }
+
+export async function rebuildSnapshots(): Promise<{ rebuilt: number }> {
+  const res = await apiFetch("/portfolio/rebuild-snapshots", { method: "POST" })
+  return res.json()
+}

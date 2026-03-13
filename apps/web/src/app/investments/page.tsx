@@ -14,6 +14,7 @@ import {
   History,
   Camera,
   Trash2,
+  RefreshCw,
 } from "lucide-react"
 import {
   LineChart,
@@ -63,6 +64,7 @@ import {
   usePortfolioHistory,
   useAssetHistory,
   useRecordSnapshot,
+  useRebuildSnapshots,
 } from "@/hooks/useInvestments"
 
 // ---------------------------------------------------------------------------
@@ -644,6 +646,7 @@ function AllocationBar({ allocation }: { allocation: { asset_class: AssetClass; 
 function PortfolioHistoryChart() {
   const { data: history, isLoading } = usePortfolioHistory()
   const recordSnapshot = useRecordSnapshot()
+  const rebuild = useRebuildSnapshots()
 
   async function handleSnapshot() {
     try {
@@ -654,10 +657,18 @@ function PortfolioHistoryChart() {
     }
   }
 
+  async function handleRebuild() {
+    try {
+      const result = await rebuild.mutateAsync()
+      toast.success(`History rebuilt — ${result.rebuilt} snapshot${result.rebuilt !== 1 ? "s" : ""}`)
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Failed to rebuild history")
+    }
+  }
+
   const chartData = (history ?? []).map((pt) => ({
     date: pt.snapshot_date,
     value: pt.total_value_minor / 100,
-    label: formatAmount(pt.total_value_minor, pt.currency),
   }))
 
   return (
@@ -666,18 +677,30 @@ function PortfolioHistoryChart() {
         <div>
           <h2 className="text-[14px] font-semibold">Portfolio Evolution</h2>
           <p className="text-[12px] text-muted-foreground mt-0.5">
-            Total portfolio value over time. Record a snapshot to add today&apos;s data point.
+            Total portfolio value over time, one point per position date.
           </p>
         </div>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={handleSnapshot}
-          disabled={recordSnapshot.isPending}
-        >
-          <Camera className="h-4 w-4 mr-1.5" />
-          Record Snapshot
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={handleRebuild}
+            disabled={rebuild.isPending}
+            title="Recalculate all snapshots from current positions"
+          >
+            <RefreshCw className="h-4 w-4 mr-1.5" />
+            Rebuild History
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleSnapshot}
+            disabled={recordSnapshot.isPending}
+          >
+            <Camera className="h-4 w-4 mr-1.5" />
+            Record Today
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (
@@ -733,8 +756,8 @@ function PortfolioHistoryChart() {
                 dataKey="value"
                 stroke="hsl(var(--primary))"
                 strokeWidth={2}
-                dot={{ r: 3, fill: "hsl(var(--primary))" }}
-                activeDot={{ r: 5 }}
+                dot={false}
+                activeDot={{ r: 4 }}
               />
             </LineChart>
           </ResponsiveContainer>
@@ -833,8 +856,8 @@ function AssetHistoryChart({ assets }: { assets: AssetOut[] }) {
                 dataKey="value"
                 stroke="hsl(var(--primary))"
                 strokeWidth={2}
-                dot={{ r: 3, fill: "hsl(var(--primary))" }}
-                activeDot={{ r: 5 }}
+                dot={false}
+                activeDot={{ r: 4 }}
               />
             </LineChart>
           </ResponsiveContainer>

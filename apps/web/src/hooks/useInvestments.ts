@@ -16,6 +16,7 @@ import {
   getInvestmentAccounts,
   getPortfolioHistory,
   getPortfolioSummary,
+  rebuildSnapshots,
   recordSnapshot,
   updateAssetPosition,
 } from "@/lib/api"
@@ -135,6 +136,17 @@ export function useRecordSnapshot() {
       qc.invalidateQueries({ queryKey: ["portfolio-history"] })
       qc.invalidateQueries({ queryKey: ["asset-history"] })
       qc.invalidateQueries({ queryKey: ["portfolio-summary"] })
+    },
+  })
+}
+
+export function useRebuildSnapshots() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: rebuildSnapshots,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["portfolio-history"] })
+      qc.invalidateQueries({ queryKey: ["asset-history"] })
     },
   })
 }
