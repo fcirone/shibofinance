@@ -6,7 +6,9 @@ Progress legend: `[ ]` pending · `[x]` done
 - Execute ONLY the next unchecked task.
 - Do not change completed code unless required to complete the current task.
 - If a spec mismatch is found, propose a minimal patch and stop.
-- Always add/adjust tests for the current task.
+- Always add or update tests for the current task.
+- Do not start a new phase before the current phase is complete.
+- Update documentation before coding when a new major phase starts.
 
 ---
 
@@ -350,6 +352,348 @@ Progress legend: `[ ]` pending · `[x]` done
 - [x] 24.12 Frontend: "Apply to similar" button on categorized transaction — pre-fills a rule with the transaction's description
 - [x] 24.13 Frontend: dry-run preview before applying rules
 - [x] 24.14 Frontend: show rule name in category badge tooltip when `source = 'rule'`
+
+## Phase 25 — Planning and Control
+
+### 25.1 Documentation
+- [x] Update CLAUDE.md with a new "Planning and Control" section
+- [x] Update ROADMAP.md if needed
+- [x] Confirm scope for this phase is monthly category budgeting only
+
+**Acceptance criteria**
+- Product documentation reflects the new Planning and Control module
+- Scope is clearly limited to monthly category-based budgeting
+
+---
+
+### 25.2 Backend Data Model
+- [x] Create `budget_periods` table
+- [x] Create `category_budgets` table
+- [x] Add migrations
+- [x] Define constraints to avoid duplicate category budgets for the same period
+
+Suggested model:
+
+`budget_periods`
+- id
+- month
+- year
+- status (open | closed)
+- created_at
+- updated_at
+
+`category_budgets`
+- id
+- budget_period_id
+- category_id
+- planned_amount_minor
+- created_at
+- updated_at
+
+**Acceptance criteria**
+- Database supports monthly planning by category
+- No duplicate budget records for the same category and period
+
+---
+
+### 25.3 Backend Services
+- [x] Implement service to calculate actual spending by category for a given budget period
+- [x] Exclude transfer categories from expense budget calculations
+- [x] Return planned, actual, remaining and percentage consumed
+
+**Acceptance criteria**
+- Service returns correct values using categorized transactions
+
+---
+
+### 25.4 Backend API
+- [x] GET `/budgets/periods`
+- [x] POST `/budgets/periods`
+- [x] GET `/budgets/{period_id}`
+- [x] POST `/budgets/{period_id}/categories`
+- [x] PATCH `/budgets/category-items/{id}`
+- [x] POST `/budgets/{period_id}/copy-from/{source_period_id}`
+
+**Acceptance criteria**
+- API allows creating, editing and copying monthly budgets
+
+---
+
+### 25.5 Frontend Pages
+- [x] Create `/planning` page
+- [x] Add month selector
+- [x] Show budget summary cards:
+  - planned total
+  - actual total
+  - remaining total
+  - percentage consumed
+- [x] Show category budget table
+- [x] Allow inline planned amount editing
+- [x] Add visual status for:
+  - within budget
+  - near limit
+  - over budget
+
+**Acceptance criteria**
+- User can create and manage a monthly budget from the UI
+
+---
+
+### 25.6 Frontend UX
+- [x] Add empty state for month with no budget
+- [x] Add create-first-budget CTA
+- [x] Add copy-from-previous-month flow
+- [x] Add loading and error states
+
+**Acceptance criteria**
+- Planning UX is usable and understandable without documentation
+
+---
+
+### 25.7 Tests
+- [x] Add backend tests for budget calculations
+- [x] Add backend tests for copy-from-period
+
+**Acceptance criteria**
+- Budget module is tested and stable
+
+---
+
+## Phase 26 — Payables and Recurring Expenses
+
+### 26.1 Documentation
+- [ ] Update CLAUDE.md with a new "Payables and Recurring Expenses" section
+- [ ] Document that first cycle includes manual payables + recurring detection suggestions
+- [ ] Keep automatic reconciliation out of scope for this phase
+
+**Acceptance criteria**
+- Documentation clearly defines the module scope
+
+---
+
+### 26.2 Backend Data Model
+- [ ] Create `recurring_patterns` table
+- [ ] Create `payables` table
+- [ ] Create `payable_occurrences` table
+- [ ] Add migrations
+
+Suggested model:
+
+`recurring_patterns`
+- id
+- name
+- normalized_description
+- category_id nullable
+- expected_amount_minor nullable
+- cadence (monthly | weekly | yearly | custom)
+- detection_source (system | manual)
+- status (suggested | approved | ignored)
+- created_at
+- updated_at
+
+`payables`
+- id
+- name
+- category_id nullable
+- default_amount_minor nullable
+- notes nullable
+- source_type (manual | recurring_pattern)
+- recurring_pattern_id nullable
+- created_at
+- updated_at
+
+`payable_occurrences`
+- id
+- payable_id
+- due_date
+- expected_amount_minor
+- actual_amount_minor nullable
+- status (expected | pending | paid | ignored)
+- notes nullable
+- created_at
+- updated_at
+
+**Acceptance criteria**
+- Database supports recurring patterns and monthly payable items
+
+---
+
+### 26.3 Backend Detection Logic
+- [ ] Implement recurring transaction detection heuristics
+- [ ] Detect likely recurring expenses from transaction history
+- [ ] Generate suggested recurring patterns
+- [ ] Avoid auto-approving system-detected patterns
+
+**Acceptance criteria**
+- System can produce recurring suggestions from existing data
+
+---
+
+### 26.4 Backend API
+- [ ] GET `/recurring-patterns`
+- [ ] POST `/recurring-patterns/{id}/approve`
+- [ ] POST `/recurring-patterns/{id}/ignore`
+- [ ] GET `/payables`
+- [ ] POST `/payables`
+- [ ] GET `/payable-occurrences`
+- [ ] POST `/payable-occurrences/generate`
+- [ ] PATCH `/payable-occurrences/{id}`
+
+**Acceptance criteria**
+- API supports recurring review and payables management
+
+---
+
+### 26.5 Frontend Pages
+- [ ] Create `/payables` page
+- [ ] Show current month payable occurrences
+- [ ] Allow filtering by status
+- [ ] Allow marking payable occurrence as paid or ignored
+- [ ] Allow manual payable creation
+
+**Acceptance criteria**
+- User can manage monthly payables in UI
+
+---
+
+### 26.6 Frontend Recurring Suggestions
+- [ ] Create `/recurring` page or section
+- [ ] Show suggested recurring patterns
+- [ ] Allow approve / ignore
+- [ ] Show source examples used for detection
+
+**Acceptance criteria**
+- User can review recurring suggestions without ambiguity
+
+---
+
+### 26.7 Tests
+- [ ] Add backend tests for recurring detection heuristics
+- [ ] Add backend tests for occurrence generation
+- [ ] Add frontend smoke tests for payables pages
+
+**Acceptance criteria**
+- Payables module is tested and stable
+
+---
+
+## Phase 27 — Investments
+
+### 27.1 Documentation
+- [ ] Update CLAUDE.md with a new "Investments" section
+- [ ] Document that first version is manual-only
+- [ ] Document supported asset classes
+
+**Acceptance criteria**
+- Investments scope is clear and limited
+
+---
+
+### 27.2 Backend Data Model
+- [ ] Create `investment_accounts` table
+- [ ] Create `assets` table
+- [ ] Create `asset_positions` table
+- [ ] Create `portfolio_snapshots` table
+- [ ] Add migrations
+
+Suggested model:
+
+`investment_accounts`
+- id
+- name
+- institution_name nullable
+- currency
+- created_at
+- updated_at
+
+`assets`
+- id
+- symbol nullable
+- name
+- asset_class
+- currency
+- metadata nullable
+- created_at
+- updated_at
+
+`asset_positions`
+- id
+- investment_account_id
+- asset_id
+- quantity
+- average_cost_minor nullable
+- current_value_minor nullable
+- as_of_date
+- created_at
+- updated_at
+
+`portfolio_snapshots`
+- id
+- snapshot_date
+- total_value_minor
+- currency
+- notes nullable
+- created_at
+
+**Acceptance criteria**
+- Database supports manual investment portfolio tracking
+
+---
+
+### 27.3 Backend Services
+- [ ] Implement allocation summary by asset class
+- [ ] Implement account-level and portfolio-level totals
+- [ ] Implement current portfolio summary endpoint
+
+**Acceptance criteria**
+- Backend can return portfolio summary and allocation breakdown
+
+---
+
+### 27.4 Backend API
+- [ ] GET `/investment-accounts`
+- [ ] POST `/investment-accounts`
+- [ ] GET `/assets`
+- [ ] POST `/assets`
+- [ ] GET `/asset-positions`
+- [ ] POST `/asset-positions`
+- [ ] PATCH `/asset-positions/{id}`
+- [ ] GET `/portfolio/summary`
+
+**Acceptance criteria**
+- API supports manual investment tracking flows
+
+---
+
+### 27.5 Frontend Pages
+- [ ] Create `/investments` page
+- [ ] Show total invested value
+- [ ] Show allocation by asset class
+- [ ] Show list of positions
+- [ ] Allow manual asset and position creation
+- [ ] Allow updating current position values
+
+**Acceptance criteria**
+- User can track a manual portfolio from the UI
+
+---
+
+### 27.6 Frontend UX
+- [ ] Add empty states for no investment accounts
+- [ ] Add onboarding CTA for first asset
+- [ ] Add loading and error states
+
+**Acceptance criteria**
+- Investments module is usable for first-time setup
+
+---
+
+### 27.7 Tests
+- [ ] Add backend tests for portfolio summary
+- [ ] Add frontend smoke tests for investments page
+
+**Acceptance criteria**
+- Investments module is tested and stable
 
 **Acceptance:** Rules auto-categorize matching transactions on import. Manual categorizations are never overwritten by rules. Dry-run shows preview before committing.
 

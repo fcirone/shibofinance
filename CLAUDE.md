@@ -1076,3 +1076,127 @@ Audit log of every categorization change — who/what changed it and when.
 7. Frontend: category picker in transaction row (click to assign), bulk select + categorize, filter by category.
 
 Do NOT implement rule evaluation or auto-categorization in Cycle 1.
+
+---
+
+# Next Functional Product Phases
+
+The next stage of product evolution prioritizes major new functional modules before a general polish/refinement cycle.
+
+## Phase 25 — Planning and Control
+
+Goal:
+Allow users to define monthly budgets by category and compare planned vs actual spending.
+
+Scope:
+- monthly planning periods
+- category budgets
+- planned vs actual calculations
+- remaining budget
+- over-budget indicators
+- copy previous month budget
+- frontend planning page
+
+Out of scope for this phase:
+- advanced forecasting
+- income planning
+- yearly budgets
+- AI suggestions
+
+### Data Model
+
+#### budget_periods
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | uuid pk | |
+| month | int | 1–12 |
+| year | int | e.g. 2026 |
+| status | enum | open \| closed |
+| created_at | timestamptz | |
+| updated_at | timestamptz | |
+
+Unique constraint: `(month, year)` — one period per calendar month.
+
+#### category_budgets
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | uuid pk | |
+| budget_period_id | uuid → budget_periods.id | |
+| category_id | uuid → categories.id | |
+| planned_amount_minor | bigint | stored as integer minor units |
+| created_at | timestamptz | |
+| updated_at | timestamptz | |
+
+Unique constraint: `(budget_period_id, category_id)` — one budget line per category per period.
+
+### Spending Calculation Rules
+
+- Actual spending for a category = sum of `amount_minor` from `card_transactions` + `bank_transactions` WHERE the transaction has a categorization with that `category_id`.
+- Only `expense` kind categories count toward budget consumption.
+- `transfer` and `income` categories must be excluded from over-budget calculations.
+- Remaining = planned − actual (can be negative when over budget).
+- Percentage consumed = actual / planned × 100.
+
+### API Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | /budgets/periods | List all budget periods (sorted newest first) |
+| POST | /budgets/periods | Create a new budget period (month + year) |
+| GET | /budgets/{period_id} | Get period with all category budget lines + actuals |
+| POST | /budgets/{period_id}/categories | Add or update a category budget line |
+| PATCH | /budgets/category-items/{id} | Update planned_amount_minor |
+| POST | /budgets/{period_id}/copy-from/{source_period_id} | Copy all budget lines from another period |
+
+### Frontend
+
+- `/planning` page — month selector, summary cards (planned / actual / remaining / % consumed), category budget table with inline editing, over-budget visual indicators.
+- Summary cards: planned total, actual total, remaining total, percentage consumed.
+- Category table: category name, planned, actual, remaining, progress bar, over-budget badge.
+- Inline editing: click planned amount to edit in place.
+- Empty state: no budget for selected month → CTA to create budget or copy from previous month.
+- Copy-from-previous-month flow: button that triggers POST to copy endpoint.
+
+---
+
+## Phase 26 — Payables and Recurring Expenses
+
+Goal:
+Add a lightweight payables and recurring-expense layer.
+
+Scope:
+- recurring expense detection from existing transaction history
+- suggested recurring patterns
+- manual approval or ignore flow
+- monthly payable occurrence generation
+- payable status tracking
+- manual payable creation
+
+Out of scope for this phase:
+- full bank reconciliation
+- auto-payment matching
+- invoices/documents
+- OCR
+
+---
+
+## Phase 27 — Investments
+
+Goal:
+Add manual investment tracking and portfolio visibility.
+
+Scope:
+- investment accounts
+- assets
+- positions
+- portfolio summary
+- asset allocation
+- frontend investments page
+
+Out of scope for this phase:
+- brokerage integrations
+- automatic market price sync
+- tax calculations
+- advanced performance analytics

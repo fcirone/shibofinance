@@ -11,6 +11,7 @@ import {
   FileText,
   Tag,
   Sliders,
+  Target,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -33,6 +34,7 @@ const NAV_GROUPS = [
     items: [
       { label: "Transactions", href: "/transactions", icon: List },
       { label: "Statements", href: "/statements", icon: FileText },
+      { label: "Planning", href: "/planning", icon: Target },
     ],
   },
   {

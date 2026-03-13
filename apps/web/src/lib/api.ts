@@ -352,3 +352,104 @@ export async function dryRunRules(): Promise<DryRunResult> {
   const res = await apiFetch("/category-rules/dry-run", { method: "POST" })
   return res.json()
 }
+
+// ---------------------------------------------------------------------------
+// Budget planning
+// ---------------------------------------------------------------------------
+
+export interface BudgetPeriodOut {
+  id: string
+  year: number
+  month: number
+  status: "open" | "closed"
+  created_at: string
+}
+
+export interface CategoryBudgetItemOut {
+  id: string
+  budget_period_id: string
+  category_id: string
+  category_name: string
+  category_kind: "expense" | "income" | "transfer"
+  planned_amount_minor: number
+  actual_amount_minor: number
+  remaining_amount_minor: number
+  pct_consumed: number
+}
+
+export interface BudgetDetailOut {
+  id: string
+  year: number
+  month: number
+  status: "open" | "closed"
+  created_at: string
+  planned_total_minor: number
+  actual_total_minor: number
+  remaining_total_minor: number
+  pct_consumed: number
+  items: CategoryBudgetItemOut[]
+}
+
+export interface BudgetPeriodCreate {
+  year: number
+  month: number
+}
+
+export interface CategoryBudgetCreate {
+  category_id: string
+  planned_amount_minor: number
+}
+
+export interface CategoryBudgetUpdate {
+  planned_amount_minor: number
+}
+
+export async function getBudgetPeriods(): Promise<BudgetPeriodOut[]> {
+  const res = await apiFetch("/budgets/periods")
+  return res.json()
+}
+
+export async function createBudgetPeriod(data: BudgetPeriodCreate): Promise<BudgetPeriodOut> {
+  const res = await apiFetch("/budgets/periods", {
+    method: "POST",
+    body: JSON.stringify(data),
+  })
+  return res.json()
+}
+
+export async function getBudgetDetail(periodId: string): Promise<BudgetDetailOut> {
+  const res = await apiFetch(`/budgets/${periodId}`)
+  return res.json()
+}
+
+export async function upsertCategoryBudget(
+  periodId: string,
+  data: CategoryBudgetCreate,
+): Promise<CategoryBudgetItemOut> {
+  const res = await apiFetch(`/budgets/${periodId}/categories`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  })
+  return res.json()
+}
+
+export async function updateCategoryBudgetItem(
+  itemId: string,
+  data: CategoryBudgetUpdate,
+): Promise<CategoryBudgetItemOut> {
+  const res = await apiFetch(`/budgets/category-items/${itemId}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  })
+  return res.json()
+}
+
+export async function copyBudgetFrom(
+  targetPeriodId: string,
+  sourcePeriodId: string,
+): Promise<BudgetDetailOut> {
+  const res = await apiFetch(`/budgets/${targetPeriodId}/copy-from/${sourcePeriodId}`, {
+    method: "POST",
+  })
+  return res.json()
+}

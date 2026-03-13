@@ -6,6 +6,7 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict
 
 from app.models import (
+    BudgetPeriodStatus,
     CategorizationSource,
     CategoryKind,
     ImportStatus,
@@ -269,3 +270,57 @@ class DryRunResult(BaseModel):
 class ApplyRulesResult(BaseModel):
     applied: int
     by_category: list[RulePreviewItem]
+
+
+# ---------------------------------------------------------------------------
+# Budget planning
+# ---------------------------------------------------------------------------
+
+
+class BudgetPeriodCreate(BaseModel):
+    year: int
+    month: int  # 1–12
+
+
+class BudgetPeriodOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    year: int
+    month: int
+    status: BudgetPeriodStatus
+    created_at: datetime
+
+
+class CategoryBudgetCreate(BaseModel):
+    category_id: uuid.UUID
+    planned_amount_minor: int
+
+
+class CategoryBudgetUpdate(BaseModel):
+    planned_amount_minor: int | None = None
+
+
+class CategoryBudgetItemOut(BaseModel):
+    id: uuid.UUID
+    budget_period_id: uuid.UUID
+    category_id: uuid.UUID
+    category_name: str
+    category_kind: CategoryKind
+    planned_amount_minor: int
+    actual_amount_minor: int
+    remaining_amount_minor: int
+    pct_consumed: float
+
+
+class BudgetDetailOut(BaseModel):
+    id: uuid.UUID
+    year: int
+    month: int
+    status: BudgetPeriodStatus
+    created_at: datetime
+    planned_total_minor: int
+    actual_total_minor: int
+    remaining_total_minor: int
+    pct_consumed: float
+    items: list[CategoryBudgetItemOut]

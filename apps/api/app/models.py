@@ -102,6 +102,11 @@ class EventAction(str, enum.Enum):
     deleted = "deleted"
 
 
+class BudgetPeriodStatus(str, enum.Enum):
+    open = "open"
+    closed = "closed"
+
+
 # ---------------------------------------------------------------------------
 # Instruments
 # ---------------------------------------------------------------------------
@@ -402,6 +407,57 @@ class CategoryRule(Base):
     categorizations: Mapped[list["Categorization"]] = relationship(
         back_populates="rule", foreign_keys="Categorization.rule_id"
     )
+
+
+# ---------------------------------------------------------------------------
+# Categorization Events
+# ---------------------------------------------------------------------------
+
+
+# ---------------------------------------------------------------------------
+# Budget Planning
+# ---------------------------------------------------------------------------
+
+
+class BudgetPeriod(Base):
+    __tablename__ = "budget_periods"
+    __table_args__ = (UniqueConstraint("year", "month"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    year: Mapped[int] = mapped_column(Integer, nullable=False)
+    month: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[BudgetPeriodStatus] = mapped_column(
+        Enum(BudgetPeriodStatus), nullable=False, default=BudgetPeriodStatus.open, server_default="open"
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+    category_budgets: Mapped[list["CategoryBudget"]] = relationship(
+        back_populates="budget_period", cascade="all, delete-orphan"
+    )
+
+
+class CategoryBudget(Base):
+    __tablename__ = "category_budgets"
+    __table_args__ = (UniqueConstraint("budget_period_id", "category_id"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    budget_period_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("budget_periods.id", ondelete="CASCADE"), nullable=False
+    )
+    category_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("categories.id"), nullable=False
+    )
+    planned_amount_minor: Mapped[int] = mapped_column(BigInteger, nullable=False, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+    budget_period: Mapped["BudgetPeriod"] = relationship(back_populates="category_budgets")
+    category: Mapped["Category"] = relationship()
 
 
 # ---------------------------------------------------------------------------

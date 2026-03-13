@@ -12,6 +12,7 @@ from app.db import AsyncSessionLocal
 from app.models import Category, CategoryKind
 from app.routers import (
     bank_transactions,
+    budgets,
     card_transactions,
     categories,
     categorizations,
@@ -73,3 +74,4 @@ app.include_router(categories.router)
 app.include_router(categorizations.router)
 app.include_router(category_rules.router)
 app.include_router(spending_summary.router)
+app.include_router(budgets.router)
