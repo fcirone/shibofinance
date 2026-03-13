@@ -17,8 +17,8 @@ import {
   RefreshCw,
 } from "lucide-react"
 import {
-  LineChart,
-  Line,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -717,22 +717,26 @@ function PortfolioHistoryChart() {
       ) : (
         <div className="rounded-lg border border-border bg-card p-4">
           <ResponsiveContainer width="100%" height={260}>
-            <LineChart data={chartData} margin={{ top: 8, right: 16, bottom: 0, left: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+            <AreaChart data={chartData} margin={{ top: 8, right: 16, bottom: 0, left: 0 }}>
+              <defs>
+                <linearGradient id="portfolioGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#6366f1" stopOpacity={0.25} />
+                  <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" strokeOpacity={0.4} />
               <XAxis
                 dataKey="date"
-                tick={{ fontSize: 11 }}
-                className="fill-muted-foreground"
+                tick={{ fontSize: 11, fill: "#9ca3af" }}
                 tickLine={false}
                 axisLine={false}
               />
               <YAxis
-                tick={{ fontSize: 11 }}
-                className="fill-muted-foreground"
+                tick={{ fontSize: 11, fill: "#9ca3af" }}
                 tickLine={false}
                 axisLine={false}
                 tickFormatter={(v: number) => `R$${(v / 1000).toFixed(0)}k`}
-                width={60}
+                width={64}
               />
               <Tooltip
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -740,26 +744,28 @@ function PortfolioHistoryChart() {
                   typeof value === "number"
                     ? `R$ ${(value as number).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
                     : String(value ?? ""),
-                  "Portfolio Value",
+                  "Valor total",
                 ]}
-                labelFormatter={(label) => `Date: ${label}`}
+                labelFormatter={(label) => `Data: ${label}`}
                 contentStyle={{
                   fontSize: 12,
                   borderRadius: 8,
-                  border: "1px solid hsl(var(--border))",
-                  background: "hsl(var(--card))",
-                  color: "hsl(var(--card-foreground))",
+                  border: "1px solid #e5e7eb",
+                  background: "#ffffff",
+                  color: "#111827",
+                  boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
                 }}
               />
-              <Line
+              <Area
                 type="monotone"
                 dataKey="value"
-                stroke="hsl(var(--primary))"
+                stroke="#6366f1"
                 strokeWidth={2}
+                fill="url(#portfolioGrad)"
                 dot={false}
-                activeDot={{ r: 4 }}
+                activeDot={{ r: 4, fill: "#6366f1", stroke: "#fff", strokeWidth: 2 }}
               />
-            </LineChart>
+            </AreaChart>
           </ResponsiveContainer>
         </div>
       )}
@@ -817,22 +823,26 @@ function AssetHistoryChart({ assets }: { assets: AssetOut[] }) {
       ) : (
         <div className="rounded-lg border border-border bg-card p-4">
           <ResponsiveContainer width="100%" height={260}>
-            <LineChart data={chartData} margin={{ top: 8, right: 16, bottom: 0, left: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+            <AreaChart data={chartData} margin={{ top: 8, right: 16, bottom: 0, left: 0 }}>
+              <defs>
+                <linearGradient id="assetGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.25} />
+                  <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" strokeOpacity={0.4} />
               <XAxis
                 dataKey="date"
-                tick={{ fontSize: 11 }}
-                className="fill-muted-foreground"
+                tick={{ fontSize: 11, fill: "#9ca3af" }}
                 tickLine={false}
                 axisLine={false}
               />
               <YAxis
-                tick={{ fontSize: 11 }}
-                className="fill-muted-foreground"
+                tick={{ fontSize: 11, fill: "#9ca3af" }}
                 tickLine={false}
                 axisLine={false}
                 tickFormatter={(v: number) => `R$${(v / 1000).toFixed(0)}k`}
-                width={60}
+                width={64}
               />
               <Tooltip
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -842,24 +852,26 @@ function AssetHistoryChart({ assets }: { assets: AssetOut[] }) {
                     : String(value ?? ""),
                   assetLabel,
                 ]}
-                labelFormatter={(label) => `Date: ${label}`}
+                labelFormatter={(label) => `Data: ${label}`}
                 contentStyle={{
                   fontSize: 12,
                   borderRadius: 8,
-                  border: "1px solid hsl(var(--border))",
-                  background: "hsl(var(--card))",
-                  color: "hsl(var(--card-foreground))",
+                  border: "1px solid #e5e7eb",
+                  background: "#ffffff",
+                  color: "#111827",
+                  boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
                 }}
               />
-              <Line
+              <Area
                 type="monotone"
                 dataKey="value"
-                stroke="hsl(var(--primary))"
+                stroke="#10b981"
                 strokeWidth={2}
+                fill="url(#assetGrad)"
                 dot={false}
-                activeDot={{ r: 4 }}
+                activeDot={{ r: 4, fill: "#10b981", stroke: "#fff", strokeWidth: 2 }}
               />
-            </LineChart>
+            </AreaChart>
           </ResponsiveContainer>
         </div>
       )}
