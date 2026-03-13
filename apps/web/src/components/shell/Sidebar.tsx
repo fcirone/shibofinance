@@ -26,14 +26,6 @@ const NAV_GROUPS = [
     ],
   },
   {
-    label: "Data",
-    items: [
-      { label: "Instruments", href: "/instruments", icon: CreditCard },
-      { label: "Import", href: "/import/new", icon: Upload },
-      { label: "History", href: "/imports", icon: History },
-    ],
-  },
-  {
     label: "Analyze",
     items: [
       { label: "Transactions", href: "/transactions", icon: List },
@@ -47,6 +39,14 @@ const NAV_GROUPS = [
       { label: "Payables", href: "/payables", icon: CalendarCheck },
       { label: "Recurring", href: "/recurring", icon: RefreshCw },
       { label: "Investments", href: "/investments", icon: TrendingUp },
+    ],
+  },
+  {
+    label: "Data",
+    items: [
+      { label: "Instruments", href: "/instruments", icon: CreditCard },
+      { label: "Import", href: "/import/new", icon: Upload },
+      { label: "History", href: "/imports", icon: History },
     ],
   },
   {
