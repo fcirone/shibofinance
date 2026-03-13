@@ -589,3 +589,130 @@ export async function updateOccurrence(id: string, data: OccurrenceUpdate): Prom
   })
   return res.json()
 }
+
+// ---------------------------------------------------------------------------
+// Investments
+// ---------------------------------------------------------------------------
+
+export type AssetClass = "stock" | "bond" | "etf" | "real_estate" | "crypto" | "cash" | "other"
+
+export interface InvestmentAccountOut {
+  id: string
+  name: string
+  institution_name: string | null
+  currency: string
+  created_at: string
+}
+
+export interface InvestmentAccountCreate {
+  name: string
+  institution_name?: string | null
+  currency?: string
+}
+
+export interface AssetOut {
+  id: string
+  symbol: string | null
+  name: string
+  asset_class: AssetClass
+  currency: string
+  created_at: string
+}
+
+export interface AssetCreate {
+  symbol?: string | null
+  name: string
+  asset_class: AssetClass
+  currency?: string
+  metadata?: Record<string, unknown> | null
+}
+
+export interface AssetPositionOut {
+  id: string
+  investment_account_id: string
+  asset_id: string
+  asset_symbol: string | null
+  asset_name: string
+  asset_class: AssetClass
+  quantity: number
+  average_cost_minor: number | null
+  current_value_minor: number | null
+  as_of_date: string
+  created_at: string
+}
+
+export interface AssetPositionCreate {
+  investment_account_id: string
+  asset_id: string
+  quantity: number
+  average_cost_minor?: number | null
+  current_value_minor?: number | null
+  as_of_date: string
+}
+
+export interface AssetPositionUpdate {
+  quantity?: number | null
+  average_cost_minor?: number | null
+  current_value_minor?: number | null
+  as_of_date?: string | null
+}
+
+export interface AllocationItem {
+  asset_class: AssetClass
+  total_value_minor: number
+  pct: number
+}
+
+export interface AccountSummaryItem {
+  account_id: string
+  account_name: string
+  currency: string
+  total_value_minor: number
+}
+
+export interface PortfolioSummaryOut {
+  total_value_minor: number
+  accounts: AccountSummaryItem[]
+  allocation: AllocationItem[]
+}
+
+export async function getInvestmentAccounts(): Promise<InvestmentAccountOut[]> {
+  const res = await apiFetch("/investment-accounts")
+  return res.json()
+}
+
+export async function createInvestmentAccount(data: InvestmentAccountCreate): Promise<InvestmentAccountOut> {
+  const res = await apiFetch("/investment-accounts", { method: "POST", body: JSON.stringify(data) })
+  return res.json()
+}
+
+export async function getAssets(): Promise<AssetOut[]> {
+  const res = await apiFetch("/assets")
+  return res.json()
+}
+
+export async function createAsset(data: AssetCreate): Promise<AssetOut> {
+  const res = await apiFetch("/assets", { method: "POST", body: JSON.stringify(data) })
+  return res.json()
+}
+
+export async function getAssetPositions(investment_account_id?: string): Promise<AssetPositionOut[]> {
+  const params = investment_account_id ? `?investment_account_id=${investment_account_id}` : ""
+  const res = await apiFetch(`/asset-positions${params}`)
+  return res.json()
+}
+
+export async function createAssetPosition(data: AssetPositionCreate): Promise<AssetPositionOut> {
+  const res = await apiFetch("/asset-positions", { method: "POST", body: JSON.stringify(data) })
+  return res.json()
+}
+
+export async function updateAssetPosition(id: string, data: AssetPositionUpdate): Promise<AssetPositionOut> {
+  const res = await apiFetch(`/asset-positions/${id}`, { method: "PATCH", body: JSON.stringify(data) })
+  return res.json()
+}
+
+export async function getPortfolioSummary(): Promise<PortfolioSummaryOut> {
+  const res = await apiFetch("/portfolio/summary")
+  return res.json()
+}

@@ -1,5 +1,7 @@
 "use client"
 
+export const dynamic = 'force-dynamic'
+
 import { useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useForm } from "react-hook-form"
@@ -98,7 +100,8 @@ type AddForm = z.infer<typeof addSchema>
 function AddPayableDialog({ onSuccess }: { onSuccess: () => void }) {
   const [open, setOpen] = useState(false)
   const create = useCreatePayable()
-  const form = useForm<AddForm>({ resolver: zodResolver(addSchema) })
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const form = useForm<any>({ resolver: zodResolver(addSchema) })
 
   async function onSubmit(data: AddForm) {
     try {
@@ -133,7 +136,7 @@ function AddPayableDialog({ onSuccess }: { onSuccess: () => void }) {
             <Label htmlFor="name">Name</Label>
             <Input id="name" placeholder="e.g. Internet Bill" {...form.register("name")} />
             {form.formState.errors.name && (
-              <p className="text-xs text-destructive">{form.formState.errors.name.message}</p>
+              <p className="text-xs text-destructive">{form.formState.errors.name.message as string}</p>
             )}
           </div>
           <div className="space-y-1.5">

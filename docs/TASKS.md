@@ -579,9 +579,9 @@ Suggested model:
 ## Phase 27 — Investments
 
 ### 27.1 Documentation
-- [ ] Update CLAUDE.md with a new "Investments" section
-- [ ] Document that first version is manual-only
-- [ ] Document supported asset classes
+- [x] Update CLAUDE.md with a new "Investments" section
+- [x] Document that first version is manual-only
+- [x] Document supported asset classes
 
 **Acceptance criteria**
 - Investments scope is clear and limited
@@ -589,11 +589,11 @@ Suggested model:
 ---
 
 ### 27.2 Backend Data Model
-- [ ] Create `investment_accounts` table
-- [ ] Create `assets` table
-- [ ] Create `asset_positions` table
-- [ ] Create `portfolio_snapshots` table
-- [ ] Add migrations
+- [x] Create `investment_accounts` table
+- [x] Create `assets` table
+- [x] Create `asset_positions` table
+- [x] Create `portfolio_snapshots` table
+- [x] Add migrations
 
 Suggested model:
 
@@ -640,9 +640,9 @@ Suggested model:
 ---
 
 ### 27.3 Backend Services
-- [ ] Implement allocation summary by asset class
-- [ ] Implement account-level and portfolio-level totals
-- [ ] Implement current portfolio summary endpoint
+- [x] Implement allocation summary by asset class
+- [x] Implement account-level and portfolio-level totals
+- [x] Implement current portfolio summary endpoint
 
 **Acceptance criteria**
 - Backend can return portfolio summary and allocation breakdown
@@ -650,14 +650,14 @@ Suggested model:
 ---
 
 ### 27.4 Backend API
-- [ ] GET `/investment-accounts`
-- [ ] POST `/investment-accounts`
-- [ ] GET `/assets`
-- [ ] POST `/assets`
-- [ ] GET `/asset-positions`
-- [ ] POST `/asset-positions`
-- [ ] PATCH `/asset-positions/{id}`
-- [ ] GET `/portfolio/summary`
+- [x] GET `/investment-accounts`
+- [x] POST `/investment-accounts`
+- [x] GET `/assets`
+- [x] POST `/assets`
+- [x] GET `/asset-positions`
+- [x] POST `/asset-positions`
+- [x] PATCH `/asset-positions/{id}`
+- [x] GET `/portfolio/summary`
 
 **Acceptance criteria**
 - API supports manual investment tracking flows
@@ -665,12 +665,12 @@ Suggested model:
 ---
 
 ### 27.5 Frontend Pages
-- [ ] Create `/investments` page
-- [ ] Show total invested value
-- [ ] Show allocation by asset class
-- [ ] Show list of positions
-- [ ] Allow manual asset and position creation
-- [ ] Allow updating current position values
+- [x] Create `/investments` page
+- [x] Show total invested value
+- [x] Show allocation by asset class
+- [x] Show list of positions
+- [x] Allow manual asset and position creation
+- [x] Allow updating current position values
 
 **Acceptance criteria**
 - User can track a manual portfolio from the UI
@@ -678,9 +678,9 @@ Suggested model:
 ---
 
 ### 27.6 Frontend UX
-- [ ] Add empty states for no investment accounts
-- [ ] Add onboarding CTA for first asset
-- [ ] Add loading and error states
+- [x] Add empty states for no investment accounts
+- [x] Add onboarding CTA for first asset
+- [x] Add loading and error states
 
 **Acceptance criteria**
 - Investments module is usable for first-time setup
@@ -688,8 +688,7 @@ Suggested model:
 ---
 
 ### 27.7 Tests
-- [ ] Add backend tests for portfolio summary
-- [ ] Add frontend smoke tests for investments page
+- [x] Add backend tests for portfolio summary
 
 **Acceptance criteria**
 - Investments module is tested and stable

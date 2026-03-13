@@ -1,5 +1,7 @@
 "use client"
 
+export const dynamic = 'force-dynamic'
+
 import { useState, useCallback } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Upload, Inbox } from "lucide-react"

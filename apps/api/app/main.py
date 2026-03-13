@@ -20,6 +20,7 @@ from app.routers import (
     health,
     imports,
     instruments,
+    investments,
     payables,
     spending_summary,
     statements,
@@ -77,3 +78,4 @@ app.include_router(category_rules.router)
 app.include_router(spending_summary.router)
 app.include_router(budgets.router)
 app.include_router(payables.router)
+app.include_router(investments.router)

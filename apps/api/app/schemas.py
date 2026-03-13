@@ -6,6 +6,7 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict
 
 from app.models import (
+    AssetClass,
     BudgetPeriodStatus,
     CategorizationSource,
     CategoryKind,
@@ -423,3 +424,94 @@ class PayableOccurrenceOut(BaseModel):
 class GenerateOccurrencesResult(BaseModel):
     created: int
     skipped: int
+
+
+# ---------------------------------------------------------------------------
+# Investments
+# ---------------------------------------------------------------------------
+
+
+class InvestmentAccountCreate(BaseModel):
+    name: str
+    institution_name: str | None = None
+    currency: str = "BRL"
+
+
+class InvestmentAccountOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    name: str
+    institution_name: str | None
+    currency: str
+    created_at: datetime
+
+
+class AssetCreate(BaseModel):
+    symbol: str | None = None
+    name: str
+    asset_class: AssetClass
+    currency: str = "BRL"
+    metadata: dict | None = None
+
+
+class AssetOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    symbol: str | None
+    name: str
+    asset_class: AssetClass
+    currency: str
+    created_at: datetime
+
+
+class AssetPositionCreate(BaseModel):
+    investment_account_id: uuid.UUID
+    asset_id: uuid.UUID
+    quantity: float
+    average_cost_minor: int | None = None
+    current_value_minor: int | None = None
+    as_of_date: date
+
+
+class AssetPositionUpdate(BaseModel):
+    quantity: float | None = None
+    average_cost_minor: int | None = None
+    current_value_minor: int | None = None
+    as_of_date: date | None = None
+
+
+class AssetPositionOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    investment_account_id: uuid.UUID
+    asset_id: uuid.UUID
+    asset_symbol: str | None
+    asset_name: str
+    asset_class: AssetClass
+    quantity: float
+    average_cost_minor: int | None
+    current_value_minor: int | None
+    as_of_date: date
+    created_at: datetime
+
+
+class AllocationItem(BaseModel):
+    asset_class: AssetClass
+    total_value_minor: int
+    pct: float
+
+
+class AccountSummaryItem(BaseModel):
+    account_id: uuid.UUID
+    account_name: str
+    currency: str
+    total_value_minor: int
+
+
+class PortfolioSummaryOut(BaseModel):
+    total_value_minor: int
+    accounts: list[AccountSummaryItem]
+    allocation: list[AllocationItem]

@@ -137,6 +137,16 @@ class OccurrenceStatus(str, enum.Enum):
     ignored = "ignored"
 
 
+class AssetClass(str, enum.Enum):
+    stock = "stock"
+    bond = "bond"
+    etf = "etf"
+    real_estate = "real_estate"
+    crypto = "crypto"
+    cash = "cash"
+    other = "other"
+
+
 # ---------------------------------------------------------------------------
 # Instruments
 # ---------------------------------------------------------------------------
@@ -571,6 +581,79 @@ class PayableOccurrence(Base):
     )
 
     payable: Mapped["Payable"] = relationship(back_populates="occurrences")
+
+
+# ---------------------------------------------------------------------------
+# Investments
+# ---------------------------------------------------------------------------
+
+
+class InvestmentAccount(Base):
+    __tablename__ = "investment_accounts"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    institution_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    currency: Mapped[str] = mapped_column(String(3), nullable=False, default="BRL")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+    positions: Mapped[list["AssetPosition"]] = relationship(
+        back_populates="account", cascade="all, delete-orphan"
+    )
+
+
+class Asset(Base):
+    __tablename__ = "assets"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    symbol: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    asset_class: Mapped[AssetClass] = mapped_column(Enum(AssetClass), nullable=False)
+    currency: Mapped[str] = mapped_column(String(3), nullable=False, default="BRL")
+    metadata_: Mapped[dict | None] = mapped_column("metadata", JSONB, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+    positions: Mapped[list["AssetPosition"]] = relationship(back_populates="asset")
+
+
+class AssetPosition(Base):
+    __tablename__ = "asset_positions"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    investment_account_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("investment_accounts.id", ondelete="CASCADE"), nullable=False
+    )
+    asset_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("assets.id"), nullable=False
+    )
+    quantity: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    average_cost_minor: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    current_value_minor: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    as_of_date: Mapped[date] = mapped_column(Date, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+    account: Mapped["InvestmentAccount"] = relationship(back_populates="positions")
+    asset: Mapped["Asset"] = relationship(back_populates="positions")
+
+
+class PortfolioSnapshot(Base):
+    __tablename__ = "portfolio_snapshots"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    snapshot_date: Mapped[date] = mapped_column(Date, nullable=False)
+    total_value_minor: Mapped[int] = mapped_column(BigInteger, nullable=False, default=0)
+    currency: Mapped[str] = mapped_column(String(3), nullable=False, default="BRL")
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
 # ---------------------------------------------------------------------------

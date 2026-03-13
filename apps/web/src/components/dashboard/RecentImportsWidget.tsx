@@ -10,7 +10,8 @@ import { useImports } from "@/hooks/useImports"
 import { useInstruments } from "@/hooks/useInstruments"
 
 export function RecentImportsWidget() {
-  const { data: batches = [], isLoading } = useImports({ limit: 5 })
+  const { data: result, isLoading } = useImports({ limit: 5 })
+  const batches = result?.data ?? []
   const { data: instruments = [] } = useInstruments()
 
   return (

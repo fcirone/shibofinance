@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import { DM_Sans, DM_Mono } from "next/font/google"
+import { Suspense } from "react"
 import "./globals.css"
 import { AppShell } from "@/components/shell/AppShell"
 import { QueryProvider } from "@/components/providers/QueryProvider"
@@ -33,7 +34,7 @@ export default function RootLayout({
     <html lang="en" className={`dark ${dmSans.variable} ${dmMono.variable}`}>
       <body className="antialiased font-sans">
         <QueryProvider>
-          <AppShell>{children}</AppShell>
+          <AppShell><Suspense>{children}</Suspense></AppShell>
           <Toaster richColors closeButton />
         </QueryProvider>
       </body>

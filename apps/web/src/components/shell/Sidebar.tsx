@@ -14,6 +14,7 @@ import {
   Target,
   CalendarCheck,
   RefreshCw,
+  TrendingUp,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -44,6 +45,7 @@ const NAV_GROUPS = [
     items: [
       { label: "Payables", href: "/payables", icon: CalendarCheck },
       { label: "Recurring", href: "/recurring", icon: RefreshCw },
+      { label: "Investments", href: "/investments", icon: TrendingUp },
     ],
   },
   {

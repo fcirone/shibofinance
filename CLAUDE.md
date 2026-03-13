@@ -1255,19 +1255,92 @@ This cycle excludes:
 
 ## Phase 27 — Investments
 
-Goal:
-Add manual investment tracking and portfolio visibility.
+Goal: Add manual investment tracking and portfolio visibility. First version is manual-only — no brokerage integrations or automatic price sync.
 
-Scope:
-- investment accounts
-- assets
-- positions
-- portfolio summary
-- asset allocation
-- frontend investments page
+### Supported Asset Classes
+`stock` | `bond` | `etf` | `real_estate` | `crypto` | `cash` | `other`
+
+### Data Model
+
+#### investment_accounts
+Represents a brokerage or custody account.
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | uuid pk | |
+| name | text | display name |
+| institution_name | text nullable | e.g. "XP", "BTG" |
+| currency | char(3) | ISO currency code |
+| created_at | timestamptz | |
+| updated_at | timestamptz | |
+
+#### assets
+Represents a tradable instrument.
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | uuid pk | |
+| symbol | varchar(20) nullable | ticker e.g. "PETR4" |
+| name | text | full name |
+| asset_class | enum | stock/bond/etf/real_estate/crypto/cash/other |
+| currency | char(3) | |
+| metadata | jsonb nullable | extra data |
+| created_at | timestamptz | |
+| updated_at | timestamptz | |
+
+#### asset_positions
+One position per account+asset (quantity + value snapshot).
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | uuid pk | |
+| investment_account_id | uuid → investment_accounts.id CASCADE | |
+| asset_id | uuid → assets.id | |
+| quantity | float | fractional units supported |
+| average_cost_minor | bigint nullable | average purchase price in minor units |
+| current_value_minor | bigint nullable | current market value in minor units |
+| as_of_date | date | when this snapshot was recorded |
+| created_at | timestamptz | |
+| updated_at | timestamptz | |
+
+#### portfolio_snapshots
+Point-in-time portfolio total (for future trend tracking).
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | uuid pk | |
+| snapshot_date | date | |
+| total_value_minor | bigint | |
+| currency | char(3) | |
+| notes | text nullable | |
+| created_at | timestamptz | |
+
+### API Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | /investment-accounts | List all accounts |
+| POST | /investment-accounts | Create account |
+| GET | /assets | List all assets |
+| POST | /assets | Create asset |
+| GET | /asset-positions | List positions (filter: investment_account_id) |
+| POST | /asset-positions | Add position |
+| PATCH | /asset-positions/{id} | Update quantity/value/date |
+| GET | /portfolio/summary | Portfolio totals + allocation by asset class |
+
+### Portfolio Summary Logic
+- Sum `current_value_minor` per account → `accounts[]`
+- Sum `current_value_minor` per asset class → `allocation[]` with percentage
+- Grand total = sum of all `current_value_minor` values (null treated as 0)
+
+### Frontend
+- `/investments` page — summary cards (total, positions count, asset classes), allocation bar chart, per-account positions table with edit buttons
+- Add Account dialog, Add Asset dialog, Add Position dialog, Update Position dialog
+- Empty state with CTA when no accounts exist
+- "Investments" added to Sidebar nav under "Control" group
 
 Out of scope for this phase:
-- brokerage integrations
-- automatic market price sync
-- tax calculations
-- advanced performance analytics
+- Brokerage integrations / API sync
+- Automatic market price updates
+- Tax calculations / IRR / performance analytics
+- Snapshot creation via API
