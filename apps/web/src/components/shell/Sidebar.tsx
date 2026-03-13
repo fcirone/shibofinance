@@ -17,6 +17,7 @@ import {
   TrendingUp,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { ThemeSelector } from "@/components/shared/ThemeSelector"
 
 const NAV_GROUPS = [
   {
@@ -116,7 +117,7 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto py-2">
+      <nav className="flex-1 overflow-y-auto py-2 min-h-0">
         {NAV_GROUPS.map((group, gi) => (
           <div key={gi} className={cn(gi > 0 && "mt-1")}>
             {/* Group label — expanded */}
@@ -173,6 +174,11 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
           </div>
         ))}
       </nav>
+
+      {/* Theme selector footer */}
+      <div className="shrink-0 border-t border-sidebar-border px-2 py-2">
+        <ThemeSelector collapsed={collapsed} />
+      </div>
     </aside>
   )
 }

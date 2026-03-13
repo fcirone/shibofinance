@@ -4,6 +4,7 @@ import { Suspense } from "react"
 import "./globals.css"
 import { AppShell } from "@/components/shell/AppShell"
 import { QueryProvider } from "@/components/providers/QueryProvider"
+import { ThemeProvider } from "@/components/providers/ThemeProvider"
 import { Toaster } from "@/components/ui/sonner"
 
 const dmSans = DM_Sans({
@@ -31,12 +32,14 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`dark ${dmSans.variable} ${dmMono.variable}`}>
+    <html lang="en" className={`${dmSans.variable} ${dmMono.variable}`} suppressHydrationWarning>
       <body className="antialiased font-sans">
-        <QueryProvider>
-          <AppShell><Suspense>{children}</Suspense></AppShell>
-          <Toaster richColors closeButton />
-        </QueryProvider>
+        <ThemeProvider>
+          <QueryProvider>
+            <AppShell><Suspense>{children}</Suspense></AppShell>
+            <Toaster richColors closeButton />
+          </QueryProvider>
+        </ThemeProvider>
       </body>
     </html>
   )
