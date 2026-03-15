@@ -3,7 +3,9 @@
 export const dynamic = 'force-dynamic'
 
 import { useState } from "react"
-import { useSearchParams, useRouter } from "next/navigation"
+import { useTranslations } from 'next-intl'
+import { useRouter, usePathname } from '@/i18n/navigation'
+import { useSearchParams } from "next/navigation"
 import { toast } from "sonner"
 import { RefreshCw, Check, X, Search } from "lucide-react"
 
@@ -27,54 +29,51 @@ import {
 } from "@/hooks/usePayables"
 
 // ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-const CADENCE_LABELS: Record<string, string> = {
-  monthly: "Monthly",
-  weekly: "Weekly",
-  yearly: "Yearly",
-  custom: "Custom",
-}
-
-const SOURCE_LABELS: Record<string, string> = {
-  system: "Auto-detected",
-  manual: "Manual",
-}
-
-function statusBadge(status: RecurringPatternStatus) {
-  const map: Record<RecurringPatternStatus, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-    suggested: { label: "Suggested", variant: "secondary" },
-    approved: { label: "Approved", variant: "default" },
-    ignored: { label: "Ignored", variant: "destructive" },
-  }
-  const cfg = map[status] ?? map.suggested
-  return <Badge variant={cfg.variant}>{cfg.label}</Badge>
-}
-
-// ---------------------------------------------------------------------------
 // Pattern card
 // ---------------------------------------------------------------------------
 
 function PatternCard({ pattern }: { pattern: RecurringPatternOut }) {
+  const t = useTranslations('recurring')
   const approve = useApprovePattern()
   const ignore = useIgnorePattern()
+
+  const CADENCE_LABELS: Record<string, string> = {
+    monthly: t('monthly'),
+    weekly: t('weekly'),
+    yearly: t('yearly'),
+    custom: t('custom'),
+  }
+
+  const SOURCE_LABELS: Record<string, string> = {
+    system: t('autoDetected'),
+    manual: t('manual'),
+  }
+
+  function statusBadge(status: RecurringPatternStatus) {
+    const map: Record<RecurringPatternStatus, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
+      suggested: { label: t('suggested'), variant: "secondary" },
+      approved:  { label: t('approved'),  variant: "default" },
+      ignored:   { label: t('ignored'),   variant: "destructive" },
+    }
+    const cfg = map[status] ?? map.suggested
+    return <Badge variant={cfg.variant}>{cfg.label}</Badge>
+  }
 
   async function handleApprove() {
     try {
       await approve.mutateAsync(pattern.id)
-      toast.success(`"${pattern.name}" approved`)
+      toast.success(`"${pattern.name}" ${t('approved')}`)
     } catch {
-      toast.error("Failed to approve pattern")
+      toast.error(t('approveFailed'))
     }
   }
 
   async function handleIgnore() {
     try {
       await ignore.mutateAsync(pattern.id)
-      toast.success(`"${pattern.name}" ignored`)
+      toast.success(`"${pattern.name}" ${t('ignored')}`)
     } catch {
-      toast.error("Failed to ignore pattern")
+      toast.error(t('ignoreFailed'))
     }
   }
 
@@ -114,7 +113,7 @@ function PatternCard({ pattern }: { pattern: RecurringPatternOut }) {
             disabled={approve.isPending || ignore.isPending}
           >
             <Check className="h-3.5 w-3.5 mr-1.5" />
-            Approve
+            {t('approve')}
           </Button>
           <Button
             size="sm"
@@ -124,7 +123,7 @@ function PatternCard({ pattern }: { pattern: RecurringPatternOut }) {
             disabled={approve.isPending || ignore.isPending}
           >
             <X className="h-3.5 w-3.5 mr-1.5" />
-            Ignore
+            {t('ignore')}
           </Button>
         </div>
       )}
@@ -139,7 +138,7 @@ function PatternCard({ pattern }: { pattern: RecurringPatternOut }) {
             disabled={ignore.isPending}
           >
             <X className="h-3.5 w-3.5 mr-1.5" />
-            Ignore
+            {t('ignore')}
           </Button>
         </div>
       )}
@@ -151,17 +150,19 @@ function PatternCard({ pattern }: { pattern: RecurringPatternOut }) {
 // Page
 // ---------------------------------------------------------------------------
 
-const STATUS_OPTIONS: { value: "all" | RecurringPatternStatus; label: string }[] = [
-  { value: "all", label: "All" },
-  { value: "suggested", label: "Suggested" },
-  { value: "approved", label: "Approved" },
-  { value: "ignored", label: "Ignored" },
-]
-
 export default function RecurringPage() {
+  const t = useTranslations('recurring')
   const router = useRouter()
+  const pathname = usePathname()
   const searchParams = useSearchParams()
   const statusParam = (searchParams.get("status") ?? "all") as "all" | RecurringPatternStatus
+
+  const STATUS_OPTIONS: { value: "all" | RecurringPatternStatus; label: string }[] = [
+    { value: "all", label: t('all') },
+    { value: "suggested", label: t('suggested') },
+    { value: "approved", label: t('approved') },
+    { value: "ignored", label: t('ignored') },
+  ]
 
   const filterStatus = statusParam === "all" ? undefined : statusParam
   const { data: patterns, isLoading } = useRecurringPatterns(filterStatus)
@@ -171,12 +172,12 @@ export default function RecurringPage() {
     try {
       const res = await detect.mutateAsync()
       if (res.created === 0) {
-        toast.info("No new recurring patterns found")
+        toast.info(t('noNewPatterns'))
       } else {
-        toast.success(`Found ${res.created} new suggestion${res.created !== 1 ? "s" : ""}`)
+        toast.success(t('foundSuggestions', { count: res.created }))
       }
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Detection failed")
+      toast.error(e instanceof Error ? e.message : t('detectionFailed'))
     }
   }
 
@@ -184,7 +185,7 @@ export default function RecurringPage() {
     const params = new URLSearchParams(searchParams.toString())
     if (value === "all") params.delete("status")
     else params.set("status", value)
-    router.push(`/recurring?${params}`)
+    router.push(`${pathname}?${params}` as '/recurring')
   }
 
   return (
@@ -192,9 +193,9 @@ export default function RecurringPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">Recurring Expenses</h1>
+          <h1 className="text-xl font-semibold tracking-tight">{t('title')}</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Auto-detected and manually defined recurring patterns
+            {t('subtitle')}
           </p>
         </div>
         <Button
@@ -203,13 +204,13 @@ export default function RecurringPage() {
           disabled={detect.isPending}
         >
           <Search className="h-4 w-4 mr-1.5" />
-          {detect.isPending ? "Detecting…" : "Run Detection"}
+          {detect.isPending ? t('detecting') : t('runDetection')}
         </Button>
       </div>
 
       {/* Filter */}
       <div className="flex items-center gap-3">
-        <span className="text-[13px] text-muted-foreground">Status</span>
+        <span className="text-[13px] text-muted-foreground">{t('statusFilter')}</span>
         <Select value={statusParam} onValueChange={handleStatusChange}>
           <SelectTrigger className="h-8 w-36 text-[13px]">
             <SelectValue />
@@ -224,7 +225,7 @@ export default function RecurringPage() {
         </Select>
         {patterns && (
           <span className="text-[12px] text-muted-foreground ml-auto">
-            {patterns.length} pattern{patterns.length !== 1 ? "s" : ""}
+            {patterns.length} {t('patterns')}
           </span>
         )}
       </div>
@@ -237,9 +238,9 @@ export default function RecurringPage() {
       ) : !patterns || patterns.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 gap-3 text-center">
           <RefreshCw className="h-10 w-10 text-muted-foreground/40" />
-          <p className="text-sm font-medium text-muted-foreground">No recurring patterns</p>
+          <p className="text-sm font-medium text-muted-foreground">{t('noPatterns')}</p>
           <p className="text-xs text-muted-foreground/70">
-            Click <strong>Run Detection</strong> to analyze your transaction history for recurring expenses.
+            {t('noPatternsDesc')}
           </p>
         </div>
       ) : (

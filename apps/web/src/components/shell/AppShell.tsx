@@ -1,11 +1,13 @@
 "use client"
 
 import { useState } from "react"
+import { useTranslations } from 'next-intl'
 import { Sidebar } from "./Sidebar"
 import { Topbar } from "./Topbar"
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false)
+  const tc = useTranslations('common')
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -14,7 +16,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-2 focus:bg-background focus:text-foreground"
       >
-        Skip to content
+        {tc('skipToContent')}
       </a>
 
       {/* Sidebar — hidden on mobile, visible lg+ */}

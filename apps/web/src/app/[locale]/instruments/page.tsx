@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useTranslations } from 'next-intl'
 import { CreditCard } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { PageHeader } from "@/components/shared/PageHeader"
@@ -13,6 +14,7 @@ import { useInstruments } from "@/hooks/useInstruments"
 import type { InstrumentOut } from "@/lib/api"
 
 export default function InstrumentsPage() {
+  const t = useTranslations('instruments')
   const { data: instruments = [], isLoading } = useInstruments()
   const [createOpen, setCreateOpen] = useState(false)
   const [editing, setEditing] = useState<InstrumentOut | null>(null)
@@ -20,10 +22,10 @@ export default function InstrumentsPage() {
   return (
     <>
       <PageHeader
-        title="Instruments"
+        title={t('title')}
         action={
           <Button onClick={() => setCreateOpen(true)}>
-            Add Instrument
+            {t('addInstrument')}
           </Button>
         }
       />
@@ -35,9 +37,9 @@ export default function InstrumentsPage() {
       ) : instruments.length === 0 ? (
         <EmptyState
           icon={CreditCard}
-          title="No instruments yet"
-          description="Add your first bank account or credit card to get started."
-          action={{ label: "Add Instrument", onClick: () => setCreateOpen(true) }}
+          title={t('noInstruments')}
+          description={t('noInstrumentsDesc')}
+          action={{ label: t('addInstrument'), onClick: () => setCreateOpen(true) }}
         />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

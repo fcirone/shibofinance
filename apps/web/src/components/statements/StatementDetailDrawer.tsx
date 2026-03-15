@@ -1,6 +1,7 @@
 "use client"
 
-import Link from "next/link"
+import { useTranslations } from 'next-intl'
+import { Link } from "@/i18n/navigation"
 import { ExternalLink } from "lucide-react"
 import {
   Sheet,
@@ -31,13 +32,14 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 }
 
 export function StatementDetailDrawer({ statement, instrumentId, open, onOpenChange }: Props) {
+  const t = useTranslations('statements')
   if (!statement) return null
 
   const params = new URLSearchParams({ tab: "card" })
   if (instrumentId) params.set("instrument_id", instrumentId)
   params.set("date_from", statement.statement_start)
   params.set("date_to", statement.statement_end)
-  const txLink = `/transactions?${params}`
+  const txLink = `/transactions?${params}` as '/transactions'
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -49,28 +51,28 @@ export function StatementDetailDrawer({ statement, instrumentId, open, onOpenCha
         </SheetHeader>
 
         <div className="space-y-0.5">
-          <Row label="Status">
+          <Row label={t('statusLabel')}>
             <StatementStatusBadge status={statement.status} />
           </Row>
-          <Row label="Period start">{formatDate(statement.statement_start)}</Row>
-          <Row label="Period end">{formatDate(statement.statement_end)}</Row>
+          <Row label={t('periodStart')}>{formatDate(statement.statement_start)}</Row>
+          <Row label={t('periodEnd')}>{formatDate(statement.statement_end)}</Row>
           {statement.closing_date && (
-            <Row label="Closing date">{formatDate(statement.closing_date)}</Row>
+            <Row label={t('closingDate')}>{formatDate(statement.closing_date)}</Row>
           )}
           {statement.due_date && (
-            <Row label="Due date">{formatDate(statement.due_date)}</Row>
+            <Row label={t('dueDate')}>{formatDate(statement.due_date)}</Row>
           )}
-          <Row label="Total">
+          <Row label={t('total')}>
             <AmountDisplay minor={statement.total_minor} currency={statement.currency} />
           </Row>
-          <Row label="Currency">{statement.currency}</Row>
+          <Row label={t('currency')}>{statement.currency}</Row>
         </div>
 
         <div className="mt-6">
           <Button asChild variant="outline" className="w-full" size="sm">
             <Link href={txLink} onClick={() => onOpenChange(false)}>
               <ExternalLink className="h-4 w-4 mr-2" />
-              View transactions
+              {t('viewTransactions')}
             </Link>
           </Button>
         </div>

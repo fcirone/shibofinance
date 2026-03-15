@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useTranslations } from 'next-intl'
 import { Loader2, Plus, Pencil, Trash2, Play, Sliders } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -39,31 +40,9 @@ import type {
 } from "@/lib/api"
 
 // ---------------------------------------------------------------------------
-// Labels
+// Operators allowed per match field
 // ---------------------------------------------------------------------------
 
-const matchFieldLabels: Record<MatchField, string> = {
-  description_raw: "Description (raw)",
-  description_norm: "Description (normalized)",
-  merchant_raw: "Merchant",
-  amount_minor: "Amount",
-}
-
-const matchOperatorLabels: Record<MatchOperator, string> = {
-  contains: "contains",
-  equals: "equals",
-  regex: "matches regex",
-  gte: "≥",
-  lte: "≤",
-}
-
-const targetTypeLabels: Record<RuleTargetType, string> = {
-  bank_transaction: "Bank",
-  card_transaction: "Card",
-  both: "Both",
-}
-
-// Operators allowed per match field
 const textOperators: MatchOperator[] = ["contains", "equals", "regex"]
 const numericOperators: MatchOperator[] = ["gte", "lte", "equals"]
 
@@ -101,6 +80,8 @@ function RuleDialog({
   rule?: CategoryRuleOut
   onClose: () => void
 }) {
+  const t = useTranslations('categoryRules')
+  const tc = useTranslations('common')
   const { data: categories = [] } = useCategories()
   const createMutation = useCreateCategoryRule()
   const updateMutation = useUpdateCategoryRule()
@@ -140,7 +121,6 @@ function RuleDialog({
   const watchedEnabled = watch("enabled")
   const allowedOperators = getAllowedOperators(watchedField)
 
-  // If current operator not allowed for current field, reset to first allowed
   function handleFieldChange(field: MatchField) {
     setValue("match_field", field)
     const allowed = getAllowedOperators(field)
@@ -162,7 +142,7 @@ function RuleDialog({
           enabled: data.enabled,
         }
         await updateMutation.mutateAsync({ id: rule.id, data: update })
-        toast.success("Rule updated")
+        toast.success(t('ruleUpdated'))
       } else {
         const create: CategoryRuleCreate = {
           category_id: data.category_id,
@@ -174,30 +154,33 @@ function RuleDialog({
           enabled: data.enabled,
         }
         await createMutation.mutateAsync(create)
-        toast.success("Rule created")
+        toast.success(t('ruleCreated'))
       }
       reset()
       onClose()
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Failed to save rule")
+      toast.error(err instanceof Error ? err.message : t('saveFailed'))
     }
   }
+
+  const matchFieldOptions: MatchField[] = ["description_raw", "description_norm", "merchant_raw", "amount_minor"]
+  const targetTypeOptions: RuleTargetType[] = ["bank_transaction", "card_transaction", "both"]
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) { reset(); onClose() } }}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{rule ? "Edit Rule" : "New Rule"}</DialogTitle>
+          <DialogTitle>{rule ? t('editRule') : t('newRule')}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-2">
           {/* Category */}
           <div className="space-y-1">
-            <label className="text-sm font-medium">Category</label>
+            <label className="text-sm font-medium">{t('category')}</label>
             <select
               {...register("category_id")}
               className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             >
-              <option value="">Select a category…</option>
+              <option value="">{t('selectCategory')}</option>
               {categories.map((cat) => (
                 <option key={cat.id} value={cat.id}>
                   {cat.name}
@@ -211,15 +194,15 @@ function RuleDialog({
 
           {/* Match field */}
           <div className="space-y-1">
-            <label className="text-sm font-medium">Match Field</label>
+            <label className="text-sm font-medium">{t('matchField')}</label>
             <select
               value={watchedField}
               onChange={(e) => handleFieldChange(e.target.value as MatchField)}
               className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             >
-              {(Object.keys(matchFieldLabels) as MatchField[]).map((f) => (
+              {matchFieldOptions.map((f) => (
                 <option key={f} value={f}>
-                  {matchFieldLabels[f]}
+                  {t(`field_${f}` as Parameters<typeof t>[0])}
                 </option>
               ))}
             </select>
@@ -227,14 +210,14 @@ function RuleDialog({
 
           {/* Operator */}
           <div className="space-y-1">
-            <label className="text-sm font-medium">Operator</label>
+            <label className="text-sm font-medium">{t('matchOperator')}</label>
             <select
               {...register("match_operator")}
               className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             >
               {allowedOperators.map((op) => (
                 <option key={op} value={op}>
-                  {matchOperatorLabels[op]}
+                  {t(`op_${op}` as Parameters<typeof t>[0])}
                 </option>
               ))}
             </select>
@@ -245,7 +228,7 @@ function RuleDialog({
 
           {/* Match value */}
           <div className="space-y-1">
-            <label className="text-sm font-medium">Match Value</label>
+            <label className="text-sm font-medium">{t('matchValue')}</label>
             <input
               {...register("match_value")}
               className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
@@ -258,14 +241,14 @@ function RuleDialog({
 
           {/* Target type */}
           <div className="space-y-1">
-            <label className="text-sm font-medium">Applies To</label>
+            <label className="text-sm font-medium">{t('appliesTo')}</label>
             <select
               {...register("target_type")}
               className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             >
-              {(Object.keys(targetTypeLabels) as RuleTargetType[]).map((t) => (
-                <option key={t} value={t}>
-                  {targetTypeLabels[t]}
+              {targetTypeOptions.map((tt) => (
+                <option key={tt} value={tt}>
+                  {t(`target_${tt}` as Parameters<typeof t>[0])}
                 </option>
               ))}
             </select>
@@ -273,14 +256,14 @@ function RuleDialog({
 
           {/* Priority */}
           <div className="space-y-1">
-            <label className="text-sm font-medium">Priority</label>
+            <label className="text-sm font-medium">{t('priority')}</label>
             <input
               type="number"
               {...register("priority", { valueAsNumber: true })}
               className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               min={0}
             />
-            <p className="text-xs text-muted-foreground">Lower number = higher priority</p>
+            <p className="text-xs text-muted-foreground">{t('priorityHint')}</p>
             {errors.priority && (
               <p className="text-xs text-destructive">{errors.priority.message}</p>
             )}
@@ -294,17 +277,17 @@ function RuleDialog({
               onCheckedChange={(v) => setValue("enabled", v === true)}
             />
             <label htmlFor="enabled" className="text-sm font-medium cursor-pointer">
-              Enabled
+              {t('enabled')}
             </label>
           </div>
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => { reset(); onClose() }}>
-              Cancel
+              {tc('cancel')}
             </Button>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {rule ? "Save" : "Create"}
+              {rule ? tc('save') : tc('create')}
             </Button>
           </DialogFooter>
         </form>
@@ -314,7 +297,7 @@ function RuleDialog({
 }
 
 // ---------------------------------------------------------------------------
-// Dry-run preview modal (Task 24.13)
+// Dry-run preview modal
 // ---------------------------------------------------------------------------
 
 function ApplyPreviewModal({
@@ -330,15 +313,18 @@ function ApplyPreviewModal({
   onApply: () => void
   onClose: () => void
 }) {
+  const t = useTranslations('categoryRules')
+  const tc = useTranslations('common')
+
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) onClose() }}>
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle>Apply Rules Preview</DialogTitle>
+          <DialogTitle>{t('previewTitle')}</DialogTitle>
           <DialogDescription>
             {dryRunResult
-              ? `This will categorize ${dryRunResult.would_categorize} transaction${dryRunResult.would_categorize !== 1 ? "s" : ""}:`
-              : "Calculating…"}
+              ? t('previewDesc', { count: dryRunResult.would_categorize })
+              : t('previewCalculating')}
           </DialogDescription>
         </DialogHeader>
         {dryRunResult && dryRunResult.by_category.length > 0 && (
@@ -354,18 +340,18 @@ function ApplyPreviewModal({
           </ul>
         )}
         {dryRunResult && dryRunResult.by_category.length === 0 && (
-          <p className="text-sm text-muted-foreground">No transactions would be categorized.</p>
+          <p className="text-sm text-muted-foreground">{t('previewNone')}</p>
         )}
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={isApplying}>
-            Cancel
+            {tc('cancel')}
           </Button>
           <Button
             onClick={onApply}
             disabled={isApplying || !dryRunResult || dryRunResult.would_categorize === 0}
           >
             {isApplying && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Apply
+            {t('apply')}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -378,6 +364,7 @@ function ApplyPreviewModal({
 // ---------------------------------------------------------------------------
 
 export default function CategoryRulesPage() {
+  const t = useTranslations('categoryRules')
   const { data: rules = [], isLoading } = useCategoryRules()
   const deleteMutation = useDeleteCategoryRule()
   const dryRunMutation = useDryRunRules()
@@ -399,12 +386,12 @@ export default function CategoryRulesPage() {
   }
 
   async function handleDelete(rule: CategoryRuleOut) {
-    if (!confirm(`Delete this rule for "${rule.category_name}"?`)) return
+    if (!confirm(t('deleteRuleConfirm', { name: rule.category_name }))) return
     try {
       await deleteMutation.mutateAsync(rule.id)
-      toast.success("Rule deleted")
+      toast.success(t('ruleDeleted'))
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Failed to delete rule")
+      toast.error(err instanceof Error ? err.message : t('deleteFailed'))
     }
   }
 
@@ -415,7 +402,7 @@ export default function CategoryRulesPage() {
       const result = await dryRunMutation.mutateAsync()
       setDryRunResult(result)
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Failed to preview rules")
+      toast.error(err instanceof Error ? err.message : t('previewFailed'))
       setPreviewOpen(false)
     }
   }
@@ -423,18 +410,18 @@ export default function CategoryRulesPage() {
   async function handleConfirmApply() {
     try {
       const result = await applyMutation.mutateAsync()
-      toast.success(`Applied to ${result.applied} transaction${result.applied !== 1 ? "s" : ""}`)
+      toast.success(t('applied', { count: result.applied }))
       setPreviewOpen(false)
       setDryRunResult(null)
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Failed to apply rules")
+      toast.error(err instanceof Error ? err.message : t('applyFailed'))
     }
   }
 
   return (
     <>
       <PageHeader
-        title="Category Rules"
+        title={t('title')}
         action={
           <div className="flex items-center gap-2">
             <Button
@@ -444,11 +431,11 @@ export default function CategoryRulesPage() {
               disabled={dryRunMutation.isPending || rules.length === 0}
             >
               <Play className="h-4 w-4 mr-1.5" />
-              Apply Rules
+              {t('applyRules')}
             </Button>
             <Button size="sm" onClick={openCreate}>
               <Plus className="h-4 w-4 mr-1.5" />
-              New Rule
+              {t('newRule')}
             </Button>
           </div>
         }
@@ -457,27 +444,27 @@ export default function CategoryRulesPage() {
       {isLoading ? (
         <div className="flex items-center gap-2 text-muted-foreground text-sm">
           <Loader2 className="h-4 w-4 animate-spin" />
-          Loading…
+          {t('loadingRules')}
         </div>
       ) : rules.length === 0 ? (
         <EmptyState
           icon={Sliders}
-          title="No rules yet"
-          description="Create rules to automatically categorize transactions."
-          action={{ label: "New Rule", onClick: openCreate }}
+          title={t('noRules')}
+          description={t('noRulesDesc')}
+          action={{ label: t('newRule'), onClick: openCreate }}
         />
       ) : (
         <div className="rounded-lg border overflow-hidden overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-muted/40">
-                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground whitespace-nowrap">Match Field</th>
-                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground whitespace-nowrap">Operator</th>
-                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">Match Value</th>
-                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">Category</th>
-                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground whitespace-nowrap">Target</th>
-                <th className="px-4 py-2.5 text-right font-medium text-muted-foreground whitespace-nowrap">Priority</th>
-                <th className="px-4 py-2.5 text-center font-medium text-muted-foreground">Enabled</th>
+                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground whitespace-nowrap">{t('matchField')}</th>
+                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground whitespace-nowrap">{t('matchOperator')}</th>
+                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">{t('matchValue')}</th>
+                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">{t('category')}</th>
+                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground whitespace-nowrap">{t('target')}</th>
+                <th className="px-4 py-2.5 text-right font-medium text-muted-foreground whitespace-nowrap">{t('priority')}</th>
+                <th className="px-4 py-2.5 text-center font-medium text-muted-foreground">{t('enabled')}</th>
                 <th className="px-4 py-2.5" />
               </tr>
             </thead>
@@ -488,10 +475,10 @@ export default function CategoryRulesPage() {
                   className="border-b last:border-0 hover:bg-muted/20 transition-colors"
                 >
                   <td className="px-4 py-2.5 whitespace-nowrap">
-                    {matchFieldLabels[rule.match_field] ?? rule.match_field}
+                    {t(`field_${rule.match_field}` as Parameters<typeof t>[0])}
                   </td>
                   <td className="px-4 py-2.5 whitespace-nowrap text-muted-foreground">
-                    {matchOperatorLabels[rule.match_operator] ?? rule.match_operator}
+                    {t(`op_${rule.match_operator}` as Parameters<typeof t>[0])}
                   </td>
                   <td className="px-4 py-2.5 font-mono text-xs max-w-[200px] truncate" title={rule.match_value}>
                     {rule.match_value}
@@ -499,14 +486,14 @@ export default function CategoryRulesPage() {
                   <td className="px-4 py-2.5 font-medium">{rule.category_name}</td>
                   <td className="px-4 py-2.5">
                     <span className="inline-flex rounded-full bg-muted px-2 py-0.5 text-xs font-medium">
-                      {targetTypeLabels[rule.target_type] ?? rule.target_type}
+                      {t(`target_${rule.target_type}` as Parameters<typeof t>[0])}
                     </span>
                   </td>
                   <td className="px-4 py-2.5 text-right tabular-nums">{rule.priority}</td>
                   <td className="px-4 py-2.5 text-center">
                     <span
                       className={`inline-block h-2 w-2 rounded-full ${rule.enabled ? "bg-green-500" : "bg-muted-foreground/30"}`}
-                      aria-label={rule.enabled ? "Enabled" : "Disabled"}
+                      aria-label={rule.enabled ? t('enabled') : t('disabled')}
                     />
                   </td>
                   <td className="px-4 py-2.5 text-right">
@@ -516,7 +503,7 @@ export default function CategoryRulesPage() {
                         size="icon"
                         className="h-7 w-7"
                         onClick={() => openEdit(rule)}
-                        aria-label="Edit rule"
+                        aria-label={t('editRule')}
                       >
                         <Pencil className="h-3.5 w-3.5" />
                       </Button>
@@ -525,7 +512,7 @@ export default function CategoryRulesPage() {
                         size="icon"
                         className="h-7 w-7 text-destructive hover:text-destructive"
                         onClick={() => handleDelete(rule)}
-                        aria-label="Delete rule"
+                        aria-label={t('deleteRule')}
                         disabled={deleteMutation.isPending}
                       >
                         <Trash2 className="h-3.5 w-3.5" />

@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from 'next-intl'
 import { TrendingDown, Receipt, Clock } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -45,6 +46,7 @@ function StatCard({
 }
 
 export function SummaryCards({ summary, lastImport, summaryLoading, importsLoading }: Props) {
+  const t = useTranslations('dashboard')
   const { data: fx } = useExchangeRates()
 
   // Sum all category totals converted to USD
@@ -73,19 +75,19 @@ export function SummaryCards({ summary, lastImport, summaryLoading, importsLoadi
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
       <StatCard
         icon={TrendingDown}
-        label="Total Expenses (USD)"
+        label={t('totalExpenses')}
         value={totalExpenses}
         loading={summaryLoading}
       />
       <StatCard
         icon={Receipt}
-        label="Transactions"
+        label={t('transactions')}
         value={totalTxs}
         loading={summaryLoading}
       />
       <StatCard
         icon={Clock}
-        label="Last Import"
+        label={t('lastImport')}
         value={lastImportDate}
         loading={importsLoading}
       />

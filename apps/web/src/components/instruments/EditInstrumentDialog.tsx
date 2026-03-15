@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect } from "react"
+import { useTranslations } from 'next-intl'
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -34,6 +35,8 @@ interface Props {
 }
 
 export function EditInstrumentDialog({ instrument, onOpenChange }: Props) {
+  const t = useTranslations('instruments')
+  const tc = useTranslations('common')
   const update = useUpdateInstrument()
 
   const form = useForm<FormData>({ resolver: zodResolver(schema) })
@@ -62,10 +65,10 @@ export function EditInstrumentDialog({ instrument, onOpenChange }: Props) {
             : null,
         },
       })
-      toast.success("Instrument updated")
+      toast.success(t('updated'))
       onOpenChange(false)
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Failed to update instrument")
+      toast.error(err instanceof Error ? err.message : t('updateFailed'))
     }
   }
 
@@ -73,13 +76,13 @@ export function EditInstrumentDialog({ instrument, onOpenChange }: Props) {
     <Dialog open={!!instrument} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Edit Instrument</DialogTitle>
+          <DialogTitle>{t('editInstrument')}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-2">
           {/* Name */}
           <div className="space-y-1">
-            <label className="text-sm font-medium">Name *</label>
+            <label className="text-sm font-medium">{t('nameLabel')} *</label>
             <input
               {...register("name")}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
@@ -89,7 +92,7 @@ export function EditInstrumentDialog({ instrument, onOpenChange }: Props) {
 
           {/* Metadata JSON */}
           <div className="space-y-1">
-            <label className="text-sm font-medium">Metadata (JSON)</label>
+            <label className="text-sm font-medium">{t('metadataLabel')}</label>
             <textarea
               {...register("metadata_raw")}
               rows={4}
@@ -103,10 +106,10 @@ export function EditInstrumentDialog({ instrument, onOpenChange }: Props) {
 
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+              {tc('cancel')}
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Saving…" : "Save"}
+              {isSubmitting ? tc('saving') : tc('save')}
             </Button>
           </div>
         </form>

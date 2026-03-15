@@ -1,7 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useTranslations } from 'next-intl'
+import { useRouter } from '@/i18n/navigation'
 import { toast } from "sonner"
 import { Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -15,6 +16,8 @@ import { useInstruments } from "@/hooks/useInstruments"
 import type { ImportBatchOut } from "@/lib/api"
 
 export default function ImportNewPage() {
+  const t = useTranslations('imports')
+  const tc = useTranslations('common')
   const router = useRouter()
   const [instrumentId, setInstrumentId] = useState<string | undefined>()
   const [file, setFile] = useState<File | null>(null)
@@ -32,9 +35,9 @@ export default function ImportNewPage() {
       const batch = await upload.mutateAsync({ instrumentId, file })
       setResult(batch)
       setFile(null)
-      toast.success("File imported successfully")
+      toast.success(t('importSuccess'))
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Import failed")
+      toast.error(err instanceof Error ? err.message : t('importFailed'))
     }
   }
 
@@ -42,28 +45,28 @@ export default function ImportNewPage() {
 
   return (
     <>
-      <PageHeader title="Import Statement" />
+      <PageHeader title={t('title')} />
 
       <div className="max-w-lg space-y-6">
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Upload File</CardTitle>
+            <CardTitle className="text-base">{t('uploadFile')}</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-5">
               {/* Instrument picker */}
               <div className="space-y-1.5">
-                <label className="text-sm font-medium">Instrument *</label>
+                <label className="text-sm font-medium">{t('instrumentLabel')} *</label>
                 <InstrumentPicker
                   value={instrumentId}
                   onChange={setInstrumentId}
-                  placeholder="Select an instrument"
+                  placeholder={t('selectInstrument')}
                 />
               </div>
 
               {/* Dropzone */}
               <div className="space-y-1.5">
-                <label className="text-sm font-medium">File *</label>
+                <label className="text-sm font-medium">{t('fileLabel')} *</label>
                 <UploadDropzone
                   file={file}
                   onChange={setFile}
@@ -78,16 +81,16 @@ export default function ImportNewPage() {
                   onClick={() => router.push("/imports")}
                   disabled={upload.isPending}
                 >
-                  Cancel
+                  {tc('cancel')}
                 </Button>
                 <Button type="submit" disabled={!canSubmit}>
                   {upload.isPending ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Importing…
+                      {t('importing')}
                     </>
                   ) : (
-                    "Import File"
+                    t('importFile')
                   )}
                 </Button>
               </div>
@@ -98,14 +101,14 @@ export default function ImportNewPage() {
         {/* Result card */}
         {result && (
           <div className="space-y-2">
-            <p className="text-sm font-medium text-muted-foreground">Import result</p>
+            <p className="text-sm font-medium text-muted-foreground">{t('importResult')}</p>
             <ImportBatchCard batch={result} instrument={resultInstrument} />
             <Button
               variant="link"
               className="px-0 h-auto text-sm"
               onClick={() => router.push("/imports")}
             >
-              View all imports →
+              {t('viewAll')}
             </Button>
           </div>
         )}

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useTranslations } from "next-intl"
 import { Check, Loader2, Tag, X } from "lucide-react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
@@ -21,6 +22,7 @@ interface Props {
 }
 
 export function BulkCategoryBar({ selectedIds, targetType, onClear }: Props) {
+  const t = useTranslations('transactions')
   const [open, setOpen] = useState(false)
   const { data: categories = [] } = useCategories()
   const qc = useQueryClient()
@@ -39,7 +41,7 @@ export function BulkCategoryBar({ selectedIds, targetType, onClear }: Props) {
     onSuccess: (result) => {
       qc.invalidateQueries({ queryKey: ["bank-transactions"] })
       qc.invalidateQueries({ queryKey: ["card-transactions"] })
-      toast.success(`Categorized ${result.updated + result.created} transactions`)
+      toast.success(t('categorized', { count: result.updated + result.created }))
       onClear()
       setOpen(false)
     },
@@ -51,7 +53,7 @@ export function BulkCategoryBar({ selectedIds, targetType, onClear }: Props) {
   return (
     <div className="sticky top-0 z-10 flex items-center gap-3 rounded-lg border bg-background px-4 py-2.5 shadow-sm">
       <span className="text-sm font-medium">
-        {count} {count === 1 ? "transaction" : "transactions"} selected
+        {count} {t('selected')}
       </span>
 
       <Popover open={open} onOpenChange={setOpen}>
@@ -62,7 +64,7 @@ export function BulkCategoryBar({ selectedIds, targetType, onClear }: Props) {
             ) : (
               <Tag className="h-3.5 w-3.5" />
             )}
-            Categorize
+            {t('categorize')}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-52 p-1" align="start">
@@ -89,10 +91,10 @@ export function BulkCategoryBar({ selectedIds, targetType, onClear }: Props) {
         variant="ghost"
         onClick={onClear}
         disabled={isPending}
-        aria-label="Clear selection"
+        aria-label={t('clearSelection')}
       >
         <X className="h-3.5 w-3.5" />
-        Clear
+        {t('clearSelection')}
       </Button>
     </div>
   )

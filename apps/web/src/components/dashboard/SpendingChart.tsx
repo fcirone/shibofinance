@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from 'next-intl'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts"
 import { BarChart2 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -36,13 +37,14 @@ function CustomTooltip({ active, payload }: any) {
 }
 
 export function SpendingChart({ summary, loading }: Props) {
+  const t = useTranslations('dashboard')
   const { data: fx } = useExchangeRates()
 
   if (loading) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm font-medium">Spending by Category (USD)</CardTitle>
+          <CardTitle className="text-sm font-medium">{t('spendingByCategory')}</CardTitle>
         </CardHeader>
         <CardContent>
           <Skeleton className="h-48 w-full" />
@@ -70,7 +72,7 @@ export function SpendingChart({ summary, loading }: Props) {
       for (const [cur, amt] of Object.entries(summary.uncategorized_by_currency)) {
         uncatUSD += toUSDMinor(amt, cur, fx.rates) ?? 0
       }
-      if (uncatUSD > 0) entries.push({ name: "Uncategorized", usd: uncatUSD })
+      if (uncatUSD > 0) entries.push({ name: t('uncategorized'), usd: uncatUSD })
     }
   }
 
@@ -78,12 +80,12 @@ export function SpendingChart({ summary, loading }: Props) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm font-medium">Spending by Category (USD)</CardTitle>
+          <CardTitle className="text-sm font-medium">{t('spendingByCategory')}</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col items-center justify-center py-12 gap-3 text-center">
           <BarChart2 className="h-8 w-8 text-muted-foreground" />
           <p className="text-sm text-muted-foreground">
-            {!fx ? "Loading exchange rates…" : "No spending data for this period."}
+            {!fx ? t('loadingRates') : t('noSpendingData')}
           </p>
         </CardContent>
       </Card>
@@ -93,7 +95,7 @@ export function SpendingChart({ summary, loading }: Props) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-sm font-medium">Spending by Category (USD)</CardTitle>
+        <CardTitle className="text-sm font-medium">{t('spendingByCategory')}</CardTitle>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={Math.max(180, entries.length * 36)}>

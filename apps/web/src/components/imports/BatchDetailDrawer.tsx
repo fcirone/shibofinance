@@ -1,6 +1,7 @@
 "use client"
 
-import Link from "next/link"
+import { useTranslations } from 'next-intl'
+import { Link } from "@/i18n/navigation"
 import { ExternalLink } from "lucide-react"
 import {
   Sheet,
@@ -30,11 +31,12 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 }
 
 export function BatchDetailDrawer({ batch, instrument, open, onOpenChange }: Props) {
+  const t = useTranslations('imports')
   if (!batch) return null
 
   const txLink = instrument
-    ? `/transactions?instrument_id=${instrument.id}`
-    : "/transactions"
+    ? (`/transactions?instrument_id=${instrument.id}` as '/transactions')
+    : "/transactions" as const
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -44,18 +46,18 @@ export function BatchDetailDrawer({ batch, instrument, open, onOpenChange }: Pro
         </SheetHeader>
 
         <div className="space-y-0.5">
-          <Row label="Status">
+          <Row label={t('statusLabel')}>
             <ImportStatusBadge status={batch.status} />
           </Row>
-          {instrument && <Row label="Instrument">{instrument.name}</Row>}
-          <Row label="Imported">{formatDateTime(batch.created_at)}</Row>
+          {instrument && <Row label={t('instrument')}>{instrument.name}</Row>}
+          <Row label={t('importedAt')}>{formatDateTime(batch.created_at)}</Row>
           {batch.processed_at && (
-            <Row label="Processed">{formatDateTime(batch.processed_at)}</Row>
+            <Row label={t('processedAt')}>{formatDateTime(batch.processed_at)}</Row>
           )}
-          <Row label="Inserted">{batch.inserted_count}</Row>
-          <Row label="Duplicates">{batch.duplicate_count}</Row>
+          <Row label={t('insertedCount')}>{batch.inserted_count}</Row>
+          <Row label={t('duplicateCount')}>{batch.duplicate_count}</Row>
           {batch.error_count > 0 && (
-            <Row label="Errors">
+            <Row label={t('errorCount')}>
               <span className="text-destructive">{batch.error_count}</span>
             </Row>
           )}
@@ -68,7 +70,7 @@ export function BatchDetailDrawer({ batch, instrument, open, onOpenChange }: Pro
           <Button asChild variant="outline" className="w-full" size="sm">
             <Link href={txLink} onClick={() => onOpenChange(false)}>
               <ExternalLink className="h-4 w-4 mr-2" />
-              View transactions
+              {t('viewTransactions')}
             </Link>
           </Button>
         </div>

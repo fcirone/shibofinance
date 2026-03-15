@@ -3,7 +3,9 @@
 export const dynamic = 'force-dynamic'
 
 import { useState } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useTranslations } from 'next-intl'
+import { useRouter, usePathname } from '@/i18n/navigation'
+import { useSearchParams } from "next/navigation"
 import { Receipt } from "lucide-react"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PageHeader } from "@/components/shared/PageHeader"
@@ -20,7 +22,9 @@ import type { BankTransactionOut, CardTransactionOut, TargetType } from "@/lib/a
 const PAGE_SIZE = 50
 
 export default function TransactionsPage() {
+  const t = useTranslations('transactions')
   const router = useRouter()
+  const pathname = usePathname()
   const searchParams = useSearchParams()
 
   const tab = (searchParams.get("tab") ?? "bank") as "bank" | "card"
@@ -55,17 +59,17 @@ export default function TransactionsPage() {
     setSelectedIds(new Set())
     const params = new URLSearchParams()
     params.set("tab", value)
-    router.replace(`/transactions?${params}`)
+    router.replace(`${pathname}?${params}` as '/transactions')
   }
 
   return (
     <>
-      <PageHeader title="Transactions" />
+      <PageHeader title={t('title')} />
 
       <Tabs value={tab} onValueChange={switchTab} className="space-y-5">
         <TabsList>
-          <TabsTrigger value="bank">Bank</TabsTrigger>
-          <TabsTrigger value="card">Card</TabsTrigger>
+          <TabsTrigger value="bank">{t('bankTab')}</TabsTrigger>
+          <TabsTrigger value="card">{t('cardTab')}</TabsTrigger>
         </TabsList>
 
         <TransactionFilters typeFilter={tab === "bank" ? "bank_account" : "credit_card"} />
@@ -75,8 +79,8 @@ export default function TransactionsPage() {
         ) : rows.length === 0 ? (
           <EmptyState
             icon={Receipt}
-            title="No transactions found"
-            description="Try adjusting your filters or import a statement file."
+            title={t('noTransactions')}
+            description={t('noTransactionsDesc')}
           />
         ) : (
           <>

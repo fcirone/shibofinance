@@ -3,7 +3,9 @@
 export const dynamic = 'force-dynamic'
 
 import { useState, useCallback } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useTranslations } from 'next-intl'
+import { useRouter, usePathname } from '@/i18n/navigation'
+import { useSearchParams } from "next/navigation"
 import { Upload, Inbox } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { PageHeader } from "@/components/shared/PageHeader"
@@ -20,7 +22,9 @@ import type { ImportBatchOut } from "@/lib/api"
 const PAGE_SIZE = 50
 
 export default function ImportsPage() {
+  const t = useTranslations('imports')
   const router = useRouter()
+  const pathname = usePathname()
   const searchParams = useSearchParams()
   const instrumentId = searchParams.get("instrument_id") ?? undefined
   const page = Number(searchParams.get("page") ?? "1")
@@ -43,9 +47,9 @@ export default function ImportsPage() {
       if (id) params.set("instrument_id", id)
       else params.delete("instrument_id")
       params.delete("page")
-      router.replace(`/imports?${params}`)
+      router.replace(`${pathname}?${params}` as '/imports')
     },
-    [router, searchParams],
+    [router, pathname, searchParams],
   )
 
   const selectedInstrument = instruments.find((i) => i.id === selected?.instrument_id)
@@ -53,11 +57,11 @@ export default function ImportsPage() {
   return (
     <>
       <PageHeader
-        title="Import History"
+        title={t('history')}
         action={
           <Button onClick={() => router.push("/import/new")}>
             <Upload className="h-4 w-4 mr-2" />
-            Import File
+            {t('importFile')}
           </Button>
         }
       />
@@ -69,7 +73,7 @@ export default function ImportsPage() {
             value={instrumentId}
             onChange={setInstrumentFilter}
             allowAll
-            allLabel="All instruments"
+            allLabel={t('allInstruments')}
           />
         </div>
       </div>
@@ -83,13 +87,13 @@ export default function ImportsPage() {
       ) : batches.length === 0 ? (
         <EmptyState
           icon={Inbox}
-          title="No imports yet"
+          title={t('noImports')}
           description={
             instrumentId
-              ? "No imports found for this instrument."
-              : "Upload your first statement file to get started."
+              ? t('noImportsForInstrument')
+              : t('noImportsDesc')
           }
-          action={{ label: "Import File", onClick: () => router.push("/import/new") }}
+          action={{ label: t('importFile'), onClick: () => router.push("/import/new") }}
         />
       ) : (
         <div className="space-y-3">

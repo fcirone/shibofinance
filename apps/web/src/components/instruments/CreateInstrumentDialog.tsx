@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from 'next-intl'
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -43,6 +44,8 @@ interface Props {
 }
 
 export function CreateInstrumentDialog({ open, onOpenChange }: Props) {
+  const t = useTranslations('instruments')
+  const tc = useTranslations('common')
   const create = useCreateInstrument()
 
   const form = useForm<FormData>({
@@ -66,11 +69,11 @@ export function CreateInstrumentDialog({ open, onOpenChange }: Props) {
           ? JSON.parse(data.metadata_raw)
           : null,
       })
-      toast.success("Instrument created")
+      toast.success(t('created'))
       form.reset()
       onOpenChange(false)
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Failed to create instrument")
+      toast.error(err instanceof Error ? err.message : t('createFailed'))
     }
   }
 
@@ -80,31 +83,31 @@ export function CreateInstrumentDialog({ open, onOpenChange }: Props) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Add Instrument</DialogTitle>
+          <DialogTitle>{t('addInstrument')}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-2">
           {/* Name */}
           <div className="space-y-1">
-            <label className="text-sm font-medium">Name *</label>
+            <label className="text-sm font-medium">{t('nameLabel')} *</label>
             <input
               {...register("name")}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-              placeholder="e.g. Santander Checking"
+              placeholder={t('namePlaceholder')}
             />
             {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
           </div>
 
           {/* Type */}
           <div className="space-y-1">
-            <label className="text-sm font-medium">Type *</label>
+            <label className="text-sm font-medium">{t('typeLabel')} *</label>
             <Select onValueChange={(v) => setValue("type", v as FormData["type"])}>
               <SelectTrigger>
-                <SelectValue placeholder="Select type" />
+                <SelectValue placeholder={t('selectType')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="bank_account">Bank Account</SelectItem>
-                <SelectItem value="credit_card">Credit Card</SelectItem>
+                <SelectItem value="bank_account">{t('bankAccount')}</SelectItem>
+                <SelectItem value="credit_card">{t('creditCard')}</SelectItem>
               </SelectContent>
             </Select>
             {errors.type && <p className="text-xs text-destructive">{errors.type.message}</p>}
@@ -112,10 +115,10 @@ export function CreateInstrumentDialog({ open, onOpenChange }: Props) {
 
           {/* Source */}
           <div className="space-y-1">
-            <label className="text-sm font-medium">Source *</label>
+            <label className="text-sm font-medium">{t('sourceLabel')} *</label>
             <Select onValueChange={(v) => setValue("source", v as FormData["source"])}>
               <SelectTrigger>
-                <SelectValue placeholder="Select source" />
+                <SelectValue placeholder={t('selectSource')} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="santander_br">Santander BR</SelectItem>
@@ -128,10 +131,10 @@ export function CreateInstrumentDialog({ open, onOpenChange }: Props) {
 
           {/* Currency */}
           <div className="space-y-1">
-            <label className="text-sm font-medium">Currency *</label>
+            <label className="text-sm font-medium">{t('currencyLabel')} *</label>
             <Select onValueChange={(v) => setValue("currency", v as FormData["currency"])}>
               <SelectTrigger>
-                <SelectValue placeholder="Select currency" />
+                <SelectValue placeholder={t('selectCurrency')} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="BRL">BRL — Brazilian Real</SelectItem>
@@ -144,17 +147,17 @@ export function CreateInstrumentDialog({ open, onOpenChange }: Props) {
 
           {/* Source instrument ID */}
           <div className="space-y-1">
-            <label className="text-sm font-medium">Source Instrument ID</label>
+            <label className="text-sm font-medium">{t('sourceIdLabel')}</label>
             <input
               {...register("source_instrument_id")}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-              placeholder="Optional unique identifier"
+              placeholder={t('sourceIdPlaceholder')}
             />
           </div>
 
           {/* Metadata JSON */}
           <div className="space-y-1">
-            <label className="text-sm font-medium">Metadata (JSON)</label>
+            <label className="text-sm font-medium">{t('metadataLabel')}</label>
             <textarea
               {...register("metadata_raw")}
               rows={3}
@@ -168,10 +171,10 @@ export function CreateInstrumentDialog({ open, onOpenChange }: Props) {
 
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+              {tc('cancel')}
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Creating…" : "Create"}
+              {isSubmitting ? tc('creating') : tc('create')}
             </Button>
           </div>
         </form>

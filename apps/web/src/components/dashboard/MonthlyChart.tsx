@@ -1,6 +1,7 @@
 "use client"
 
 import { useQueries } from "@tanstack/react-query"
+import { useTranslations } from "next-intl"
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip,
   ResponsiveContainer, Legend, CartesianGrid,
@@ -51,6 +52,7 @@ function CustomTooltip({ active, payload, label }: any) {
 // ── component ─────────────────────────────────────────────────────────────────
 
 export function MonthlyChart() {
+  const t = useTranslations('dashboard')
   const { data: fx } = useExchangeRates()
 
   const results = useQueries({
@@ -62,6 +64,9 @@ export function MonthlyChart() {
   })
 
   const isLoading = results.some((r) => r.isLoading)
+
+  const creditsLabel = t('credits')
+  const debitsLabel = t('debits')
 
   const entries = MONTHS.map((m, i) => {
     const summary = results[i].data
@@ -80,13 +85,13 @@ export function MonthlyChart() {
         credits += toUSDMinor(amt, cur, fx.rates) ?? 0
       }
     }
-    return { label: m.label, Credits: credits, Debits: debits }
+    return { label: m.label, [creditsLabel]: credits, [debitsLabel]: debits }
   })
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-sm font-medium">Credits vs Debits — Last 12 Months (USD)</CardTitle>
+        <CardTitle className="text-sm font-medium">{t('creditsVsDebits')}</CardTitle>
       </CardHeader>
       <CardContent>
         {isLoading || !fx ? (
@@ -110,8 +115,8 @@ export function MonthlyChart() {
               />
               <Tooltip content={<CustomTooltip />} cursor={{ fill: "hsl(var(--muted))" }} />
               <Legend iconType="square" iconSize={10} wrapperStyle={{ fontSize: 12 }} />
-              <Bar dataKey="Credits" fill="#22c55e" radius={[3, 3, 0, 0]} />
-              <Bar dataKey="Debits" fill="#f87171" radius={[3, 3, 0, 0]} />
+              <Bar dataKey={creditsLabel} fill="#22c55e" radius={[3, 3, 0, 0]} />
+              <Bar dataKey={debitsLabel} fill="#f87171" radius={[3, 3, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         )}

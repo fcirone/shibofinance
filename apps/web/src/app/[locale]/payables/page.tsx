@@ -3,7 +3,9 @@
 export const dynamic = 'force-dynamic'
 
 import { useState } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useTranslations } from 'next-intl'
+import { useRouter, usePathname } from '@/i18n/navigation'
+import { useSearchParams } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -26,13 +28,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -48,11 +43,6 @@ import {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-const MONTH_NAMES = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
-]
 
 function parseMonth(param: string | null): { month: number; year: number } {
   if (param) {
@@ -75,15 +65,21 @@ function shiftMonth(year: number, month: number, delta: number) {
   return { year: y, month: m }
 }
 
-function statusBadge(status: OccurrenceStatus) {
-  const map: Record<OccurrenceStatus, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-    expected: { label: "Expected", variant: "secondary" },
-    pending:  { label: "Pending", variant: "outline" },
-    paid:     { label: "Paid", variant: "default" },
-    ignored:  { label: "Ignored", variant: "destructive" },
+function StatusBadgeCell({ status }: { status: OccurrenceStatus }) {
+  const t = useTranslations('payables')
+  const variantMap: Record<OccurrenceStatus, "default" | "secondary" | "destructive" | "outline"> = {
+    expected: "secondary",
+    pending:  "outline",
+    paid:     "default",
+    ignored:  "destructive",
   }
-  const cfg = map[status] ?? map.expected
-  return <Badge variant={cfg.variant}>{cfg.label}</Badge>
+  const labelMap: Record<OccurrenceStatus, string> = {
+    expected: t('expected'),
+    pending:  t('pending'),
+    paid:     t('paid'),
+    ignored:  t('ignored'),
+  }
+  return <Badge variant={variantMap[status] ?? "secondary"}>{labelMap[status] ?? status}</Badge>
 }
 
 // ---------------------------------------------------------------------------
@@ -98,6 +94,8 @@ const addSchema = z.object({
 type AddForm = z.infer<typeof addSchema>
 
 function AddPayableDialog({ onSuccess }: { onSuccess: () => void }) {
+  const t = useTranslations('payables')
+  const tc = useTranslations('common')
   const [open, setOpen] = useState(false)
   const create = useCreatePayable()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -110,12 +108,12 @@ function AddPayableDialog({ onSuccess }: { onSuccess: () => void }) {
         default_amount_minor: data.default_amount_minor ?? null,
         notes: data.notes || null,
       })
-      toast.success("Payable created")
+      toast.success(t('payableCreated'))
       setOpen(false)
       form.reset()
       onSuccess()
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Failed to create payable")
+      toast.error(e instanceof Error ? e.message : t('payableCreateFailed'))
     }
   }
 
@@ -124,23 +122,23 @@ function AddPayableDialog({ onSuccess }: { onSuccess: () => void }) {
       <DialogTrigger asChild>
         <Button size="sm" variant="outline">
           <Plus className="h-4 w-4 mr-1.5" />
-          Add Payable
+          {t('addPayable')}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle>Add Payable</DialogTitle>
+          <DialogTitle>{t('newPayable')}</DialogTitle>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-2">
           <div className="space-y-1.5">
-            <Label htmlFor="name">Name</Label>
-            <Input id="name" placeholder="e.g. Internet Bill" {...form.register("name")} />
+            <Label htmlFor="name">{t('payableName')}</Label>
+            <Input id="name" placeholder={t('payableNamePlaceholder')} {...form.register("name")} />
             {form.formState.errors.name && (
               <p className="text-xs text-destructive">{form.formState.errors.name.message as string}</p>
             )}
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="amount">Default Amount (minor units)</Label>
+            <Label htmlFor="amount">{t('defaultAmountLabel')}</Label>
             <Input
               id="amount"
               type="number"
@@ -149,15 +147,15 @@ function AddPayableDialog({ onSuccess }: { onSuccess: () => void }) {
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="notes">Notes</Label>
-            <Input id="notes" placeholder="Optional notes" {...form.register("notes")} />
+            <Label htmlFor="notes">{t('notesLabel')}</Label>
+            <Input id="notes" placeholder={t('notesPlaceholder')} {...form.register("notes")} />
           </div>
           <div className="flex justify-end gap-2 pt-1">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-              Cancel
+              {tc('cancel')}
             </Button>
             <Button type="submit" disabled={form.formState.isSubmitting}>
-              Create
+              {tc('create')}
             </Button>
           </div>
         </form>
@@ -179,23 +177,24 @@ function OccurrenceRow({
   month: number
   year: number
 }) {
+  const t = useTranslations('payables')
   const update = useUpdateOccurrence(month, year)
 
   async function markPaid() {
     try {
       await update.mutateAsync({ id: occurrence.id, data: { status: "paid" } })
-      toast.success("Marked as paid")
+      toast.success(t('markedPaid'))
     } catch {
-      toast.error("Failed to update")
+      toast.error(t('markPaidFailed'))
     }
   }
 
   async function markIgnored() {
     try {
       await update.mutateAsync({ id: occurrence.id, data: { status: "ignored" } })
-      toast.success("Ignored")
+      toast.success(t('ignore'))
     } catch {
-      toast.error("Failed to update")
+      toast.error(t('markPaidFailed'))
     }
   }
 
@@ -213,7 +212,7 @@ function OccurrenceRow({
           ? formatAmount(occurrence.actual_amount_minor, "BRL")
           : "—"}
       </td>
-      <td className="py-3 px-4">{statusBadge(occurrence.status)}</td>
+      <td className="py-3 px-4"><StatusBadgeCell status={occurrence.status} /></td>
       <td className="py-3 px-4">
         <div className="flex items-center gap-1.5">
           {occurrence.status !== "paid" && occurrence.status !== "ignored" && (
@@ -222,7 +221,7 @@ function OccurrenceRow({
                 size="icon"
                 variant="ghost"
                 className="h-7 w-7 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
-                title="Mark paid"
+                title={t('markPaid')}
                 onClick={markPaid}
                 disabled={update.isPending}
               >
@@ -232,7 +231,7 @@ function OccurrenceRow({
                 size="icon"
                 variant="ghost"
                 className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                title="Ignore"
+                title={t('ignore')}
                 onClick={markIgnored}
                 disabled={update.isPending}
               >
@@ -250,8 +249,16 @@ function OccurrenceRow({
 // Page
 // ---------------------------------------------------------------------------
 
+const MONTH_NAMES_KEYS = [
+  "january", "february", "march", "april", "may", "june",
+  "july", "august", "september", "october", "november", "december",
+] as const
+
 export default function PayablesPage() {
+  const t = useTranslations('payables')
+  const tc = useTranslations('common')
   const router = useRouter()
+  const pathname = usePathname()
   const searchParams = useSearchParams()
   const { month, year } = parseMonth(searchParams.get("period"))
 
@@ -262,7 +269,7 @@ export default function PayablesPage() {
     const next = shiftMonth(year, month, delta)
     const params = new URLSearchParams(searchParams.toString())
     params.set("period", formatMonth(next.year, next.month))
-    router.push(`/payables?${params}`)
+    router.push(`${pathname}?${params}` as '/payables')
   }
 
   async function handleGenerate() {
@@ -270,18 +277,20 @@ export default function PayablesPage() {
       const res = await generate.mutateAsync({ month, year })
       toast.success(`Generated ${res.created} occurrence${res.created !== 1 ? "s" : ""}${res.skipped ? ` (${res.skipped} skipped)` : ""}`)
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Failed to generate")
+      toast.error(e instanceof Error ? e.message : t('generateFailed'))
     }
   }
+
+  const monthName = tc(MONTH_NAMES_KEYS[month - 1])
 
   return (
     <div className="flex flex-col gap-6 p-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">Payables</h1>
+          <h1 className="text-xl font-semibold tracking-tight">{t('title')}</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Monthly payable occurrences and payment tracking
+            {t('subtitle')}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -293,7 +302,7 @@ export default function PayablesPage() {
             disabled={generate.isPending}
           >
             <Zap className="h-4 w-4 mr-1.5" />
-            Generate
+            {t('generate')}
           </Button>
         </div>
       </div>
@@ -304,7 +313,7 @@ export default function PayablesPage() {
           <ChevronLeft className="h-4 w-4" />
         </Button>
         <span className="text-[14px] font-medium min-w-[130px] text-center">
-          {MONTH_NAMES[month - 1]} {year}
+          {monthName} {year}
         </span>
         <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => navigateMonth(1)}>
           <ChevronRight className="h-4 w-4" />
@@ -320,22 +329,21 @@ export default function PayablesPage() {
         ) : !occurrences || occurrences.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 gap-3 text-center px-4">
             <CalendarCheck className="h-10 w-10 text-muted-foreground/40" />
-            <p className="text-sm font-medium text-muted-foreground">No payables for {MONTH_NAMES[month - 1]} {year}</p>
+            <p className="text-sm font-medium text-muted-foreground">{t('noPayablesForMonth', { month: monthName, year })}</p>
             <p className="text-xs text-muted-foreground/70">
-              Click <strong>Generate</strong> to create occurrences from your payables,
-              or <strong>Add Payable</strong> to create one manually.
+              {t('noPayablesDesc')}
             </p>
           </div>
         ) : (
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/40">
-                <th className="py-2.5 px-4 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Name</th>
-                <th className="py-2.5 px-4 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Due Date</th>
-                <th className="py-2.5 px-4 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Expected</th>
-                <th className="py-2.5 px-4 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Actual</th>
-                <th className="py-2.5 px-4 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Status</th>
-                <th className="py-2.5 px-4 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Actions</th>
+                <th className="py-2.5 px-4 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{t('name')}</th>
+                <th className="py-2.5 px-4 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{t('dueDate')}</th>
+                <th className="py-2.5 px-4 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{t('expectedAmount')}</th>
+                <th className="py-2.5 px-4 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{t('actualAmount')}</th>
+                <th className="py-2.5 px-4 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{t('status')}</th>
+                <th className="py-2.5 px-4 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{t('actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -350,7 +358,6 @@ export default function PayablesPage() {
   )
 }
 
-// needed for the empty state icon without import collision
 function CalendarCheck(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">

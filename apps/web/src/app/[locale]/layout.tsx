@@ -1,7 +1,11 @@
 import type { Metadata } from "next"
 import { DM_Sans, DM_Mono } from "next/font/google"
 import { Suspense } from "react"
-import "./globals.css"
+import { NextIntlClientProvider } from 'next-intl'
+import { getMessages } from 'next-intl/server'
+import { notFound } from 'next/navigation'
+import { routing } from '@/i18n/routing'
+import "../globals.css"
 import { AppShell } from "@/components/shell/AppShell"
 import { QueryProvider } from "@/components/providers/QueryProvider"
 import { ThemeProvider } from "@/components/providers/ThemeProvider"
@@ -26,20 +30,29 @@ export const metadata: Metadata = {
   description: "Local-first personal finance dashboard",
 }
 
-export default function RootLayout({
+export default async function LocaleLayout({
   children,
+  params,
 }: {
   children: React.ReactNode
+  params: Promise<{ locale: string }>
 }) {
+  const { locale } = await params
+  if (!routing.locales.includes(locale as 'pt' | 'en' | 'es')) notFound()
+
+  const messages = await getMessages()
+
   return (
-    <html lang="en" className={`${dmSans.variable} ${dmMono.variable}`} suppressHydrationWarning>
+    <html lang={locale} className={`${dmSans.variable} ${dmMono.variable}`} suppressHydrationWarning>
       <body className="antialiased font-sans">
-        <ThemeProvider>
-          <QueryProvider>
-            <AppShell><Suspense>{children}</Suspense></AppShell>
-            <Toaster richColors closeButton />
-          </QueryProvider>
-        </ThemeProvider>
+        <NextIntlClientProvider messages={messages}>
+          <ThemeProvider>
+            <QueryProvider>
+              <AppShell><Suspense>{children}</Suspense></AppShell>
+              <Toaster richColors closeButton />
+            </QueryProvider>
+          </ThemeProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   )

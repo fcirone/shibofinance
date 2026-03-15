@@ -1,6 +1,7 @@
 "use client"
 
 import { useRef, useState, useCallback } from "react"
+import { useTranslations } from 'next-intl'
 import { Upload, X, File } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -21,16 +22,17 @@ function formatBytes(bytes: number) {
 }
 
 export function UploadDropzone({ file, onChange, disabled }: Props) {
+  const t = useTranslations('imports')
   const inputRef = useRef<HTMLInputElement>(null)
   const [dragging, setDragging] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const validate = useCallback((f: File): string | null => {
     const ext = f.name.toLowerCase().slice(f.name.lastIndexOf("."))
-    if (!ACCEPTED.includes(ext)) return `File type not supported. Use ${ACCEPTED.join(" or ")}.`
-    if (f.size > MAX_BYTES) return `File exceeds 20 MB limit.`
+    if (!ACCEPTED.includes(ext)) return t('unsupportedType')
+    if (f.size > MAX_BYTES) return t('fileTooLarge')
     return null
-  }, [])
+  }, [t])
 
   const accept = useCallback(
     (f: File) => {
@@ -102,9 +104,9 @@ export function UploadDropzone({ file, onChange, disabled }: Props) {
       >
         <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-3" />
         <p className="text-sm font-medium">
-          {dragging ? "Drop file here" : "Click or drag file here"}
+          {dragging ? t('dropHere') : t('clickOrDrag')}
         </p>
-        <p className="text-xs text-muted-foreground mt-1">PDF or CSV · max 20 MB</p>
+        <p className="text-xs text-muted-foreground mt-1">{t('fileTypes')}</p>
       </button>
       <input
         ref={inputRef}

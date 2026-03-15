@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useTranslations } from 'next-intl'
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -71,16 +72,6 @@ import {
 // Constants
 // ---------------------------------------------------------------------------
 
-const ASSET_CLASS_LABELS: Record<AssetClass, string> = {
-  stock: "Stock",
-  bond: "Bond",
-  etf: "ETF",
-  real_estate: "Real Estate",
-  crypto: "Crypto",
-  cash: "Cash",
-  other: "Other",
-}
-
 const ASSET_CLASS_OPTIONS: AssetClass[] = [
   "stock", "bond", "etf", "real_estate", "crypto", "cash", "other",
 ]
@@ -97,6 +88,8 @@ const accountSchema = z.object({
 type AccountForm = z.infer<typeof accountSchema>
 
 function AddAccountDialog() {
+  const t = useTranslations('investments')
+  const tc = useTranslations('common')
   const [open, setOpen] = useState(false)
   const create = useCreateInvestmentAccount()
   const form = useForm<AccountForm>({ resolver: zodResolver(accountSchema) })
@@ -108,11 +101,11 @@ function AddAccountDialog() {
         institution_name: data.institution_name || null,
         currency: data.currency || "BRL",
       })
-      toast.success("Investment account created")
+      toast.success(t('accountCreated'))
       setOpen(false)
       form.reset()
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Failed to create account")
+      toast.error(e instanceof Error ? e.message : t('accountFailed'))
     }
   }
 
@@ -121,32 +114,32 @@ function AddAccountDialog() {
       <DialogTrigger asChild>
         <Button size="sm" variant="outline">
           <Plus className="h-4 w-4 mr-1.5" />
-          Add Account
+          {t('addAccount')}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle>Add Investment Account</DialogTitle>
+          <DialogTitle>{t('newAccount')}</DialogTitle>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-2">
           <div className="space-y-1.5">
-            <Label htmlFor="acc-name">Name</Label>
-            <Input id="acc-name" placeholder="e.g. XP Investimentos" {...form.register("name")} />
+            <Label htmlFor="acc-name">{t('accountName')}</Label>
+            <Input id="acc-name" placeholder={t('accountNamePlaceholder')} {...form.register("name")} />
             {form.formState.errors.name && (
               <p className="text-xs text-destructive">{form.formState.errors.name.message}</p>
             )}
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="acc-inst">Institution</Label>
-            <Input id="acc-inst" placeholder="e.g. XP" {...form.register("institution_name")} />
+            <Label htmlFor="acc-inst">{t('institution')}</Label>
+            <Input id="acc-inst" placeholder={t('institutionPlaceholder')} {...form.register("institution_name")} />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="acc-currency">Currency</Label>
+            <Label htmlFor="acc-currency">{t('currency')}</Label>
             <Input id="acc-currency" placeholder="BRL" defaultValue="BRL" {...form.register("currency")} />
           </div>
           <div className="flex justify-end gap-2 pt-1">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button type="submit" disabled={form.formState.isSubmitting}>Create</Button>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>{tc('cancel')}</Button>
+            <Button type="submit" disabled={form.formState.isSubmitting}>{tc('create')}</Button>
           </div>
         </form>
       </DialogContent>
@@ -167,6 +160,8 @@ const assetSchema = z.object({
 type AssetForm = z.infer<typeof assetSchema>
 
 function AddAssetDialog() {
+  const t = useTranslations('investments')
+  const tc = useTranslations('common')
   const [open, setOpen] = useState(false)
   const [assetClass, setAssetClass] = useState<AssetClass>("stock")
   const create = useCreateAsset()
@@ -183,12 +178,12 @@ function AddAssetDialog() {
         asset_class: data.asset_class,
         currency: data.currency || "BRL",
       })
-      toast.success("Asset created")
+      toast.success(t('assetCreated'))
       setOpen(false)
       form.reset()
       setAssetClass("stock")
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Failed to create asset")
+      toast.error(e instanceof Error ? e.message : t('assetFailed'))
     }
   }
 
@@ -197,27 +192,27 @@ function AddAssetDialog() {
       <DialogTrigger asChild>
         <Button size="sm" variant="outline">
           <Plus className="h-4 w-4 mr-1.5" />
-          Add Asset
+          {t('addAsset')}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle>Add Asset</DialogTitle>
+          <DialogTitle>{t('newAsset')}</DialogTitle>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-2">
           <div className="space-y-1.5">
-            <Label htmlFor="asset-name">Name</Label>
-            <Input id="asset-name" placeholder="e.g. Petrobras PN" {...form.register("name")} />
+            <Label htmlFor="asset-name">{t('assetName')}</Label>
+            <Input id="asset-name" placeholder={t('assetNamePlaceholder')} {...form.register("name")} />
             {form.formState.errors.name && (
               <p className="text-xs text-destructive">{form.formState.errors.name.message}</p>
             )}
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="asset-symbol">Ticker / Symbol</Label>
-            <Input id="asset-symbol" placeholder="e.g. PETR4" {...form.register("symbol")} />
+            <Label htmlFor="asset-symbol">{t('tickerSymbol')}</Label>
+            <Input id="asset-symbol" placeholder={t('tickerPlaceholder')} {...form.register("symbol")} />
           </div>
           <div className="space-y-1.5">
-            <Label>Asset Class</Label>
+            <Label>{t('assetClass')}</Label>
             <Select
               value={assetClass}
               onValueChange={(v) => {
@@ -230,18 +225,18 @@ function AddAssetDialog() {
               </SelectTrigger>
               <SelectContent>
                 {ASSET_CLASS_OPTIONS.map((cls) => (
-                  <SelectItem key={cls} value={cls}>{ASSET_CLASS_LABELS[cls]}</SelectItem>
+                  <SelectItem key={cls} value={cls}>{t(cls as Parameters<typeof t>[0])}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="asset-currency">Currency</Label>
+            <Label htmlFor="asset-currency">{t('currency')}</Label>
             <Input id="asset-currency" placeholder="BRL" defaultValue="BRL" {...form.register("currency")} />
           </div>
           <div className="flex justify-end gap-2 pt-1">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button type="submit" disabled={form.formState.isSubmitting}>Create</Button>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>{tc('cancel')}</Button>
+            <Button type="submit" disabled={form.formState.isSubmitting}>{tc('create')}</Button>
           </div>
         </form>
       </DialogContent>
@@ -270,6 +265,8 @@ function AddPositionDialog({
   accounts: InvestmentAccountOut[]
   onSuccess: () => void
 }) {
+  const t = useTranslations('investments')
+  const tc = useTranslations('common')
   const [open, setOpen] = useState(false)
   const [accountId, setAccountId] = useState("")
   const [assetId, setAssetId] = useState("")
@@ -288,14 +285,14 @@ function AddPositionDialog({
         current_value_minor: data.current_value_minor ?? null,
         as_of_date: data.as_of_date,
       })
-      toast.success("Position added")
+      toast.success(t('positionAdded'))
       setOpen(false)
       form.reset()
       setAccountId("")
       setAssetId("")
       onSuccess()
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Failed to add position")
+      toast.error(e instanceof Error ? e.message : t('positionFailed'))
     }
   }
 
@@ -306,19 +303,19 @@ function AddPositionDialog({
       <DialogTrigger asChild>
         <Button size="sm">
           <Plus className="h-4 w-4 mr-1.5" />
-          Add Position
+          {t('addPosition')}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle>Add Position</DialogTitle>
+          <DialogTitle>{t('newPosition')}</DialogTitle>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-2">
           <div className="space-y-1.5">
-            <Label>Account</Label>
+            <Label>{t('selectAccount')}</Label>
             <Select value={accountId} onValueChange={(v) => { setAccountId(v); form.setValue("investment_account_id", v) }}>
               <SelectTrigger className="h-9">
-                <SelectValue placeholder="Select account" />
+                <SelectValue placeholder={t('selectAccount')} />
               </SelectTrigger>
               <SelectContent>
                 {accounts.map((a) => (
@@ -331,10 +328,10 @@ function AddPositionDialog({
             )}
           </div>
           <div className="space-y-1.5">
-            <Label>Asset</Label>
+            <Label>{t('selectAsset')}</Label>
             <Select value={assetId} onValueChange={(v) => { setAssetId(v); form.setValue("asset_id", v) }}>
               <SelectTrigger className="h-9">
-                <SelectValue placeholder="Select asset" />
+                <SelectValue placeholder={t('selectAsset')} />
               </SelectTrigger>
               <SelectContent>
                 {(assets ?? []).map((a) => (
@@ -349,7 +346,7 @@ function AddPositionDialog({
             )}
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="pos-qty">Quantity</Label>
+            <Label htmlFor="pos-qty">{t('quantity')}</Label>
             <Input id="pos-qty" type="number" step="any" placeholder="e.g. 100" {...form.register("quantity")} />
             {form.formState.errors.quantity && (
               <p className="text-xs text-destructive">{form.formState.errors.quantity.message as string}</p>
@@ -357,24 +354,24 @@ function AddPositionDialog({
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="pos-avg">Avg Cost (minor)</Label>
+              <Label htmlFor="pos-avg">{t('averageCostMinor')}</Label>
               <Input id="pos-avg" type="number" placeholder="e.g. 7500" {...form.register("average_cost_minor")} />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="pos-val">Current Value (minor)</Label>
+              <Label htmlFor="pos-val">{t('currentValueMinor')}</Label>
               <Input id="pos-val" type="number" placeholder="e.g. 8200" {...form.register("current_value_minor")} />
             </div>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="pos-date">As of Date</Label>
+            <Label htmlFor="pos-date">{t('asOfDate')}</Label>
             <Input id="pos-date" type="date" defaultValue={today} {...form.register("as_of_date")} />
             {form.formState.errors.as_of_date && (
               <p className="text-xs text-destructive">{form.formState.errors.as_of_date.message as string}</p>
             )}
           </div>
           <div className="flex justify-end gap-2 pt-1">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button type="submit" disabled={form.formState.isSubmitting || create.isPending}>Add</Button>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>{tc('cancel')}</Button>
+            <Button type="submit" disabled={form.formState.isSubmitting || create.isPending}>{tc('add')}</Button>
           </div>
         </form>
       </DialogContent>
@@ -387,6 +384,7 @@ function AddPositionDialog({
 // ---------------------------------------------------------------------------
 
 function DeletePositionButton({ position }: { position: AssetPositionOut }) {
+  const t = useTranslations('investments')
   const [confirm, setConfirm] = useState(false)
   const del = useDeleteAssetPosition()
 
@@ -397,9 +395,9 @@ function DeletePositionButton({ position }: { position: AssetPositionOut }) {
     }
     try {
       await del.mutateAsync(position.id)
-      toast.success("Position deleted")
+      toast.success(t('positionDeleted'))
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Failed to delete position")
+      toast.error(e instanceof Error ? e.message : t('positionDeleteFailed'))
     }
   }
 
@@ -408,7 +406,7 @@ function DeletePositionButton({ position }: { position: AssetPositionOut }) {
       size="icon"
       variant={confirm ? "destructive" : "ghost"}
       className="h-7 w-7"
-      title={confirm ? "Click again to confirm" : "Delete position"}
+      title={confirm ? t('clickToConfirm') : t('deletePosition')}
       onClick={handleDelete}
       disabled={del.isPending}
       onBlur={() => setConfirm(false)}
@@ -419,6 +417,8 @@ function DeletePositionButton({ position }: { position: AssetPositionOut }) {
 }
 
 function UpdatePositionDialog({ position }: { position: AssetPositionOut }) {
+  const t = useTranslations('investments')
+  const tc = useTranslations('common')
   const [open, setOpen] = useState(false)
   const update = useUpdateAssetPosition()
 
@@ -448,40 +448,40 @@ function UpdatePositionDialog({ position }: { position: AssetPositionOut }) {
           as_of_date: data.as_of_date ?? null,
         },
       })
-      toast.success("Position updated")
+      toast.success(t('positionUpdated'))
       setOpen(false)
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Failed to update position")
+      toast.error(e instanceof Error ? e.message : t('positionUpdateFailed'))
     }
   }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="icon" variant="ghost" className="h-7 w-7" title="Edit position">
+        <Button size="icon" variant="ghost" className="h-7 w-7" title={t('editPosition')}>
           <Pencil className="h-3.5 w-3.5" />
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle>Update Position — {position.asset_symbol ?? position.asset_name}</DialogTitle>
+          <DialogTitle>{t('editPosition')} — {position.asset_symbol ?? position.asset_name}</DialogTitle>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-2">
           <div className="space-y-1.5">
-            <Label htmlFor="upd-qty">Quantity</Label>
+            <Label htmlFor="upd-qty">{t('quantity')}</Label>
             <Input id="upd-qty" type="number" step="any" {...form.register("quantity")} />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="upd-val">Current Value (minor units)</Label>
+            <Label htmlFor="upd-val">{t('currentValueMinorUnits')}</Label>
             <Input id="upd-val" type="number" {...form.register("current_value_minor")} />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="upd-date">As of Date</Label>
+            <Label htmlFor="upd-date">{t('asOfDate')}</Label>
             <Input id="upd-date" type="date" {...form.register("as_of_date")} />
           </div>
           <div className="flex justify-end gap-2 pt-1">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button type="submit" disabled={form.formState.isSubmitting || update.isPending}>Save</Button>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>{tc('cancel')}</Button>
+            <Button type="submit" disabled={form.formState.isSubmitting || update.isPending}>{tc('save')}</Button>
           </div>
         </form>
       </DialogContent>
@@ -504,9 +504,11 @@ const CLASS_COLORS: Record<AssetClass, string> = {
 }
 
 function AssetClassBadge({ cls }: { cls: AssetClass }) {
+  const t = useTranslations('investments')
+  const label = t(cls as Parameters<typeof t>[0])
   return (
     <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide ${CLASS_COLORS[cls]}`}>
-      {ASSET_CLASS_LABELS[cls]}
+      {label}
     </span>
   )
 }
@@ -522,12 +524,12 @@ function AccountPositionsTable({
   account: InvestmentAccountOut
   positions: AssetPositionOut[]
 }) {
+  const t = useTranslations('investments')
   const accountPositions = positions.filter(p => p.investment_account_id === account.id)
   const accountTotal = accountPositions.reduce((s, p) => s + (p.current_value_minor ?? 0), 0)
 
   return (
     <div className="rounded-lg border border-border overflow-hidden bg-card">
-      {/* Account header */}
       <div className="flex items-center justify-between px-4 py-3 bg-muted/40 border-b border-border">
         <div className="flex items-center gap-2">
           <Building2 className="h-4 w-4 text-muted-foreground" />
@@ -543,18 +545,18 @@ function AccountPositionsTable({
 
       {accountPositions.length === 0 ? (
         <div className="px-4 py-8 text-center text-[13px] text-muted-foreground">
-          No positions yet. Add a position to get started.
+          {t('noPositions')}
         </div>
       ) : (
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border">
-              <th className="py-2 px-4 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Asset</th>
-              <th className="py-2 px-4 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Class</th>
-              <th className="py-2 px-4 text-right text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Quantity</th>
-              <th className="py-2 px-4 text-right text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Avg Cost</th>
-              <th className="py-2 px-4 text-right text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Current Value</th>
-              <th className="py-2 px-4 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">As of</th>
+              <th className="py-2 px-4 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{t('asset')}</th>
+              <th className="py-2 px-4 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{t('class')}</th>
+              <th className="py-2 px-4 text-right text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{t('quantity')}</th>
+              <th className="py-2 px-4 text-right text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{t('averageCost')}</th>
+              <th className="py-2 px-4 text-right text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{t('currentValue')}</th>
+              <th className="py-2 px-4 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{t('asOfDate')}</th>
               <th className="py-2 px-4" />
             </tr>
           </thead>
@@ -604,6 +606,7 @@ function AccountPositionsTable({
 // ---------------------------------------------------------------------------
 
 function AllocationBar({ allocation }: { allocation: { asset_class: AssetClass; pct: number }[] }) {
+  const t = useTranslations('investments')
   const BAR_COLORS: Record<AssetClass, string> = {
     stock: "bg-blue-500",
     bond: "bg-amber-500",
@@ -622,7 +625,7 @@ function AllocationBar({ allocation }: { allocation: { asset_class: AssetClass; 
             key={item.asset_class}
             className={`${BAR_COLORS[item.asset_class]} transition-all`}
             style={{ width: `${item.pct}%` }}
-            title={`${ASSET_CLASS_LABELS[item.asset_class]}: ${item.pct}%`}
+            title={`${t(item.asset_class as Parameters<typeof t>[0])}: ${item.pct}%`}
           />
         ))}
       </div>
@@ -630,7 +633,7 @@ function AllocationBar({ allocation }: { allocation: { asset_class: AssetClass; 
         {allocation.map((item) => (
           <div key={item.asset_class} className="flex items-center gap-1.5 text-[12px]">
             <div className={`h-2 w-2 rounded-full ${BAR_COLORS[item.asset_class]}`} />
-            <span className="text-muted-foreground">{ASSET_CLASS_LABELS[item.asset_class]}</span>
+            <span className="text-muted-foreground">{t(item.asset_class as Parameters<typeof t>[0])}</span>
             <span className="font-medium">{item.pct.toFixed(1)}%</span>
           </div>
         ))}
@@ -644,6 +647,7 @@ function AllocationBar({ allocation }: { allocation: { asset_class: AssetClass; 
 // ---------------------------------------------------------------------------
 
 function PortfolioHistoryChart() {
+  const t = useTranslations('investments')
   const { data: history, isLoading } = usePortfolioHistory()
   const recordSnapshot = useRecordSnapshot()
   const rebuild = useRebuildSnapshots()
@@ -651,18 +655,18 @@ function PortfolioHistoryChart() {
   async function handleSnapshot() {
     try {
       const snap = await recordSnapshot.mutateAsync()
-      toast.success(`Snapshot recorded: ${formatAmount(snap.total_value_minor, snap.currency)}`)
+      toast.success(`${t('snapshotRecorded')}: ${formatAmount(snap.total_value_minor, snap.currency)}`)
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Failed to record snapshot")
+      toast.error(e instanceof Error ? e.message : t('snapshotFailed'))
     }
   }
 
   async function handleRebuild() {
     try {
       const result = await rebuild.mutateAsync()
-      toast.success(`History rebuilt — ${result.rebuilt} snapshot${result.rebuilt !== 1 ? "s" : ""}`)
+      toast.success(`${t('historyRebuilt')} — ${result.rebuilt} snapshot${result.rebuilt !== 1 ? "s" : ""}`)
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Failed to rebuild history")
+      toast.error(e instanceof Error ? e.message : t('rebuildFailed'))
     }
   }
 
@@ -675,9 +679,9 @@ function PortfolioHistoryChart() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-[14px] font-semibold">Portfolio Evolution</h2>
+          <h2 className="text-[14px] font-semibold">{t('portfolioEvolution')}</h2>
           <p className="text-[12px] text-muted-foreground mt-0.5">
-            Total portfolio value over time, one point per position date.
+            {t('portfolioEvolutionDesc')}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -686,10 +690,10 @@ function PortfolioHistoryChart() {
             variant="ghost"
             onClick={handleRebuild}
             disabled={rebuild.isPending}
-            title="Recalculate all snapshots from current positions"
+            title={t('rebuildTooltip')}
           >
             <RefreshCw className="h-4 w-4 mr-1.5" />
-            Rebuild History
+            {t('rebuildHistory')}
           </Button>
           <Button
             size="sm"
@@ -698,7 +702,7 @@ function PortfolioHistoryChart() {
             disabled={recordSnapshot.isPending}
           >
             <Camera className="h-4 w-4 mr-1.5" />
-            Record Today
+            {t('recordSnapshot')}
           </Button>
         </div>
       </div>
@@ -708,10 +712,9 @@ function PortfolioHistoryChart() {
       ) : chartData.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-64 rounded-lg border border-dashed border-border gap-3 text-center">
           <History className="h-8 w-8 text-muted-foreground/40" />
-          <p className="text-sm text-muted-foreground">No history yet</p>
+          <p className="text-sm text-muted-foreground">{t('noHistory')}</p>
           <p className="text-xs text-muted-foreground/70 max-w-xs">
-            Snapshots are recorded automatically when you add or update positions.
-            Click <strong>Record Snapshot</strong> to capture today&apos;s state manually.
+            {t('snapshotNote')}
           </p>
         </div>
       ) : (
@@ -744,9 +747,9 @@ function PortfolioHistoryChart() {
                   typeof value === "number"
                     ? `R$ ${(value as number).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
                     : String(value ?? ""),
-                  "Valor total",
+                  t('totalValue'),
                 ]}
-                labelFormatter={(label) => `Data: ${label}`}
+                labelFormatter={(label) => `${t('date')}: ${label}`}
                 contentStyle={{
                   fontSize: 12,
                   borderRadius: 8,
@@ -778,6 +781,7 @@ function PortfolioHistoryChart() {
 // ---------------------------------------------------------------------------
 
 function AssetHistoryChart({ assets }: { assets: AssetOut[] }) {
+  const t = useTranslations('investments')
   const [selectedAssetId, setSelectedAssetId] = useState<string>(assets[0]?.id ?? "")
   const { data: history, isLoading } = useAssetHistory(selectedAssetId)
 
@@ -794,14 +798,14 @@ function AssetHistoryChart({ assets }: { assets: AssetOut[] }) {
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h2 className="text-[14px] font-semibold">Asset Evolution</h2>
+          <h2 className="text-[14px] font-semibold">{t('assetEvolution')}</h2>
           <p className="text-[12px] text-muted-foreground mt-0.5">
-            Value of a specific asset over time.
+            {t('assetEvolutionDesc')}
           </p>
         </div>
         <Select value={selectedAssetId} onValueChange={setSelectedAssetId}>
           <SelectTrigger className="h-8 w-56 text-[12px]">
-            <SelectValue placeholder="Select asset" />
+            <SelectValue placeholder={t('selectAsset')} />
           </SelectTrigger>
           <SelectContent>
             {assets.map((a) => (
@@ -817,8 +821,8 @@ function AssetHistoryChart({ assets }: { assets: AssetOut[] }) {
         <Skeleton className="h-64 rounded-lg" />
       ) : chartData.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-64 rounded-lg border border-dashed border-border gap-2 text-center">
-          <p className="text-sm text-muted-foreground">No history for {selectedAsset?.name ?? "this asset"}</p>
-          <p className="text-xs text-muted-foreground/70">Update the position to generate a snapshot.</p>
+          <p className="text-sm text-muted-foreground">{t('noHistoryForAsset', { asset: selectedAsset?.name ?? t('thisAsset') })}</p>
+          <p className="text-xs text-muted-foreground/70">{t('updateToGenerate')}</p>
         </div>
       ) : (
         <div className="rounded-lg border border-border bg-card p-4">
@@ -852,7 +856,7 @@ function AssetHistoryChart({ assets }: { assets: AssetOut[] }) {
                     : String(value ?? ""),
                   assetLabel,
                 ]}
-                labelFormatter={(label) => `Data: ${label}`}
+                labelFormatter={(label) => `${t('date')}: ${label}`}
                 contentStyle={{
                   fontSize: 12,
                   borderRadius: 8,
@@ -886,6 +890,7 @@ function AssetHistoryChart({ assets }: { assets: AssetOut[] }) {
 type Tab = "portfolio" | "history"
 
 export default function InvestmentsPage() {
+  const t = useTranslations('investments')
   const [tab, setTab] = useState<Tab>("portfolio")
   const { data: accounts, isLoading: accountsLoading } = useInvestmentAccounts()
   const { data: positions, isLoading: positionsLoading } = useAssetPositions()
@@ -901,9 +906,9 @@ export default function InvestmentsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">Investments</h1>
+          <h1 className="text-xl font-semibold tracking-tight">{t('title')}</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Manual portfolio tracking across all accounts
+            {t('subtitle')}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -923,19 +928,19 @@ export default function InvestmentsPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="rounded-lg border border-border bg-card p-4">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Total Portfolio</p>
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{t('totalPortfolio')}</p>
             <p className="mt-1 text-2xl font-bold font-mono">{formatAmount(totalValue, "BRL")}</p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">{accounts?.length ?? 0} account{accounts?.length !== 1 ? "s" : ""}</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">{accounts?.length ?? 0} {t('accounts')}</p>
           </div>
           <div className="rounded-lg border border-border bg-card p-4">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Positions</p>
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{t('positions')}</p>
             <p className="mt-1 text-2xl font-bold">{positions?.length ?? 0}</p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">across {summary?.accounts.filter(a => a.total_value_minor > 0).length ?? 0} active accounts</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">{t('activeAccounts', { count: summary?.accounts.filter(a => a.total_value_minor > 0).length ?? 0 })}</p>
           </div>
           <div className="rounded-lg border border-border bg-card p-4">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Asset Classes</p>
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{t('assetClasses')}</p>
             <p className="mt-1 text-2xl font-bold">{allocation.length}</p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">in portfolio</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">{t('inPortfolio')}</p>
           </div>
         </div>
       )}
@@ -945,7 +950,7 @@ export default function InvestmentsPage() {
         <div className="rounded-lg border border-border bg-card p-4">
           <div className="flex items-center gap-2 mb-4">
             <BarChart3 className="h-4 w-4 text-muted-foreground" />
-            <h2 className="text-[13px] font-semibold">Allocation by Asset Class</h2>
+            <h2 className="text-[13px] font-semibold">{t('allocationByClass')}</h2>
           </div>
           <AllocationBar allocation={allocation} />
         </div>
@@ -955,10 +960,9 @@ export default function InvestmentsPage() {
       {!isLoading && (!accounts || accounts.length === 0) && (
         <div className="flex flex-col items-center justify-center py-20 gap-3 text-center">
           <TrendingUp className="h-10 w-10 text-muted-foreground/40" />
-          <p className="text-sm font-medium text-muted-foreground">No investment accounts yet</p>
+          <p className="text-sm font-medium text-muted-foreground">{t('noAccounts')}</p>
           <p className="text-xs text-muted-foreground/70">
-            Click <strong>Add Account</strong> to create your first investment account,
-            then add assets and positions to track your portfolio.
+            {t('noAccountsDesc')}
           </p>
           <AddAccountDialog />
         </div>
@@ -976,7 +980,7 @@ export default function InvestmentsPage() {
                   : "border-transparent text-muted-foreground hover:text-foreground"
               }`}
             >
-              Positions
+              {t('positions')}
             </button>
             <button
               onClick={() => setTab("history")}
@@ -987,7 +991,7 @@ export default function InvestmentsPage() {
               }`}
             >
               <History className="h-3.5 w-3.5" />
-              Evolution
+              {t('evolution')}
             </button>
           </div>
 

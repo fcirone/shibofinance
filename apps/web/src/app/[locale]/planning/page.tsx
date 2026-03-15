@@ -3,7 +3,9 @@
 export const dynamic = 'force-dynamic'
 
 import { useState, useCallback } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useTranslations } from 'next-intl'
+import { useRouter, usePathname } from '@/i18n/navigation'
+import { useSearchParams } from "next/navigation"
 import { toast } from "sonner"
 import {
   Target,
@@ -17,7 +19,7 @@ import {
 } from "lucide-react"
 import { PageHeader } from "@/components/shared/PageHeader"
 import { EmptyState } from "@/components/shared/EmptyState"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
@@ -80,7 +82,6 @@ function periodLabel(year: number, month: number) {
 }
 
 function formatMinor(minor: number) {
-  // Display in a generic currency-agnostic way (minor units / 100)
   const val = (minor / 100).toLocaleString("en-US", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
@@ -151,21 +152,22 @@ function InlineAmountEditor({
   periodId: string
   onClose: () => void
 }) {
+  const t = useTranslations('planning')
   const [val, setVal] = useState(String(current / 100))
   const update = useUpdateCategoryBudgetItem(periodId)
 
   async function handleSave() {
     const parsed = parseFloat(val)
     if (isNaN(parsed) || parsed < 0) {
-      toast.error("Enter a valid positive amount")
+      toast.error(t('invalidAmount'))
       return
     }
     try {
       await update.mutateAsync({ itemId, data: { planned_amount_minor: Math.round(parsed * 100) } })
-      toast.success("Budget updated")
+      toast.success(t('budgetUpdated'))
       onClose()
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Failed to update")
+      toast.error(e instanceof Error ? e.message : t('updateFailed'))
     }
   }
 
@@ -214,6 +216,7 @@ function BudgetRow({
   item: CategoryBudgetItemOut
   periodId: string
 }) {
+  const t = useTranslations('planning')
   const [editing, setEditing] = useState(false)
   const isOver = item.actual_amount_minor > item.planned_amount_minor && item.planned_amount_minor > 0
 
@@ -270,10 +273,10 @@ function BudgetRow({
       </TableCell>
       <TableCell className="hidden lg:table-cell">
         {isOver && (
-          <Badge variant="destructive" className="text-[10px]">Over</Badge>
+          <Badge variant="destructive" className="text-[10px]">{t('over')}</Badge>
         )}
         {!isOver && item.pct_consumed >= 80 && item.pct_consumed < 100 && (
-          <Badge className="text-[10px] bg-amber-500 hover:bg-amber-500">Near limit</Badge>
+          <Badge className="text-[10px] bg-amber-500 hover:bg-amber-500">{t('nearLimit')}</Badge>
         )}
       </TableCell>
     </TableRow>
@@ -295,6 +298,8 @@ function AddCategoryDialog({
   periodId: string
   existingCategoryIds: string[]
 }) {
+  const t = useTranslations('planning')
+  const tc = useTranslations('common')
   const { data: categories = [] } = useCategories()
   const [categoryId, setCategoryId] = useState("")
   const [amount, setAmount] = useState("")
@@ -306,12 +311,12 @@ function AddCategoryDialog({
 
   async function handleSubmit() {
     if (!categoryId || !amount) {
-      toast.error("Select a category and enter an amount")
+      toast.error(t('selectCategoryAndAmount'))
       return
     }
     const parsed = parseFloat(amount)
     if (isNaN(parsed) || parsed < 0) {
-      toast.error("Enter a valid positive amount")
+      toast.error(t('invalidAmount'))
       return
     }
     try {
@@ -319,12 +324,12 @@ function AddCategoryDialog({
         category_id: categoryId,
         planned_amount_minor: Math.round(parsed * 100),
       })
-      toast.success("Category budget added")
+      toast.success(t('categoryAdded'))
       setCategoryId("")
       setAmount("")
       onOpenChange(false)
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Failed to add")
+      toast.error(e instanceof Error ? e.message : t('addFailed'))
     }
   }
 
@@ -332,14 +337,14 @@ function AddCategoryDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Add Category Budget</DialogTitle>
+          <DialogTitle>{t('addCategoryBudget')}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 pt-2">
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">Category</label>
+            <label className="text-sm font-medium">{t('category')}</label>
             <Select value={categoryId} onValueChange={setCategoryId}>
               <SelectTrigger>
-                <SelectValue placeholder="Select expense category…" />
+                <SelectValue placeholder={t('selectCategory')} />
               </SelectTrigger>
               <SelectContent>
                 {expenseCategories.map((c) => (
@@ -349,14 +354,14 @@ function AddCategoryDialog({
                 ))}
                 {expenseCategories.length === 0 && (
                   <div className="px-3 py-2 text-sm text-muted-foreground">
-                    No more expense categories available
+                    {t('noCategoriesAvailable')}
                   </div>
                 )}
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">Planned amount</label>
+            <label className="text-sm font-medium">{t('plannedAmount')}</label>
             <input
               type="number"
               min="0"
@@ -369,10 +374,10 @@ function AddCategoryDialog({
           </div>
           <div className="flex justify-end gap-2 pt-1">
             <Button variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+              {tc('cancel')}
             </Button>
             <Button onClick={handleSubmit} disabled={upsert.isPending}>
-              Add
+              {tc('add')}
             </Button>
           </div>
         </div>
@@ -396,6 +401,8 @@ function CopyFromDialog({
   targetPeriodId: string
   periods: BudgetPeriodOut[]
 }) {
+  const t = useTranslations('planning')
+  const tc = useTranslations('common')
   const [sourcePeriodId, setSourcePeriodId] = useState("")
   const copy = useCopyBudgetFrom(targetPeriodId)
 
@@ -403,16 +410,16 @@ function CopyFromDialog({
 
   async function handleCopy() {
     if (!sourcePeriodId) {
-      toast.error("Select a period to copy from")
+      toast.error(t('selectPeriodToCopy'))
       return
     }
     try {
       await copy.mutateAsync(sourcePeriodId)
-      toast.success("Budget copied")
+      toast.success(t('copiedFrom'))
       setSourcePeriodId("")
       onOpenChange(false)
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Failed to copy")
+      toast.error(e instanceof Error ? e.message : t('copyFailed'))
     }
   }
 
@@ -420,12 +427,12 @@ function CopyFromDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle>Copy Budget From</DialogTitle>
+          <DialogTitle>{t('copyBudget')}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 pt-2">
           <Select value={sourcePeriodId} onValueChange={setSourcePeriodId}>
             <SelectTrigger>
-              <SelectValue placeholder="Select source month…" />
+              <SelectValue placeholder={t('selectSourceMonth')} />
             </SelectTrigger>
             <SelectContent>
               {otherPeriods.map((p) => (
@@ -434,16 +441,16 @@ function CopyFromDialog({
                 </SelectItem>
               ))}
               {otherPeriods.length === 0 && (
-                <div className="px-3 py-2 text-sm text-muted-foreground">No other periods available</div>
+                <div className="px-3 py-2 text-sm text-muted-foreground">{t('noOtherPeriods')}</div>
               )}
             </SelectContent>
           </Select>
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+              {tc('cancel')}
             </Button>
             <Button onClick={handleCopy} disabled={copy.isPending}>
-              Copy
+              {tc('copy')}
             </Button>
           </div>
         </div>
@@ -463,27 +470,29 @@ function CreatePeriodDialog({
   open: boolean
   onOpenChange: (v: boolean) => void
 }) {
+  const t = useTranslations('planning')
+  const tc = useTranslations('common')
   const [ym, setYm] = useState(currentYearMonth())
   const create = useCreateBudgetPeriod()
   const router = useRouter()
+  const pathname = usePathname()
   const searchParams = useSearchParams()
 
   async function handleCreate() {
     const parsed = parseYearMonth(ym)
     if (!parsed) {
-      toast.error("Invalid month")
+      toast.error(t('invalidMonth'))
       return
     }
     try {
       const period = await create.mutateAsync(parsed)
-      toast.success("Budget period created")
+      toast.success(t('budgetCreated'))
       onOpenChange(false)
-      // Navigate to the new period
       const params = new URLSearchParams(searchParams.toString())
       params.set("period", `${period.year}-${String(period.month).padStart(2, "0")}`)
-      router.replace(`/planning?${params}`)
+      router.replace(`${pathname}?${params}` as '/planning')
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Failed to create period")
+      toast.error(e instanceof Error ? e.message : t('createFailed'))
     }
   }
 
@@ -491,11 +500,11 @@ function CreatePeriodDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle>Create Budget Period</DialogTitle>
+          <DialogTitle>{t('newBudgetPeriod')}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 pt-2">
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">Month</label>
+            <label className="text-sm font-medium">{t('month')}</label>
             <input
               type="month"
               value={ym}
@@ -505,10 +514,10 @@ function CreatePeriodDialog({
           </div>
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+              {tc('cancel')}
             </Button>
             <Button onClick={handleCreate} disabled={create.isPending}>
-              Create
+              {tc('create')}
             </Button>
           </div>
         </div>
@@ -522,7 +531,10 @@ function CreatePeriodDialog({
 // ---------------------------------------------------------------------------
 
 export default function PlanningPage() {
+  const t = useTranslations('planning')
+  const tc = useTranslations('common')
   const router = useRouter()
+  const pathname = usePathname()
   const searchParams = useSearchParams()
 
   const periodParam = searchParams.get("period") ?? currentYearMonth()
@@ -530,7 +542,6 @@ export default function PlanningPage() {
 
   const { data: periods = [], isLoading: periodsLoading } = useBudgetPeriods()
 
-  // Find the period that matches the URL param
   const activePeriod = periods.find(
     (p) => parsed && p.year === parsed.year && p.month === parsed.month,
   )
@@ -545,9 +556,9 @@ export default function PlanningPage() {
     (ym: string) => {
       const params = new URLSearchParams(searchParams.toString())
       params.set("period", ym)
-      router.replace(`/planning?${params}`)
+      router.replace(`${pathname}?${params}` as '/planning')
     },
-    [router, searchParams],
+    [router, pathname, searchParams],
   )
 
   const isLoading = periodsLoading || (Boolean(activePeriod) && detailLoading)
@@ -555,11 +566,11 @@ export default function PlanningPage() {
   return (
     <>
       <PageHeader
-        title="Planning"
+        title={t('title')}
         action={
           <Button onClick={() => setCreateOpen(true)} size="sm">
             <PlusCircle className="h-4 w-4 mr-1.5" />
-            New period
+            {t('newPeriod')}
           </Button>
         }
       />
@@ -567,7 +578,7 @@ export default function PlanningPage() {
       {/* Period selector */}
       <div className="flex items-center gap-3 mb-6 flex-wrap">
         <div className="flex items-center gap-2">
-          <label className="text-sm text-muted-foreground shrink-0">Month</label>
+          <label className="text-sm text-muted-foreground shrink-0">{t('month')}</label>
           <input
             type="month"
             value={periodParam}
@@ -585,7 +596,7 @@ export default function PlanningPage() {
               }}
             >
               <SelectTrigger className="text-sm h-8">
-                <SelectValue placeholder="Jump to period…" />
+                <SelectValue placeholder={t('jumpToPeriod')} />
               </SelectTrigger>
               <SelectContent>
                 {periods.map((p) => (
@@ -603,9 +614,9 @@ export default function PlanningPage() {
       {!periodsLoading && periods.length === 0 && (
         <EmptyState
           icon={Target}
-          title="No budgets yet"
-          description="Create a monthly budget to start planning your spending by category."
-          action={{ label: "Create first budget", onClick: () => setCreateOpen(true) }}
+          title={t('noBudgetsYet')}
+          description={t('noBudgetsYetDesc')}
+          action={{ label: t('createBudget'), onClick: () => setCreateOpen(true) }}
         />
       )}
 
@@ -613,9 +624,9 @@ export default function PlanningPage() {
       {!periodsLoading && periods.length > 0 && !activePeriod && (
         <EmptyState
           icon={Target}
-          title="No budget for this month"
-          description={`There is no budget for ${parsed ? periodLabel(parsed.year, parsed.month) : periodParam} yet.`}
-          action={{ label: "Create budget", onClick: () => setCreateOpen(true) }}
+          title={t('noBudget')}
+          description={t('noBudgetDesc')}
+          action={{ label: t('createBudget'), onClick: () => setCreateOpen(true) }}
         />
       )}
 
@@ -626,13 +637,13 @@ export default function PlanningPage() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
             <StatCard
               icon={Target}
-              label="Planned"
+              label={t('planned')}
               value={isLoading ? "—" : formatMinor(detail?.planned_total_minor ?? 0)}
               loading={isLoading}
             />
             <StatCard
               icon={TrendingDown}
-              label="Actual"
+              label={t('actual')}
               value={isLoading ? "—" : formatMinor(detail?.actual_total_minor ?? 0)}
               valueClass={
                 detail && detail.actual_total_minor > detail.planned_total_minor && detail.planned_total_minor > 0
@@ -643,7 +654,7 @@ export default function PlanningPage() {
             />
             <StatCard
               icon={Wallet}
-              label="Remaining"
+              label={t('remaining')}
               value={isLoading ? "—" : formatMinor(Math.abs(detail?.remaining_total_minor ?? 0))}
               valueClass={
                 detail && detail.remaining_total_minor < 0 ? "text-destructive" : "text-teal-500 dark:text-teal-400"
@@ -656,7 +667,7 @@ export default function PlanningPage() {
           {!isLoading && detail && detail.planned_total_minor > 0 && (
             <div className="mb-6">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-sm text-muted-foreground">Overall consumption</span>
+                <span className="text-sm text-muted-foreground">{t('overallConsumption')}</span>
                 <span
                   className={cn(
                     "text-sm font-medium tabular-nums",
@@ -673,18 +684,18 @@ export default function PlanningPage() {
           {/* Category table */}
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-              Category Breakdown
+              {t('categoryBreakdown')}
             </h2>
             <div className="flex items-center gap-2">
               {periods.length > 1 && (
                 <Button variant="outline" size="sm" onClick={() => setCopyOpen(true)}>
                   <Copy className="h-3.5 w-3.5 mr-1.5" />
-                  Copy from month
+                  {t('copyFromMonth')}
                 </Button>
               )}
               <Button size="sm" onClick={() => setAddCatOpen(true)}>
                 <PlusCircle className="h-3.5 w-3.5 mr-1.5" />
-                Add category
+                {t('addCategory')}
               </Button>
             </div>
           </div>
@@ -697,26 +708,26 @@ export default function PlanningPage() {
             </div>
           ) : !detail || detail.items.length === 0 ? (
             <div className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
-              No category budgets yet.{" "}
+              {t('noCategoryBudgets')}{" "}
               <button
                 className="underline underline-offset-2 hover:text-foreground transition-colors"
                 onClick={() => setAddCatOpen(true)}
               >
-                Add a category
+                {t('addCategory')}
               </button>{" "}
-              to start planning.
+              {t('noCategoryBudgetsAction')}
             </div>
           ) : (
             <div className="rounded-lg border overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Category</TableHead>
-                    <TableHead className="text-right">Planned</TableHead>
-                    <TableHead className="text-right hidden sm:table-cell">Actual</TableHead>
-                    <TableHead className="text-right hidden md:table-cell">Remaining</TableHead>
-                    <TableHead className="hidden lg:table-cell w-36">Progress</TableHead>
-                    <TableHead className="hidden lg:table-cell w-20">Status</TableHead>
+                    <TableHead>{t('category')}</TableHead>
+                    <TableHead className="text-right">{t('planned')}</TableHead>
+                    <TableHead className="text-right hidden sm:table-cell">{t('actual')}</TableHead>
+                    <TableHead className="text-right hidden md:table-cell">{t('remaining')}</TableHead>
+                    <TableHead className="hidden lg:table-cell w-36">{t('progress')}</TableHead>
+                    <TableHead className="hidden lg:table-cell w-20">{t('status')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -726,7 +737,6 @@ export default function PlanningPage() {
                     .map((item) => (
                       <BudgetRow key={item.id} item={item} periodId={activePeriod.id} />
                     ))}
-                  {/* Non-expense rows dimmed at bottom */}
                   {detail.items
                     .filter((item) => item.category_kind !== "expense")
                     .map((item) => (

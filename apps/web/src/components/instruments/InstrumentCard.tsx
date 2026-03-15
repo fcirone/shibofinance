@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from 'next-intl'
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -14,6 +15,7 @@ interface InstrumentCardProps {
 }
 
 export function InstrumentCard({ instrument, onEdit }: InstrumentCardProps) {
+  const t = useTranslations('instruments')
   return (
     <Card className="flex flex-col gap-0">
       <CardHeader className="flex flex-row items-start justify-between gap-2 pb-2">
@@ -23,7 +25,7 @@ export function InstrumentCard({ instrument, onEdit }: InstrumentCardProps) {
           </p>
           <div className="flex flex-wrap gap-1.5">
             <Badge variant="secondary" className="text-xs">
-              {instrument.type === "bank_account" ? "Bank Account" : "Credit Card"}
+              {instrument.type === "bank_account" ? t('bankAccount') : t('creditCard')}
             </Badge>
             <SourceBadge source={instrument.source} />
           </div>
@@ -42,7 +44,7 @@ export function InstrumentCard({ instrument, onEdit }: InstrumentCardProps) {
         <p>
           <span className="font-medium text-foreground">{instrument.currency}</span>
         </p>
-        <p className="text-xs">Added {formatDate(instrument.created_at.split("T")[0])}</p>
+        <p className="text-xs">{t('addedOn', { date: formatDate(instrument.created_at.split("T")[0]) })}</p>
       </CardContent>
     </Card>
   )

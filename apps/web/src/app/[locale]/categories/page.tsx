@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useTranslations } from 'next-intl'
 import { Loader2, Plus, Pencil, Trash2, Tag } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -47,6 +48,8 @@ function CategoryDialog({
   category?: CategoryOut
   onClose: () => void
 }) {
+  const t = useTranslations('categories')
+  const tc = useTranslations('common')
   const createMutation = useCreateCategory()
   const updateMutation = useUpdateCategory()
 
@@ -66,15 +69,15 @@ function CategoryDialog({
     try {
       if (category) {
         await updateMutation.mutateAsync({ id: category.id, data })
-        toast.success("Category updated")
+        toast.success(t('updated'))
       } else {
         await createMutation.mutateAsync(data)
-        toast.success("Category created")
+        toast.success(t('created'))
       }
       reset()
       onClose()
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Failed to save category")
+      toast.error(err instanceof Error ? err.message : t('createFailed'))
     }
   }
 
@@ -82,11 +85,11 @@ function CategoryDialog({
     <Dialog open={open} onOpenChange={(v) => { if (!v) { reset(); onClose() } }}>
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle>{category ? "Edit Category" : "New Category"}</DialogTitle>
+          <DialogTitle>{category ? t('editCategory') : t('newCategory')}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-2">
           <div className="space-y-1">
-            <label className="text-sm font-medium">Name</label>
+            <label className="text-sm font-medium">{t('categoryName')}</label>
             <input
               {...register("name")}
               autoFocus
@@ -98,23 +101,23 @@ function CategoryDialog({
             )}
           </div>
           <div className="space-y-1">
-            <label className="text-sm font-medium">Kind</label>
+            <label className="text-sm font-medium">{t('kind')}</label>
             <select
               {...register("kind")}
               className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             >
-              <option value="expense">Expense</option>
-              <option value="income">Income</option>
-              <option value="transfer">Transfer</option>
+              <option value="expense">{t('expense')}</option>
+              <option value="income">{t('income')}</option>
+              <option value="transfer">{t('transfer')}</option>
             </select>
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => { reset(); onClose() }}>
-              Cancel
+              {tc('cancel')}
             </Button>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {category ? "Save" : "Create"}
+              {category ? tc('save') : tc('create')}
             </Button>
           </DialogFooter>
         </form>
@@ -127,12 +130,6 @@ function CategoryDialog({
 // Kind badge
 // ---------------------------------------------------------------------------
 
-const kindLabel: Record<string, string> = {
-  expense: "Expense",
-  income: "Income",
-  transfer: "Transfer",
-}
-
 const kindColor: Record<string, string> = {
   expense: "bg-orange-100 text-orange-700",
   income: "bg-green-100 text-green-700",
@@ -144,6 +141,7 @@ const kindColor: Record<string, string> = {
 // ---------------------------------------------------------------------------
 
 export default function CategoriesPage() {
+  const t = useTranslations('categories')
   const { data: categories = [], isLoading } = useCategories()
   const deleteMutation = useDeleteCategory()
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -163,20 +161,26 @@ export default function CategoriesPage() {
     if (!confirm(`Delete "${cat.name}"?`)) return
     try {
       await deleteMutation.mutateAsync(cat.id)
-      toast.success("Category deleted")
+      toast.success(t('deleted'))
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Failed to delete category")
+      toast.error(err instanceof Error ? err.message : t('createFailed'))
     }
+  }
+
+  const kindLabel: Record<string, string> = {
+    expense: t('expense'),
+    income: t('income'),
+    transfer: t('transfer'),
   }
 
   return (
     <>
       <PageHeader
-        title="Categories"
+        title={t('title')}
         action={
           <Button size="sm" onClick={openCreate}>
             <Plus className="h-4 w-4 mr-1.5" />
-            New Category
+            {t('newCategory')}
           </Button>
         }
       />
@@ -184,22 +188,22 @@ export default function CategoriesPage() {
       {isLoading ? (
         <div className="flex items-center gap-2 text-muted-foreground text-sm">
           <Loader2 className="h-4 w-4 animate-spin" />
-          Loading…
+          {t('loadingCategories')}
         </div>
       ) : categories.length === 0 ? (
         <EmptyState
           icon={Tag}
-          title="No categories yet"
-          description="Create categories to organize your transactions."
-          action={{ label: "New Category", onClick: openCreate }}
+          title={t('noCategories')}
+          description={t('noCategoriesDesc')}
+          action={{ label: t('newCategory'), onClick: openCreate }}
         />
       ) : (
         <div className="rounded-lg border overflow-hidden">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-muted/40">
-                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">Name</th>
-                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">Kind</th>
+                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">{t('categoryName')}</th>
+                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">{t('kind')}</th>
                 <th className="px-4 py-2.5" />
               </tr>
             </thead>

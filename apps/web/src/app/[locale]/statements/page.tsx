@@ -3,7 +3,9 @@
 export const dynamic = 'force-dynamic'
 
 import { useState, useCallback } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useTranslations } from 'next-intl'
+import { useRouter, usePathname } from '@/i18n/navigation'
+import { useSearchParams } from "next/navigation"
 import { FileText } from "lucide-react"
 import { PageHeader } from "@/components/shared/PageHeader"
 import { EmptyState } from "@/components/shared/EmptyState"
@@ -15,7 +17,10 @@ import { useStatements } from "@/hooks/useStatements"
 import type { CardStatementOut } from "@/lib/api"
 
 export default function StatementsPage() {
+  const t = useTranslations('statements')
+  const ti = useTranslations('imports')
   const router = useRouter()
+  const pathname = usePathname()
   const searchParams = useSearchParams()
   const instrumentId = searchParams.get("instrument_id") ?? undefined
 
@@ -27,9 +32,9 @@ export default function StatementsPage() {
       const params = new URLSearchParams(searchParams.toString())
       if (id) params.set("instrument_id", id)
       else params.delete("instrument_id")
-      router.replace(`/statements?${params}`)
+      router.replace(`${pathname}?${params}` as '/statements')
     },
-    [router, searchParams],
+    [router, pathname, searchParams],
   )
 
   // Sort newest-first by statement_end
@@ -39,7 +44,7 @@ export default function StatementsPage() {
 
   return (
     <>
-      <PageHeader title="Statements" />
+      <PageHeader title={t('title')} />
 
       {/* Filter bar */}
       <div className="flex items-center gap-3 mb-6">
@@ -49,7 +54,7 @@ export default function StatementsPage() {
             onChange={setInstrumentFilter}
             typeFilter="credit_card"
             allowAll
-            allLabel="All credit cards"
+            allLabel={t('allCreditCards')}
           />
         </div>
       </div>
@@ -63,13 +68,13 @@ export default function StatementsPage() {
       ) : sorted.length === 0 ? (
         <EmptyState
           icon={FileText}
-          title="No statements found"
+          title={t('noStatements')}
           description={
             instrumentId
-              ? "No statements imported for this card yet."
-              : "No credit card statements imported yet."
+              ? t('noStatementsForCard')
+              : t('noStatementsDesc')
           }
-          action={{ label: "Import File", onClick: () => router.push("/import/new") }}
+          action={{ label: ti('importFile'), onClick: () => router.push("/import/new") }}
         />
       ) : (
         <div className="space-y-3">

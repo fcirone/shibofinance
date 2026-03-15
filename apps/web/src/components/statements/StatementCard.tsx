@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from 'next-intl'
 import { CalendarDays } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { StatementStatusBadge } from "@/components/shared/StatusBadge"
@@ -13,6 +14,7 @@ interface Props {
 }
 
 export function StatementCard({ statement, onClick }: Props) {
+  const t = useTranslations('statements')
   return (
     <Card
       className={onClick ? "cursor-pointer hover:bg-accent/40 transition-colors" : undefined}
@@ -33,7 +35,7 @@ export function StatementCard({ statement, onClick }: Props) {
 
           {statement.due_date && (
             <p className="text-xs text-muted-foreground mt-0.5">
-              Due {formatDate(statement.due_date)}
+              {t('due')} {formatDate(statement.due_date)}
             </p>
           )}
         </div>

@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from 'next-intl'
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
@@ -45,6 +46,7 @@ function USDCell({ minor, currency, rates }: { minor: number; currency: string; 
 }
 
 export function TransactionsTable(props: Props) {
+  const t = useTranslations('transactions')
   const { rows, selectedIds, onSelectionChange } = props
   const { data: fx } = useExchangeRates()
 
@@ -86,10 +88,10 @@ export function TransactionsTable(props: Props) {
                   aria-label="Select all"
                 />
               </TableHead>
-              <TableHead scope="col" className="w-28">Date</TableHead>
-              <TableHead scope="col">Description</TableHead>
-              <TableHead scope="col" className="hidden sm:table-cell">Category</TableHead>
-              <TableHead scope="col" className="text-right w-36">Amount</TableHead>
+              <TableHead scope="col" className="w-28">{t('date')}</TableHead>
+              <TableHead scope="col">{t('description')}</TableHead>
+              <TableHead scope="col" className="hidden sm:table-cell">{t('category')}</TableHead>
+              <TableHead scope="col" className="text-right w-36">{t('amount')}</TableHead>
               <TableHead scope="col" className="text-right w-28 hidden md:table-cell">≈ USD</TableHead>
             </TableRow>
           </TableHeader>
@@ -145,13 +147,13 @@ export function TransactionsTable(props: Props) {
                 aria-label="Select all"
               />
             </TableHead>
-            <TableHead scope="col" className="w-28">Date</TableHead>
-            <TableHead scope="col">Description</TableHead>
-            <TableHead scope="col" className="hidden md:table-cell">Merchant</TableHead>
-            <TableHead scope="col" className="hidden sm:table-cell">Category</TableHead>
-            <TableHead scope="col" className="text-right w-36">Amount</TableHead>
+            <TableHead scope="col" className="w-28">{t('date')}</TableHead>
+            <TableHead scope="col">{t('description')}</TableHead>
+            <TableHead scope="col" className="hidden md:table-cell">{t('merchant')}</TableHead>
+            <TableHead scope="col" className="hidden sm:table-cell">{t('category')}</TableHead>
+            <TableHead scope="col" className="text-right w-36">{t('amount')}</TableHead>
             <TableHead scope="col" className="text-right w-28 hidden md:table-cell">≈ USD</TableHead>
-            <TableHead scope="col" className="hidden sm:table-cell w-28">Installments</TableHead>
+            <TableHead scope="col" className="hidden sm:table-cell w-28">{t('installments')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

@@ -1,7 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useTranslations } from 'next-intl'
+import { useRouter } from '@/i18n/navigation'
 import { ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -68,18 +69,19 @@ function StatPill({
 // ── Onboarding ────────────────────────────────────────────────────────────────
 
 function OnboardingPanel() {
+  const t = useTranslations('dashboard')
   const router = useRouter()
   const steps = [
-    { n: 1, label: "Add a bank account or credit card instrument", href: "/instruments" },
-    { n: 2, label: "Import a statement file (PDF or CSV)", href: "/import/new" },
-    { n: 3, label: "Browse your transactions", href: "/transactions" },
+    { n: 1, label: t('step1'), href: "/instruments" },
+    { n: 2, label: t('step2'), href: "/import/new" },
+    { n: 3, label: t('step3'), href: "/transactions" },
   ]
   return (
     <div className="flex flex-col items-center justify-center py-20 gap-8">
       <div className="text-center space-y-2">
-        <h2 className="text-2xl font-semibold">Welcome to Shibo Finance</h2>
+        <h2 className="text-2xl font-semibold">{t('welcome')}</h2>
         <p className="text-muted-foreground text-sm max-w-sm">
-          Get started by setting up your first instrument and importing a statement.
+          {t('welcomeDesc')}
         </p>
       </div>
       <div className="w-full max-w-sm space-y-3">
@@ -102,6 +104,7 @@ function OnboardingPanel() {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
+  const t = useTranslations('dashboard')
   const [yearMonth, setYearMonth] = useState(currentYearMonth)
   const { date_from, date_to } = monthToRange(yearMonth)
 
@@ -134,7 +137,7 @@ export default function DashboardPage() {
   if (!instrumentsLoading && instruments.length === 0) {
     return (
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold mb-6">Dashboard</h1>
+        <h1 className="text-2xl font-semibold mb-6">{t('title')}</h1>
         <OnboardingPanel />
       </div>
     )
@@ -145,7 +148,7 @@ export default function DashboardPage() {
       {/* ── Header: title + period picker + stat pills ── */}
       <div className="flex flex-wrap items-center gap-x-4 gap-y-3 justify-between">
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-semibold">Dashboard</h1>
+          <h1 className="text-2xl font-semibold">{t('title')}</h1>
           <input
             type="month"
             value={yearMonth}
@@ -156,21 +159,21 @@ export default function DashboardPage() {
 
         <div className="flex items-center gap-6 border rounded-lg px-4 py-2 bg-card">
           <StatPill
-            label="Credits"
+            label={t('credits')}
             value={formatUSD(creditsUSD)}
             loading={statsLoading}
             valueClass="text-teal-500 dark:text-teal-400"
           />
           <div className="w-px h-8 bg-border" />
           <StatPill
-            label="Debits"
+            label={t('debits')}
             value={formatUSD(debitsUSD)}
             loading={statsLoading}
             valueClass="text-destructive"
           />
           <div className="w-px h-8 bg-border" />
           <StatPill
-            label="Balance"
+            label={t('balance')}
             value={formatUSD(balanceUSD)}
             loading={statsLoading}
             valueClass={balanceUSD >= 0 ? "text-teal-500 dark:text-teal-400" : "text-destructive"}

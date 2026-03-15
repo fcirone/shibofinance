@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useTranslations } from "next-intl"
 import { Check, ChevronsUpDown, Loader2, Tag, Wand2 } from "lucide-react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
@@ -36,6 +37,7 @@ export function CategoryPicker({
   categoryRuleName,
   onSaved,
 }: Props) {
+  const t = useTranslations('transactions')
   const [open, setOpen] = useState(false)
   const { data: categories = [] } = useCategories()
   const qc = useQueryClient()
@@ -76,7 +78,7 @@ export function CategoryPicker({
             <Tag className="h-3 w-3 shrink-0" aria-hidden />
           )}
           <span className="max-w-[120px] truncate">
-            {categoryName ?? "Uncategorized"}
+            {categoryName ?? t('uncategorized')}
           </span>
           <ChevronsUpDown className="h-3 w-3 shrink-0 opacity-50" />
         </Button>

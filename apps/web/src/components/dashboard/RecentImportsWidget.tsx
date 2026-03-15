@@ -1,6 +1,7 @@
 "use client"
 
-import Link from "next/link"
+import { useTranslations } from 'next-intl'
+import { Link } from "@/i18n/navigation"
 import { FileText, ArrowRight } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -10,6 +11,7 @@ import { useImports } from "@/hooks/useImports"
 import { useInstruments } from "@/hooks/useInstruments"
 
 export function RecentImportsWidget() {
+  const t = useTranslations('dashboard')
   const { data: result, isLoading } = useImports({ limit: 5 })
   const batches = result?.data ?? []
   const { data: instruments = [] } = useInstruments()
@@ -17,12 +19,12 @@ export function RecentImportsWidget() {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-3">
-        <CardTitle className="text-sm font-medium">Recent Imports</CardTitle>
+        <CardTitle className="text-sm font-medium">{t('recentImports')}</CardTitle>
         <Link
           href="/imports"
           className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
         >
-          View all <ArrowRight className="h-3 w-3" />
+          {t('viewAllImports')} <ArrowRight className="h-3 w-3" />
         </Link>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -35,7 +37,7 @@ export function RecentImportsWidget() {
             </div>
           ))
         ) : batches.length === 0 ? (
-          <p className="text-sm text-muted-foreground py-4 text-center">No imports yet.</p>
+          <p className="text-sm text-muted-foreground py-4 text-center">{t('noRecentImports')}</p>
         ) : (
           batches.map((batch) => {
             const inst = instruments.find((i) => i.id === batch.instrument_id)

@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from 'next-intl'
 import { FileText, CheckCircle2, Copy, AlertCircle } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { ImportStatusBadge } from "@/components/shared/StatusBadge"
@@ -13,6 +14,7 @@ interface Props {
 }
 
 export function ImportBatchCard({ batch, instrument, onClick }: Props) {
+  const t = useTranslations('imports')
   return (
     <Card
       className={onClick ? "cursor-pointer hover:bg-accent/40 transition-colors" : undefined}
@@ -36,16 +38,16 @@ export function ImportBatchCard({ batch, instrument, onClick }: Props) {
           <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
             <span className="flex items-center gap-1 text-teal-500 dark:text-teal-400">
               <CheckCircle2 className="h-3.5 w-3.5" />
-              {batch.inserted_count} inserted
+              {batch.inserted_count} {t('inserted')}
             </span>
             <span className="flex items-center gap-1">
               <Copy className="h-3.5 w-3.5" />
-              {batch.duplicate_count} duplicates
+              {batch.duplicate_count} {t('duplicates')}
             </span>
             {batch.error_count > 0 && (
               <span className="flex items-center gap-1 text-destructive">
                 <AlertCircle className="h-3.5 w-3.5" />
-                {batch.error_count} errors
+                {batch.error_count} {t('errors')}
               </span>
             )}
           </div>

@@ -1,7 +1,7 @@
 "use client"
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { useTranslations } from 'next-intl'
+import { Link, usePathname } from "@/i18n/navigation"
 import {
   LayoutDashboard,
   CreditCard,
@@ -19,51 +19,52 @@ import {
 import { cn } from "@/lib/utils"
 import { ThemeSelector } from "@/components/shared/ThemeSelector"
 
-const NAV_GROUPS = [
-  {
-    items: [
-      { label: "Dashboard", href: "/", icon: LayoutDashboard },
-    ],
-  },
-  {
-    label: "Analyze",
-    items: [
-      { label: "Transactions", href: "/transactions", icon: List },
-      { label: "Statements", href: "/statements", icon: FileText },
-      { label: "Planning", href: "/planning", icon: Target },
-    ],
-  },
-  {
-    label: "Control",
-    items: [
-      { label: "Payables", href: "/payables", icon: CalendarCheck },
-      { label: "Recurring", href: "/recurring", icon: RefreshCw },
-      { label: "Investments", href: "/investments", icon: TrendingUp },
-    ],
-  },
-  {
-    label: "Data",
-    items: [
-      { label: "Instruments", href: "/instruments", icon: CreditCard },
-      { label: "Import", href: "/import/new", icon: Upload },
-      { label: "History", href: "/imports", icon: History },
-    ],
-  },
-  {
-    label: "Manage",
-    items: [
-      { label: "Categories", href: "/categories", icon: Tag },
-      { label: "Rules", href: "/categories/rules", icon: Sliders },
-    ],
-  },
-]
-
 interface SidebarProps {
   collapsed?: boolean
 }
 
 export function Sidebar({ collapsed = false }: SidebarProps) {
+  const t = useTranslations('nav')
   const pathname = usePathname()
+
+  const NAV_GROUPS = [
+    {
+      items: [
+        { label: t('dashboard'), href: "/" as const, icon: LayoutDashboard },
+      ],
+    },
+    {
+      label: t('analyze'),
+      items: [
+        { label: t('transactions'), href: "/transactions" as const, icon: List },
+        { label: t('statements'), href: "/statements" as const, icon: FileText },
+        { label: t('planning'), href: "/planning" as const, icon: Target },
+      ],
+    },
+    {
+      label: t('control'),
+      items: [
+        { label: t('payables'), href: "/payables" as const, icon: CalendarCheck },
+        { label: t('recurring'), href: "/recurring" as const, icon: RefreshCw },
+        { label: t('investments'), href: "/investments" as const, icon: TrendingUp },
+      ],
+    },
+    {
+      label: t('data'),
+      items: [
+        { label: t('instruments'), href: "/instruments" as const, icon: CreditCard },
+        { label: t('import'), href: "/import/new" as const, icon: Upload },
+        { label: t('history'), href: "/imports" as const, icon: History },
+      ],
+    },
+    {
+      label: t('manage'),
+      items: [
+        { label: t('categories'), href: "/categories" as const, icon: Tag },
+        { label: t('rules'), href: "/categories/rules" as const, icon: Sliders },
+      ],
+    },
+  ]
 
   function isActive(href: string) {
     if (href === "/") return pathname === "/"

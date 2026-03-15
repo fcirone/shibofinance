@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip,
   ResponsiveContainer, Cell, ReferenceLine,
@@ -39,13 +40,14 @@ interface Props {
 }
 
 export function CategoryIncomeRatioChart({ summary, loading }: Props) {
+  const t = useTranslations('dashboard')
   const { data: fx } = useExchangeRates()
 
   if (loading) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm font-medium">Spending as % of Income</CardTitle>
+          <CardTitle className="text-sm font-medium">{t('spendingAsIncomeRatio')}</CardTitle>
         </CardHeader>
         <CardContent>
           <Skeleton className="h-52 w-full" />
@@ -81,7 +83,7 @@ export function CategoryIncomeRatioChart({ summary, loading }: Props) {
     for (const [cur, amt] of Object.entries(summary.uncategorized_by_currency)) {
       uncatExpense += toUSDMinor(amt, cur, fx.rates) ?? 0
     }
-    if (uncatExpense > 0) expenseItems.push({ name: "Uncategorized", usd: uncatExpense })
+    if (uncatExpense > 0) expenseItems.push({ name: t('uncategorized'), usd: uncatExpense })
 
     if (totalIncomeUSD > 0) {
       expenseItems.sort((a, b) => b.usd - a.usd)
@@ -95,12 +97,12 @@ export function CategoryIncomeRatioChart({ summary, loading }: Props) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm font-medium">Spending as % of Income</CardTitle>
+          <CardTitle className="text-sm font-medium">{t('spendingAsIncomeRatio')}</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col items-center justify-center py-12 gap-3 text-center">
           <BarChart2 className="h-8 w-8 text-muted-foreground" />
           <p className="text-sm text-muted-foreground">
-            {!fx ? "Loading exchange rates…" : "No data for this period."}
+            {!fx ? t('loadingRates') : t('noDataForPeriod')}
           </p>
         </CardContent>
       </Card>
@@ -110,7 +112,7 @@ export function CategoryIncomeRatioChart({ summary, loading }: Props) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-sm font-medium">Spending as % of Income</CardTitle>
+        <CardTitle className="text-sm font-medium">{t('spendingAsIncomeRatio')}</CardTitle>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={Math.max(200, entries.length * 34)}>

@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
+import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import {
   ChevronFirst,
@@ -18,6 +19,7 @@ interface Props {
 }
 
 export function PaginationBar({ page, pageSize, total, basePath }: Props) {
+  const tc = useTranslations('common')
   const router = useRouter()
   const searchParams = useSearchParams()
   const [jumpValue, setJumpValue] = useState("")
@@ -49,7 +51,7 @@ export function PaginationBar({ page, pageSize, total, basePath }: Props) {
     <div className="flex items-center justify-between gap-4 pt-2 flex-wrap">
       {/* Left: record/page info */}
       <span className="text-sm text-muted-foreground whitespace-nowrap">
-        {from}–{to} of {total.toLocaleString()} records &middot; page {page} of {totalPages}
+        {from}–{to} {tc('of')} {total.toLocaleString()} {tc('records')} &middot; {tc('page')} {page} {tc('of')} {totalPages}
       </span>
 
       {/* Center: nav buttons */}
@@ -60,7 +62,7 @@ export function PaginationBar({ page, pageSize, total, basePath }: Props) {
           className="h-8 w-8"
           disabled={!hasPrev}
           onClick={() => go(1)}
-          title="First page"
+          title={tc('firstPage')}
         >
           <ChevronFirst className="h-4 w-4" />
         </Button>
@@ -70,7 +72,7 @@ export function PaginationBar({ page, pageSize, total, basePath }: Props) {
           className="h-8 w-8"
           disabled={!hasPrev}
           onClick={() => go(page - 1)}
-          title="Previous page"
+          title={tc('previousPage')}
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
@@ -80,7 +82,7 @@ export function PaginationBar({ page, pageSize, total, basePath }: Props) {
           className="h-8 w-8"
           disabled={!hasNext}
           onClick={() => go(page + 1)}
-          title="Next page"
+          title={tc('nextPage')}
         >
           <ChevronRight className="h-4 w-4" />
         </Button>
@@ -90,7 +92,7 @@ export function PaginationBar({ page, pageSize, total, basePath }: Props) {
           className="h-8 w-8"
           disabled={!hasNext}
           onClick={() => go(totalPages)}
-          title="Last page"
+          title={tc('lastPage')}
         >
           <ChevronLast className="h-4 w-4" />
         </Button>
@@ -99,7 +101,7 @@ export function PaginationBar({ page, pageSize, total, basePath }: Props) {
       {/* Right: jump to page */}
       {totalPages > 1 && (
         <form onSubmit={handleJump} className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground whitespace-nowrap">Go to</span>
+          <span className="text-sm text-muted-foreground whitespace-nowrap">{tc('goTo')}</span>
           <input
             type="number"
             min={1}
@@ -110,7 +112,7 @@ export function PaginationBar({ page, pageSize, total, basePath }: Props) {
             placeholder={String(page)}
           />
           <Button type="submit" variant="outline" size="sm" className="h-8">
-            Go
+            {tc('go')}
           </Button>
         </form>
       )}

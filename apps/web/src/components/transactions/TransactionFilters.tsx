@@ -1,7 +1,9 @@
 "use client"
 
 import { useCallback } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useTranslations } from 'next-intl'
+import { useRouter } from "@/i18n/navigation"
+import { useSearchParams } from "next/navigation"
 import { X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -14,6 +16,7 @@ interface Props {
 }
 
 export function TransactionFilters({ typeFilter }: Props) {
+  const t = useTranslations('transactions')
   const router = useRouter()
   const searchParams = useSearchParams()
   const { data: categories = [] } = useCategories()
@@ -31,7 +34,7 @@ export function TransactionFilters({ typeFilter }: Props) {
       if (value) params.set(key, value)
       else params.delete(key)
       params.delete("page")
-      router.replace(`/transactions?${params}`)
+      router.replace(`/transactions?${params}` as '/transactions')
     },
     [router, searchParams],
   )
@@ -71,7 +74,6 @@ export function TransactionFilters({ typeFilter }: Props) {
           onChange={(v) => update("instrument_id", v)}
           typeFilter={typeFilter}
           allowAll
-          allLabel="All instruments"
         />
       </div>
 
@@ -94,8 +96,8 @@ export function TransactionFilters({ typeFilter }: Props) {
         type="search"
         value={search}
         onChange={(e) => update("search", e.target.value || undefined)}
-        placeholder="Search description…"
-        aria-label="Search transactions"
+        placeholder={t('searchPlaceholder')}
+        aria-label={t('searchPlaceholder')}
         className="h-9 w-full sm:w-52 rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
       />
 
@@ -106,7 +108,7 @@ export function TransactionFilters({ typeFilter }: Props) {
         aria-label="Filter by category"
         className="h-9 w-full sm:w-44 rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
       >
-        <option value="">All categories</option>
+        <option value="">{t('allCategories')}</option>
         {categories.map((cat) => (
           <option key={cat.id} value={cat.id}>
             {cat.name}
@@ -120,13 +122,13 @@ export function TransactionFilters({ typeFilter }: Props) {
           onCheckedChange={(v) => toggleUncategorized(v === true)}
           id="uncategorized-filter"
         />
-        <span className="text-sm text-muted-foreground">Uncategorized only</span>
+        <span className="text-sm text-muted-foreground">{t('uncategorizedOnly')}</span>
       </label>
 
       {hasFilters && (
         <Button variant="ghost" size="sm" onClick={clearAll} className="gap-1 text-muted-foreground">
           <X className="h-3.5 w-3.5" />
-          Clear
+          {t('clearFilters')}
         </Button>
       )}
     </div>
